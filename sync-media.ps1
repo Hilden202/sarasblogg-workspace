@@ -1,3 +1,4 @@
+# DEV-verktyg – används endast lokalt
 # Synkar bilder från GitHub sarasblogg-media repo till lokal SarasBlogg-Media mapp
 # Kör detta när du vill hämta de senaste bilderna från GitHub
 
