@@ -1,0 +1,22 @@
+﻿@using Microsoft.AspNetCore.Http.Features
+@{
+    var consentFeatureFlag = Context.Features.Get<ITrackingConsentFeature>();
+    var showBannerFlag = !consentFeatureFlag?.CanTrack ?? false;
+    var cookieString = consentFeatureFlag?.CreateConsentCookie();
+}
+
+@if (showBannerFlag)
+{
+    <div id="cookieConsentdiv"
+         class="cookie-fixed start-50 translate-middle-x alert alert-secondary shadow-lg rounded-4 p-3 text-center">
+        <h3 class="display-6">Vår cookie-policy</h3>
+        <p>Vi använder endast nödvändiga cookies för att webbplatsen ska fungera korrekt. Genom att klicka på Acceptera godkänner du detta – och du slipper dessutom se den här rutan igen.</p>
+        <a href="#" id="showPrivacyContent">Läs mer här</a>
+        <div id="privacyContent" style="display:none; margin-top:1em;">
+            @await Html.PartialAsync("_PrivacyContent")
+        </div>
+        <button type="button" data-cookie-string="@cookieString" class="btn btn-primary mt-2">
+            Acceptera
+        </button>
+    </div>
+}

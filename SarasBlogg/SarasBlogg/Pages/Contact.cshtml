@@ -1,0 +1,98 @@
+﻿@page
+@using SarasBlogg.Extensions
+@model SarasBlogg.Pages.ContactModel
+@{
+}
+
+<div class="card card-extra-padding container-site contact-card">
+	<div class="card-img-wrapper mt-3 mb-2">
+		<img class="bloggimg mb-4 rounded shadow-lg"
+			 src="~/img/logo/kontaktaossny.png"
+			 alt="kontaktaoss logotype" />
+	</div>
+
+	<h2 class="contact-title">Kontakta mig</h2>
+
+	<form class="contact-form p-1 p-4 border rounded shadow-sm" method="post">
+		<div class="mb-3">
+			@* Anti-spam: Honeypot + tidslås *@
+			<div class="hp-field" aria-hidden="true">
+				<label for="website">Webbplats (lämna tomt)</label>
+				<input id="website" name="Website" autocomplete="off" tabindex="-1" />
+			</div>
+			<input type="hidden" name="FormIssuedAt" value="@Model.FormIssuedAt" />
+			<input type="hidden" name="FormToken" value="@Model.FormToken" />
+
+			<label asp-for="ContactMe.Name" class="control-label contact-content"></label>
+			<input asp-for="ContactMe.Name" class="form-control" />
+			<span asp-validation-for="ContactMe.Name" class="text-danger"></span>
+		</div>
+		<div class="mb-3">
+			<label asp-for="ContactMe.Email" class="control-label contact-content"></label>
+			<input asp-for="ContactMe.Email" class="form-control" />
+			<span asp-validation-for="ContactMe.Email" class="text-danger"></span>
+		</div>
+		<div class="mb-3">
+			<label asp-for="ContactMe.Subject" class="control-label contact-content"></label>
+			<input asp-for="ContactMe.Subject" class="form-control" />
+			<span asp-validation-for="ContactMe.Subject" class="text-danger"></span>
+		</div>
+		<div class="mb-3">
+			<label asp-for="ContactMe.Message" class="control-label contact-content"></label>
+			<textarea asp-for="ContactMe.Message" class="form-control"></textarea>
+			<span asp-validation-for="ContactMe.Message" class="text-danger"></span>
+		</div>
+		<br />
+		<button type="submit" class="btn blog-btn">Skicka</button>
+	</form>
+</div>
+
+@if (TempData["addMessage"] != null)
+{
+	<br />
+
+	<div class="alert alert-success">@TempData["addMessage"]</div>
+}
+@if (TempData["deleteMessage"] != null)
+{
+	<br />
+
+	<div class="alert alert-danger">@TempData["deleteMessage"]</div>
+}
+
+@if (User.IsInRole("admin") || User.IsInRole("superadmin"))
+{
+	<ul class="list-group mt-3">
+		@foreach (var item in Model.ContactMes)
+		{
+			<li class="list-group-item message-item">
+				<div class="message-header">
+					<strong>@item.Name</strong>
+					<span class="text-muted">(@item.Email)</span>
+					<span class="message-date">@item.CreatedAt.ToString("yyyy-MM-dd HH:mm")</span>
+				</div>
+				<div class="message-body">
+					<div><em>Ämne:</em> @item.Subject</div>
+					<div>@item.Message</div>
+				</div>
+
+				@if (User.IsInRole("superadmin"))
+				{
+					<form method="post"
+						  asp-page-handler="Delete"
+						  onsubmit="return handleDeleteSubmit(event, this)"
+						  data-confirm="Ta bort detta meddelande?"
+						  class="ms-auto d-inline">
+						@Html.AntiForgeryToken()
+						<input type="hidden" name="deleteId" value="@item.Id" />
+						<button type="submit"
+								class="btn btn-sm btn-outline-danger"
+								title="Ta bort" aria-label="Ta bort">
+							Ta bort
+						</button>
+					</form>
+				}
+			</li>
+		}
+	</ul>
+}

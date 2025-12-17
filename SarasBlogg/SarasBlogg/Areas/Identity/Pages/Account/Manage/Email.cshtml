@@ -1,0 +1,75 @@
+﻿@page
+@model EmailModel
+@{
+    ViewData["Title"] = "E-post";
+    ViewData["ActivePage"] = ManageNavPages.Email;
+}
+
+<h3>@ViewData["Title"]</h3>
+
+<partial name="_StatusMessage" for="StatusMessage" />
+
+@if (!string.IsNullOrWhiteSpace(Model.DevConfirmUrl))
+{
+    <div class="alert alert-info mt-2">
+        Dev: <a class="link-primary" href="@Model.DevConfirmUrl" target="_blank">Öppna bekräftelselänk</a>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <form id="email-form" method="post">
+            <div asp-validation-summary="All" class="text-danger" role="alert"></div>
+
+            <!-- Nuvarande e-post (readonly) + status -->
+            <div class="form-floating mb-2">
+                <input asp-for="Email" class="form-control" placeholder="Din e-post" disabled />
+                <label asp-for="Email" class="form-label"></label>
+            </div>
+            <div class="mb-3">
+                @if (Model.IsEmailConfirmed)
+                {
+                    <span class="badge bg-success">Bekräftad</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">Ej bekräftad</span>
+                }
+            </div>
+
+            <!-- Ny e-post -->
+            <div class="form-floating mb-3">
+                <input asp-for="Input.NewEmail" class="form-control" autocomplete="email" aria-required="true" placeholder="Ny e-postadress" />
+                <label asp-for="Input.NewEmail" class="form-label"></label>
+                <span asp-validation-for="Input.NewEmail" class="text-danger"></span>
+            </div>
+
+            <!-- Visa bara när byte är initierat (använder flaggan från PageModel) -->
+            @if (Model.ShowResendLink)
+            {
+                <div class="mb-3 small">
+                    En bekräftelselänk har skickats till
+                    <strong>@Model.PendingNewEmail</strong>.
+                    Om du inte hittar den kan du
+                    <button id="email-verification"
+                            type="submit"
+                            asp-page-handler="SendVerificationEmail"
+                            class="btn btn-link bg-transparent border-0 shadow-none p-0 align-baseline">
+                        skicka igen
+                    </button>.
+                </div>
+            }
+
+            <button id="change-email-button"
+                    type="submit"
+                    asp-page-handler="ChangeEmail"
+                    class="w-100 btn btn-lg btn-primary">
+                Byt e-post
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

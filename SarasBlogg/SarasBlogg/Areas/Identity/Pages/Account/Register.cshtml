@@ -1,0 +1,124 @@
+﻿@page
+@model SarasBlogg.Areas.Identity.Pages.Account.RegisterModel
+@{
+    ViewData["Title"] = "Registrera";
+}
+@using SarasBlogg.Areas.Identity.Pages.Account.Manage
+@{
+    var isManageContext = ViewContext.HttpContext.Request.Query.ContainsKey("manage");
+    if (isManageContext)
+    {
+        Layout = "/Areas/Identity/Pages/Account/Manage/_Layout.cshtml";
+        ViewData["ActivePage"] = ManageNavPages.Register;
+    }
+}
+
+<h1 class="visually-hidden">@ViewData["Title"]</h1>
+
+<div class="container-site">
+    <div class="card auth-card mx-auto shadow-lg">
+        <div class="card-body">
+
+            <h1 class="blogg-title mb-2">Registrera</h1>
+            <p class="blogg-content mb-3">Skapa ett konto för att kunna kommentera och följa bloggen.</p>
+
+            @if (TempData["RegisterInfo"] is string info)
+            {
+                <div class="alert alert-info">@info</div>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.DevConfirmLink))
+            {
+                <div class="alert alert-warning mb-3">
+                    <strong>Dev-läge:</strong> Bekräfta direkt via länken:
+                    <a href="@Model.DevConfirmLink" target="_blank" rel="noopener">Klicka här för att bekräfta</a>
+                </div>
+            }
+
+            <form id="registerForm" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+                <div class="form-floating mb-3">
+                    <input asp-for="Input.UserName" class="form-control" placeholder="användarnamn" />
+                    <label asp-for="Input.UserName">Användarnamn</label>
+                    <span asp-validation-for="Input.UserName" class="text-danger"></span>
+                </div>
+
+                <div class="form-floating mb-3">
+                    <input asp-for="Input.Email" class="form-control" autocomplete="username" placeholder="namn@exempel.com" />
+                    <label asp-for="Input.Email">E-post</label>
+                    <span asp-validation-for="Input.Email" class="text-danger"></span>
+                </div>
+
+                <div class="form-floating mb-3">
+                    <input asp-for="Input.Password" class="form-control" autocomplete="new-password" placeholder="Lösenord" />
+                    <label asp-for="Input.Password">Lösenord</label>
+                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                </div>
+
+                <div class="form-floating mb-3">
+                    <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" placeholder="Bekräfta lösenord" />
+                    <label asp-for="Input.ConfirmPassword">Bekräfta lösenord</label>
+                    <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                </div>
+
+                <!-- Frivilliga fält – samma stil -->
+                <div class="form-floating mb-3">
+                    <input asp-for="Input.Name" class="form-control" placeholder="Ditt namn (valfritt)" />
+                    <label asp-for="Input.Name">Namn (valfritt)</label>
+                    <span asp-validation-for="Input.Name" class="text-danger"></span>
+                </div>
+
+                <div class="form-floating mb-3">
+                    <input asp-for="Input.BirthYear" class="form-control" placeholder="Födelseår (valfritt)" />
+                    <label asp-for="Input.BirthYear">Födelseår (valfritt)</label>
+                    <span asp-validation-for="Input.BirthYear" class="text-danger"></span>
+                </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" asp-for="Input.SubscribeNewPosts" id="SubscribeNewPosts" />
+                    <label class="form-check-label" asp-for="Input.SubscribeNewPosts">
+                        Skicka mejl när nya blogginlägg publiceras
+                    </label>
+                </div>
+
+                <button id="registerSubmit" type="submit" class="btn blog-btn w-100">
+                    Registrera
+                </button>
+
+                <div class="auth-links mt-3">
+                    <a class="auth-link" asp-page="./Login">Har du redan ett konto? Logga in</a>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+          const form = document.getElementById("registerForm");
+          const btn  = document.getElementById("registerSubmit");
+          if (!form || !btn) return;
+
+          form.addEventListener("submit", (e) => {
+            e.preventDefault();
+            startLoading();
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                form.submit();
+              });
+            });
+          });
+
+          function startLoading() {
+            if (btn.disabled) return;
+            btn.disabled = true;
+            btn.innerText = "Registrerar…";
+          }
+        });
+    </script>
+}
+

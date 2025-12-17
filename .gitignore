@@ -1,0 +1,55 @@
+# Bygg- och output-filer
+bin/
+obj/
+
+# Visual Studio metadata
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.cache
+
+# NuGet-paket och cache
+*.nupkg
+.nuget/
+**/project.assets.json
+**/*.dgspec.json
+**/*.nuget.g.props
+**/*.nuget.g.targets
+**/*.nuget.cache
+
+# Appinställningar med känslig data
+appsettings.json
+appsettings.Development.json
+appsettings.Test.json
+secrets.json
+
+# Behåll mappar för frontend
+!SarasBlogg/SarasBlogg/wwwroot/img/
+!SarasBlogg/SarasBlogg/wwwroot/img/blogg/
+!SarasBlogg/SarasBlogg/wwwroot/img/aboutme/
+!SarasBlogg/SarasBlogg/wwwroot/img/logo/
+
+# Tillåt loggan i logo-mappen
+!SarasBlogg/SarasBlogg/wwwroot/img/logo/sglogga.PNG
+
+# Loggfiler och temporära filer
+*.log
+*.tmp
+
+# Entity Framework migrations (valfritt att ignorera)
+# SarasBlogg/Data/Migrations/
+# SarasBloggAPI/Data/Migrations/
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# Mac-specifika filer
+.DS_Store
+
+# Ignorera DataProtection-nycklar
+keys/
+
+# Lokal media-mapp för development
+SarasBloggAPI/SarasBlogg-Media/

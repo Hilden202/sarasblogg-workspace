@@ -1,0 +1,92 @@
+﻿@page
+@model LoginModel
+
+@{
+    ViewData["Title"] = "Logga in";
+}
+
+
+<div class="container-site">
+    <div class="card auth-card mx-auto shadow-lg">
+        <div class="card-body">
+
+            <h1 class="blogg-title mb-2">@ViewData["Title"]</h1>
+            <p class="blogg-content mb-3">Använd ditt konto för att logga in.</p>
+
+            <form id="account" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+                <div class="form-floating mb-3">
+                    <input asp-for="Input.UserNameOrEmail"
+                           class="form-control"
+                           autocomplete="username"
+                           aria-required="true"
+                           placeholder="name@example.com eller användarnamn" />
+                    <label asp-for="Input.UserNameOrEmail" class="form-label">E‑post eller användarnamn</label>
+                    <span asp-validation-for="Input.UserNameOrEmail" class="text-danger"></span>
+                </div>
+
+                <div class="form-floating mb-3">
+                    <input asp-for="Input.Password"
+                           class="form-control"
+                           autocomplete="current-password"
+                           aria-required="true"
+                           placeholder="Lösenord" />
+                    <label asp-for="Input.Password" class="form-label">Lösenord</label>
+                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                </div>
+
+                <div class="form-check mb-3">
+                    <input class="form-check-input" asp-for="Input.RememberMe" id="Input_RememberMe" />
+                    <label class="form-check-label blogg-content" for="Input_RememberMe">
+                        Kom ihåg mig
+                    </label>
+                </div>
+
+                <button id="login-submit" type="submit" class="btn blog-btn w-100">
+                    Logga in
+                </button>
+                <div class="auth-links mt-3">
+                    <a id="forgot-password" class="auth-link" asp-page="./ForgotPassword">Glömt lösenord?</a>
+                    <a class="auth-link" asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Registrera nytt konto</a>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById("account");
+            const btn  = document.getElementById("login-submit");
+            if (!form || !btn) return;
+
+            form.addEventListener("submit", (e) => {
+                // stoppa default precis nu
+                e.preventDefault();
+
+                // starta visuell feedback och disable
+                startLoading();
+
+                // låt browsern måla (2 frames), SEN skicka form
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        form.submit(); // startar navigation → inga fler frames på denna sida
+                    });
+                });
+            });
+
+            function startLoading() {
+                if (btn.disabled) return;
+                btn.disabled = true;
+                btn.innerText = "Loggar in…"; // använd ellipsis direkt så det syns
+            }
+        });
+    </script>
+}
+
+
+
+

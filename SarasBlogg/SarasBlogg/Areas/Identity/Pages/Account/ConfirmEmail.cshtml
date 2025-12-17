@@ -1,0 +1,20 @@
+﻿@page
+@model SarasBlogg.Areas.Identity.Pages.Account.ConfirmEmailModel
+@{
+    ViewData["Title"] = "Bekräfta e-post";
+}
+<h1>@ViewData["Title"]</h1>
+
+@if (!string.IsNullOrWhiteSpace(Model.Message))
+{
+    <div class="alert alert-success" role="alert">@Model.Message</div>
+}
+
+@if (Model.Message.Contains("bekräftad", StringComparison.OrdinalIgnoreCase))
+{
+    <p><a class="btn btn-primary" href="/Identity/Account/Login">Gå till inloggning</a></p>
+}
+else if (Model.Message.Contains("fel", StringComparison.OrdinalIgnoreCase))
+{
+    <p>Fick du inget mail? <a href="/Identity/Account/ResendEmailConfirmation">Skicka en ny bekräftelselänk</a>.</p>
+}

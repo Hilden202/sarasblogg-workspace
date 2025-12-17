@@ -1,0 +1,45 @@
+﻿@using System
+@using System.Linq          <!-- behövs för Where/OrderBy -->
+@using SarasBlogg.Extensions
+@model IEnumerable<SarasBlogg.Models.Blogg>
+
+@{
+    var nowSE = DateTime.UtcNow.ToSwedishTime();
+    var posts = (Model ?? Enumerable.Empty<SarasBlogg.Models.Blogg>())
+        .Where(p => !p.Hidden && !p.IsArchived && p.LaunchDate.ToSwedishTime() <= nowSE)
+        .OrderByDescending(p => p.LaunchDate.ToSwedishTime())
+        .ThenByDescending(p => p.Id)
+        //.Take(6)
+        .ToList();
+}
+<div class="cards-container">
+    @foreach (var post in posts)
+    {
+        var imageUrl = post.Images?
+        .OrderBy(i => i.Order)
+        .FirstOrDefault()?.FilePath;
+
+        var isExternal = !string.IsNullOrEmpty(imageUrl) &&
+        (imageUrl.StartsWith("http://") || imageUrl.StartsWith("https://"));
+
+        var resolvedUrl = isExternal ? imageUrl : Url.Content(imageUrl ?? "/img/blogg/default.png");
+
+        <div class="card">
+            <div class="card-img-wrapper" style="--img: url('@resolvedUrl')">
+                <img class="bloggimg"
+                     src="@resolvedUrl"
+                     onerror="this.onerror=null;this.src='/img/blogg/default.png';"
+                     alt="Bild för @post.Title"
+                     loading="lazy" />
+            </div>
+            @* <div class="flower">🌸</div> *@
+            <h4 class="card-title">@post.Title.LimitLength(20)</h4>
+            <div class="card-content prose">
+                @Html.Raw(post.Content.LimitLength(200, true))
+            </div>
+            <div class="card-footer">
+                <a asp-page="/Blogg" asp-route-showId="@post.Id" class="btn btn-primary btn-sm">Läs mer…</a>
+            </div>
+        </div>
+    }
+</div>

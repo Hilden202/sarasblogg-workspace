@@ -1,0 +1,41 @@
+﻿@{
+	// Läs namn från claims som sattes i JWT -> cookie
+	var userName =
+	User.FindFirst("name")?.Value ??       // om du sätter "name" i token
+	User.Identity?.Name ??                 // fallback: standardnamn
+	"konto";
+
+}
+<!-- Dold POST-form för utloggning -->
+<form id="logoutForm" asp-area="Identity" asp-page="/Account/Logout"
+	  asp-route-returnUrl="@Url.Page("/Index", new { area = "" })"
+	  method="post" class="d-none"></form>
+
+<ul class="navbar-nav">
+	@if (User?.Identity?.IsAuthenticated == true)
+	{
+		<li class="nav-item">
+			<a class="menutext-sm nav-link theme-dependent"
+			   asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">
+				Hej @userName!
+			</a>
+		</li>
+		<li class="nav-item">
+			<a class="menutext-sm nav-link theme-dependent" href="#"
+			   onclick="document.getElementById('logoutForm').submit(); return false;">
+				Logga ut
+			</a>
+		</li>
+	}
+	else
+	{
+		<li class="nav-item">
+			<a class="menutext-sm nav-link theme-dependent"
+			   asp-area="Identity" asp-page="/Account/Login">Logga in</a>
+		</li>
+		<li class="nav-item">
+			<a class="menutext-sm nav-link theme-dependent"
+			   asp-area="Identity" asp-page="/Account/Register">Registrera</a>
+		</li>
+	}
+</ul>

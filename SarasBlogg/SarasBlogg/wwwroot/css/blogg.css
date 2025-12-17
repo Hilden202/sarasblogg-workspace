@@ -1,0 +1,511 @@
+﻿.blogg-logo-wrapper {
+    text-align: center;
+}
+
+.blogg-logo-img {
+    max-height: 200px; /* justera storlek */
+    width: auto;
+    display: inline-block;
+}
+
+
+.index-hero {
+    position: relative;
+    text-align: center;
+}
+
+/* Huvudloggan (centrerad) */
+.index-hero-text {
+    display: inline-block;
+    max-height: 200px; /* justera efter smak */
+    max-width: 100%;
+    width: auto;
+}
+
+.index-hero-family {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(180px, -50%);
+    max-height: 200px;
+    width: auto;
+    pointer-events: none;
+}
+
+/* Mobil: dölj dekoren och skala ner huvudloggan */
+@media (max-width: 768px) {
+    .index-hero-family {
+        display: none;
+    }
+
+    .index-hero-text {
+        max-height: 120px;
+        max-width: 100%;
+    }
+}
+
+
+.header-title {
+    font-size: 73px;
+    font-weight: normal;
+    font-family: 'Dancing Script', 'Script MT', 'Brush Script MT', 'Segoe Script', cursive;
+}
+
+.menutext {
+    color: #7e6655 !important;
+    font-size: 19px !important;
+    font-family: 'Cormorant SC', serif;
+    text-decoration: none;
+    -webkit-text-stroke: 0.2px #000;
+}
+
+    .menutext:hover {
+        font-weight: bold;
+    }
+
+.card {
+    background-color: #fbefe2 !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    max-width: 850px;
+    border-radius: 15px !important;
+}
+
+.card-extra-padding {
+    padding-bottom: 1rem;
+}
+
+.card-body {
+    flex-grow: 1;
+    color: #212529 !important;
+}
+
+.card-img-wrapper {
+    position: relative; /* nytt */
+    aspect-ratio: 1.5 / 1;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 10px;
+    background-color: #f3f4f6; /* diskret bas ifall ingen bild */
+}
+
+    .card-img-wrapper::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: var(--img); /* sätts inline i markup */
+        background-size: cover;
+        background-position: center;
+        filter: blur(16px) brightness(0.9) saturate(1.1);
+        transform: scale(1.1); /* undvik hårda kanter efter blur */
+        border-radius: inherit;
+        pointer-events: none;
+        will-change: transform, filter;
+    }
+
+.bloggimg {
+    position: relative; /* viktigt så den hamnar över ::before */
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* behåll “hela ska synas” */
+    display: block;
+}
+
+/* Samma höjd i varje slide */
+.carousel .card-img-wrapper {
+    aspect-ratio: 3 / 2; /* byt vid behov */
+    border-radius: 10px;
+}
+
+.carousel .bloggimg {
+    object-fit: contain;
+}
+
+.mynav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    list-style: none;
+    margin: 0;
+    padding-left: 0;
+}
+
+.mynavbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+}
+
+.sticky-back-panel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: rgba(40, 40, 40, 0.7);
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.3);
+    z-index: 1000;
+}
+
+/* Mer luft mellan blogginlägg på listan */
+.blogg-link {
+    display: block;
+    margin-bottom: 2.75rem; /* justera vid behov: 2–3rem */
+}
+
+@media (max-width: 768px) {
+    .blogg-link {
+        margin-bottom: 2rem;
+    }
+}
+
+.thumb-strip {
+    display: flex;
+    gap: .5rem;
+    overflow-x: auto;
+    padding: .25rem 0 .5rem;
+}
+
+.thumb {
+    border: 2px solid transparent;
+    background: none;
+    padding: 0;
+    border-radius: .5rem;
+    cursor: pointer;
+    flex: 0 0 auto;
+}
+
+    .thumb img {
+        width: 72px;
+        height: 72px;
+        object-fit: cover;
+        border-radius: .5rem;
+        display: block;
+    }
+
+    .thumb.active {
+        border-color: #C48A7D; /* din rosa */
+    }
+
+.role-user {
+    color: #9c27b0;
+    font-weight: 700;
+}
+/* lila */
+.role-superuser {
+    color: #ff5722;
+    font-weight: 700;
+}
+/* orange */
+.role-admin {
+    color: #1976d2;
+    font-weight: 700;
+}
+/* blå */
+.role-superadmin {
+    color: #d32f2f;
+    font-weight: 800;
+    text-decoration: underline;
+}
+/* röd */
+.btn-like {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    border: 1px solid #ced4da;
+    background: #fff;
+    padding: .25rem .6rem;
+    border-radius: .5rem;
+}
+
+    .btn-like .like-heart {
+        font-size: 1.1rem;
+        line-height: 1;
+    }
+
+    .btn-like.liked .like-heart {
+        color: #dc3545;
+    }
+/* röd */
+
+.card .btn,
+#comments .btn {
+    background-color: #C48A7D !important; /* SarasBlogg-rosa */
+    color: #fff !important;
+    border: none !important;
+    border-radius: 9999px; /* pill-form */
+    padding: 0.35rem 1rem;
+    font-size: 0.9rem;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    transition: background-color 0.2s ease-in-out;
+}
+
+    .card .btn:hover,
+    #comments .btn:hover {
+        background-color: #a86d62 !important; /* mörkare vid hover */
+        color: #fff !important;
+    }
+
+/* Diskret trepunktsknapp i kommentarlistan */
+#comments .comment-menu-btn {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 .25rem;
+    color: #222;
+    border-radius: 0;
+    box-shadow: none !important;
+    line-height: 1;
+    font-size: 22px; /* storlek på punkterna */
+    cursor: pointer;
+}
+    /* Ingen extra caret från Bootstrap på .dropdown-toggle */
+    #comments .comment-menu-btn.dropdown-toggle::after {
+        display: none;
+    }
+
+    /* Hover/focus: bara färg, ingen bakgrund */
+    #comments .comment-menu-btn:hover,
+    #comments .comment-menu-btn:focus {
+        color: #000;
+        outline: none;
+    }
+
+
+/* === Blogg-typsnitt & färger (separat från menyn) === */
+
+/* Titel i bloggkort och i detaljvy */
+.blogg-title,
+.blogg-link .card-title {
+    font-family: 'Cormorant SC', serif;
+    text-transform: uppercase;
+    font-weight: 700; /* alltid fet */
+    font-size: 1.4rem;
+    margin: 0.5rem 0;
+    color: #7e6655; /* samma bruna som menyn */
+    -webkit-text-stroke: 0.2px #000;
+    text-stroke: 0.2px #000; /* för vissa browsers */
+}
+
+/* Innehållstext i bloggkort och detaljvy */
+.blogg-content,
+.blogg-link .card-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400; /* tunnare brödtext */
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #7e6655; /* samma bruna som menyn */
+    text-align: left; /* alltid vänsterställd */
+}
+
+/* Neutralisera länkfärg och hover för hela bloggkortet */
+a.blogg-link,
+a.blogg-link:hover,
+a.blogg-link:focus,
+a.blogg-link:visited {
+    text-decoration: none !important;
+    color: inherit !important;
+}
+
+/* Lås textfärg på titel & content även vid hover */
+.blogg-link:hover .blogg-title,
+.blogg-link:hover .blogg-content {
+    color: #7e6655; /* samma bruna */
+    text-decoration: none;
+    /* OBS: ingen font-weight här → titeln förblir fet */
+}
+
+.blogg-content.prose {
+    display: block;
+}
+
+.blogg-content.prose > *:first-child {
+    margin-top: 0;
+}
+
+.blogg-content.prose > *:last-child {
+    margin-bottom: 0;
+}
+
+.blogg-content.prose p {
+    margin-bottom: 1.25rem;
+}
+
+.blogg-content.prose h1,
+.blogg-content.prose h2,
+.blogg-content.prose h3 {
+    font-family: 'Cormorant SC', serif;
+    color: #7e6655;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.blogg-content.prose h1 { font-size: 2rem; }
+.blogg-content.prose h2 { font-size: 1.6rem; }
+.blogg-content.prose h3 { font-size: 1.3rem; }
+
+.blogg-content.prose ul,
+.blogg-content.prose ol {
+    padding-left: 1.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.blogg-content.prose blockquote {
+    border-left: 4px solid #c48a7d;
+    background: #fdf3eb;
+    padding: .75rem 1.25rem;
+    margin: 1.75rem 0;
+}
+
+.blogg-content.prose blockquote > :first-child { margin-top: 0; }
+.blogg-content.prose blockquote > :last-child { margin-bottom: 0; }
+
+.blogg-content.prose a {
+    color: #a87363;
+    text-decoration: underline;
+}
+
+.blogg-content.prose table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 1.5rem;
+}
+
+.blogg-content.prose table th,
+.blogg-content.prose table td {
+    border: 1px solid #e2d5c3;
+    padding: .5rem;
+    vertical-align: top;
+}
+
+.soft-box {
+    background: #fdf7f0;
+    border: 1px solid #eadfd2;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.sara-quote {
+    border-left: 4px solid #b77966;
+    background: #fff9f5;
+    padding: 1.25rem 1.75rem;
+    font-style: italic;
+    margin: 1.5rem 0;
+}
+
+.image-collage {
+    display: grid;
+    gap: .75rem;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    margin: 1.5rem 0;
+}
+
+.image-collage img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 12px;
+}
+/* Kommentar-sektion titel */
+#comments h5 {
+    font-family: 'Cormorant SC', serif;
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    color: #7e6655;
+    -webkit-text-stroke: 0.2px #000;
+}
+
+/* Kommentar-brödtext */
+.comment-body {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #7e6655;
+}
+
+/* Kommentarer – inmatningsfält */
+#comments .form-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    color: #7e6655;
+}
+
+#comments .form-control {
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-family: 'Cormorant Garamond', serif;
+    color: #7e6655;
+    background-color: #fbefe2;
+}
+
+/* Kommentar-knappar */
+#comments .btn {
+    background-color: #C48A7D !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 9999px;
+    padding: 0.35rem 1rem;
+    font-size: 0.9rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    transition: background-color 0.2s ease-in-out;
+}
+
+    #comments .btn:hover {
+        background-color: #a86d62 !important;
+        color: #fff !important;
+    }
+
+/* --- Huvudmeny: kompaktare på mobil --- */
+@media (max-width: 768px) {
+    .menutext {
+        font-size: 16px !important; /* ned från 19px → får plats */
+        font-weight: 700 !important; /* full bold */
+        -webkit-text-stroke: 0 !important; /* ta bort stroke, spar bredd */
+        text-stroke: 0 !important;
+        letter-spacing: 0.4px; /* lite mer luft mellan bokstäver */
+    }
+
+    .mynav {
+        gap: .5rem;
+        padding: .5rem 0;
+    }
+}
+
+/* Klickbar kommentar-rubrik, diskret */
+.comments-toggle {
+    cursor: pointer;
+    position: relative;
+}
+
+    /* Liten pil som roterar (Bootstrap sätter .collapsed) */
+    .comments-toggle::after {
+        content: "▾";
+        display: inline-block;
+        margin-left: .5rem;
+        transition: transform .2s ease;
+    }
+
+    .comments-toggle.collapsed::after {
+        transform: rotate(-90deg);
+    }
+/* gör gäst-namn lite nedtonade */
+.comment .badge.bg-secondary {
+    opacity: 0.9;
+}

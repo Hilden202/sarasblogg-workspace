@@ -1,0 +1,1270 @@
+﻿/* === Global typografi-bas === */
+html {
+    font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+}
+
+/* Säkerställ att kontroller och specialblock ärver fonten */
+body, input, textarea, select, button,
+label, small, figcaption, blockquote,
+table, th, td, ul, ol, li,
+#cookieConsentdiv, .modal, .alert, .badge {
+    font-family: inherit !important;
+}
+
+/* Cookie-banner layout-säkring */
+.cookie-fixed {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 1rem; /* kan höjas/sänkas */
+    z-index: 9999 !important;
+    width: clamp(280px, 92vw, 560px); /* min 280, max 560, annars 92% av viewport */
+    box-sizing: border-box;
+    overflow-wrap: anywhere;
+}
+
+.navbar-logo {
+    max-height: 125px;
+    height: auto;
+    width: auto;
+}
+
+.topleft-corner-flower {
+    position: absolute;
+    top: 0px; /* fast avstånd */
+    left: 0px; /* fast avstånd */
+    width: clamp(90px, 12vw, 180px);
+    height: auto;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+button {
+    background-color: var(--btn-bg, #f8f9fa);
+    color: var(--btn-text, #212529);
+    border: 1px solid var(--btn-border, #ced4da);
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+    button:hover {
+        background-color: var(--btn-hover-bg, #e2e6ea);
+        border-color: var(--btn-hover-border, #dae0e5);
+    }
+
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+.three-dots-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.text-faded {
+    color: rgba(33, 37, 41, 0.50);
+}
+
+html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    color-scheme: light; /* Tvinga ljus rendering även vid dark mode */
+}
+
+    /* Tvinga ljus tema-bakgrund oavsett Bootstrap-tema */
+    html[data-bs-theme],
+    html[data-bs-theme="dark"],
+    html[data-bs-theme="light"],
+    html[data-bs-theme] body {
+        background-color: #fff4e4 !important;
+    }
+
+
+body {
+    background-color: #fff4e4 !important;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    color: #212529;
+}
+
+header {
+    color: #212529;
+}
+
+.navbar,
+.navbar a,
+.navbar .navbar-brand,
+.navbar .nav-link,
+.navbar .d-flex {
+    color: #212529 !important;
+}
+
+div {
+    color: #212529;
+}
+
+.container-site {
+    max-width: 850px;
+    margin: 0rem auto 5rem auto;
+    padding: 0 1rem;
+    width: 100%;
+}
+
+.cards-container .card img {
+    width: 100%;
+    height: 140px;
+    object-fit: contain;
+    background-color: transparent;
+    border-radius: 12px 12px 0 0;
+    display: block;
+}
+
+.linebreak {
+    white-space: pre-wrap;
+}
+
+.header-container {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr; /* mittkolumn = loggan */
+    align-items: start;
+    gap: 1rem;
+    position: relative;
+}
+
+.right-img {
+    height: 350px;
+    width: auto;
+    display: block;
+}
+
+.left-side {
+    grid-column: 2; /* mitten */
+    justify-self: center; /* centrera horisontellt */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* centrera innehållet (bilden) */
+}
+
+.right-side {
+    grid-column: 3; /* höger */
+    justify-self: end; /* tryck ut till högerkant */
+    display: flex;
+    align-items: flex-start;
+}
+
+@media (max-width: 768px) {
+    .header-container {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .left-side,
+    .right-side {
+        grid-column: 1;
+        justify-self: center;
+    }
+
+    .right-side {
+        margin-top: 1rem;
+    }
+}
+
+.header-text {
+    margin-top: 0.25rem;
+    font-family: 'Patrick Hand', 'Caveat', 'Segoe Print', cursive;
+    font-weight: normal;
+    font-size: 3rem;
+    color: #C48A7D !important;
+    -webkit-text-stroke: 0.2px #000;
+    text-stroke: 0.2px #000;
+}
+
+.cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: flex-start; /* ändrat från center */
+    margin-top: 3rem;
+    align-items: stretch;
+}
+
+    /* Force left alignment for latest-post cards (beats any inherited .text-center) */
+    .cards-container,
+    .cards-container .card,
+    .cards-container .card-title,
+    .cards-container .card-content {
+        align-self: stretch;
+        width: 100%;
+    }
+
+
+    .cards-container .card-link {
+        flex: 0 0 250px;
+        width: 250px;
+        display: flex;
+        align-items: stretch;
+    }
+
+    .cards-container .card-title {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.25rem;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        white-space: normal;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+        min-height: 3.2rem;
+    }
+
+    .cards-container .card-link,
+    .cards-container .card {
+        min-width: 250px;
+        max-width: 250px;
+        box-sizing: border-box;
+    }
+
+    .cards-container .flower {
+        font-size: 2rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .cards-container .card-content {
+        font-size: 1rem;
+        line-height: 1.3em;
+        max-width: 30ch;
+        white-space: normal;
+        overflow-wrap: break-word;
+        margin: 0 auto;
+        text-overflow: clip;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 4;
+        overflow: hidden;
+        min-height: 5.2rem;
+    }
+
+.card-content {
+    min-height: 3em;
+    white-space: pre-wrap;
+}
+
+.right-side {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.contact-card {
+    background-color: #fef9f6;
+    border: 1px solid rgba(196, 138, 125, 0.35);
+    box-shadow: 0 22px 45px rgba(116, 85, 74, 0.22) !important;
+    padding: 2.25rem 2.5rem;
+}
+
+@media (max-width: 576px) {
+    .contact-card {
+        padding: 1.75rem;
+    }
+}
+
+.blogg-detail-card .card-img-wrapper,
+.blogg-detail-card .carousel {
+    margin-bottom: 2.75rem !important;
+}
+
+.blogg-detail-card .thumb-strip {
+    margin-bottom: 2.5rem;
+}
+
+.aboutme-img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 50%;
+    flex-shrink: 0;
+    /* ta bort margin: 0 auto; så den inte “drar” mot kanten */
+}
+
+
+.aboutme-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .aboutme-wrapper {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+
+    }
+
+        .aboutme-wrapper > div {
+            text-align: center;
+            width: 100%;
+        }
+
+    .three-dots-container {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .header-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .header-text {
+        font-size: 2rem;
+        text-align: center;
+    }
+
+    .right-img {
+        height: 250px;
+    }
+
+    .content-container {
+        flex-direction: column;
+    }
+
+    .cards-container {
+        justify-content: center !important;
+    }
+
+        .cards-container .card-link {
+            flex: 1 1 100%;
+            width: 100%;
+        }
+
+    html {
+        font-size: 100% !important;
+    }
+    body {
+        font-size: 1.0625rem !important;
+        line-height: 1.6 !important;
+    }
+
+}
+
+.container {
+    flex: 1;
+}
+
+img, .content img, .admin-blog-img {
+    position: relative; /* eller static */
+    z-index: 20 !important; /* se till att de inte går över footern */
+}
+
+
+.social-icons a svg {
+    color: #6c757d;
+    transition: color 0.2s;
+}
+
+.social-icons a:hover svg {
+    color: #000;
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+
+#cookieConsentdiv {
+    max-height: 90vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background-color: #fff !important;
+    color: #000 !important;
+}
+
+
+input, textarea, select, button {
+    background-color: white !important;
+    color: black !important;
+}
+
+    input[type="checkbox"] {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        width: 1.2rem;
+        height: 1.2rem;
+        border: 2px solid #555;
+        border-radius: 3px;
+        background-color: #fff;
+        cursor: pointer;
+        position: relative;
+        transition: background-color 0.2s ease;
+    }
+
+        input[type="checkbox"]:checked {
+            background-color: #fff;
+            border-color: #C48A7D;
+        }
+
+            input[type="checkbox"]:checked::before {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 70%;
+                height: 70%;
+                background-color: #C48A7D;
+                transform: translate(-50%, -50%);
+                border-radius: 2px;
+            }
+
+        input[type="checkbox"]:focus {
+            outline: none;
+            box-shadow: none;
+        }
+
+/* Endast bilder du vill fadea in får klassen .progressive */
+/*img.progressive {
+    opacity: 0;
+    transition: opacity .3s ease;
+}
+
+    img.progressive.is-loaded {
+        opacity: 1;
+    }*/
+
+/* Overlay-loggan påverkas inte */
+#loading-overlay .loading-logo,
+#loading-overlay img.no-fade {
+    opacity: 1 !important;
+}
+
+
+.img-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+    .img-wrapper img {
+        display: block;
+        max-width: 100%;
+        height: auto;
+        pointer-events: none;
+    }
+
+    .img-wrapper form {
+        pointer-events: auto;
+    }
+
+.d-flex.flex-wrap.gap-2 {
+    overflow: visible;
+}
+
+.img-wrapper button {
+    pointer-events: auto;
+    z-index: 3;
+}
+
+.delete-button {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    z-index: 3;
+}
+
+nav.border-bottom {
+    border-bottom: none !important;
+}
+
+footer.border-top {
+    border-top: none !important;
+}
+
+.navbar-nav .nav-item form button.nav-link {
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    color: inherit !important;
+    font: inherit;
+    text-decoration: none;
+}
+
+    .navbar-nav .nav-item form button.nav-link:hover {
+        font-weight: bold;
+    }
+
+.navbar-nav .nav-item form {
+    display: inline; /* Gör så formuläret inte bryter rad */
+    margin: 0;
+    padding: 0;
+}
+
+    .navbar-nav .nav-item form .nav-link {
+        background: none !important;
+        border: none !important;
+        padding: 0 !important;
+        color: inherit !important;
+        font: inherit;
+        line-height: inherit;
+        vertical-align: baseline;
+    }
+
+        .navbar-nav .nav-item form .nav-link:hover {
+            font-weight: bold;
+        }
+
+/* Hamburger-ikon mörk på transparent bakgrund */
+.navbar.navbar-light.bg-transparent {
+    --bs-navbar-toggler-icon-bg: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='rgba(33,37,41,0.85)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E") !important;
+}
+
+/* Transparent knapp, tunn markering vid fokus */
+.navbar-toggler {
+    background-color: transparent !important;
+    border-color: rgba(33,37,41,.2) !important;
+}
+
+    .navbar-toggler:focus,
+    .navbar-toggler:focus-visible,
+    .navbar-toggler:active {
+        outline: none !important;
+        box-shadow: 0 0 0 .10rem rgba(33,37,41,.3) !important; /* tunn & diskret */
+    }
+
+.navbar {
+    --bs-navbar-toggler-focus-width: .10rem; /* extra säkerhet */
+}
+
+
+#imageLightbox .modal-content {
+    background: inherit !important; /* ärver sidans bakgrund */
+}
+
+    /* Om du vill mörklägga lite över bakgrunden */
+    #imageLightbox .modal-content::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-color: rgba(0,0,0,0.85); /* svart med transparens */
+        z-index: 0;
+    }
+
+#imageLightbox .modal-body {
+    position: relative;
+    z-index: 1; /* ovanpå mörkläggningen */
+}
+
+.logo-img {
+    height: clamp(300px, 55vw, 520px); /* större min och max */
+    width: auto;
+    display: block;
+    max-width: 98vw; /* nästan hela bredden */
+}
+
+.header-container .left-side .logo-img {
+    height: clamp(300px, 55vw, 520px);
+}
+
+/***** === FINAL STABILITY PATCH: no flicker near tablet === *****/
+
+/* 1) Se till att vi alltid kör GRID (inte ärvda flexregler) */
+.content-container {
+    display: grid !important;
+    grid-template-columns: minmax(0, 700px) minmax(320px, 460px) !important; /* desktop: bredare om-mig */
+    gap: 2rem !important;
+    width: auto !important;
+    max-width: min(100%, 700px + 380px + 2rem) !important;
+    margin-inline: auto !important;
+    align-items: start !important;
+}
+
+/* 2) Nollställ gamla “putta-höger”/padding-justeringar nära 991px */
+@media (max-width: 992px) {
+    .om-mig-box {
+        padding-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    .aboutme-img {
+        margin-left: 0 !important;
+    }
+}
+
+/* 3) Tablet (769–992px): behåll 2 kolumner och centrera blocket */
+@media (min-width: 769px) and (max-width: 992px) {
+    .content-container {
+        grid-template-columns: 1fr 360px !important; /* blogg + lite bredare om-mig */
+        justify-content: center !important; /* centrera hela gridet */
+    }
+
+    .om-mig-box {
+        justify-self: center !important;
+        margin-inline: auto !important;
+    }
+}
+
+/* 4) Mobil (≤768px): stacka och centrera */
+@media (max-width: 768px) {
+    .content-container {
+        grid-template-columns: 1fr !important;
+    }
+
+    .om-mig-box {
+        max-width: min(560px, 96%) !important;
+        margin: 0 auto !important;
+        justify-self: center !important;
+    }
+
+    .aboutme-wrapper {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        text-align: center !important;
+    }
+
+    .aboutme-img {
+        margin: 0 auto !important;
+        width: 130px !important;
+        height: 130px !important;
+        border-radius: 9999px !important;
+        object-fit: cover !important;
+    }
+}
+
+/* 5) Säkra att om-mig inte får någon oväntad offset */
+.om-mig-box {
+    width: 100%
+    background: #fdf3ec !important; /* samma som kortens bg (#fdf3ec) */
+    border: var(--bs-card-border-width, 1px) solid var(--bs-card-border-color, rgba(0,0,0,.125)) !important; /* samma kant som .card */
+    border-radius: 20px !important; /* matcha .cards-container .card */
+    padding: 1.5rem !important;
+    box-shadow: 0 18px 35px rgba(116, 85, 74, 0.12) !important;
+    backdrop-filter: blur(4px);
+}
+
+.om-mig-box > a {
+    display: block;
+    color: inherit;
+}
+
+/* ==== Bakgrund/Decor ==== */
+.decor-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 0; /* bakom innehåll */
+}
+
+/* Bas för alla moln */
+.cloud {
+    z-index: 0;
+    position: absolute;
+    width: 450px;
+    height: auto;
+    opacity: .85;
+    user-select: none;
+}
+
+.cloud-1 {
+    top: 50vh;
+    left: 80vw;
+    transform: translate(-50%, -50%);
+}
+
+.cloud-2 {
+    top: 75vh;
+    left: 22vw;
+    transform: translate(-50%, -50%);
+}
+
+.cloud-3 {
+    top: 110vh;
+    left: 60vw;
+    transform: translate(-50%, -50%);
+}
+
+@media (max-width: 768px) {
+    .cloud {
+        display: none;
+    }
+}
+
+/* ==== Layout-stomme + sticky footer ==== */
+.page-wrapper {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+    .page-wrapper > header,
+    .page-wrapper > .container,
+    .page-wrapper > footer {
+        position: relative; /* eget stacking context över .decor-layer */
+        z-index: 1;
+    }
+
+    .page-wrapper > .container {
+        flex: 1 0 auto; /* <— tryck ner footern på korta sidor */
+    }
+
+footer {
+    margin-top: auto; /* <— sticky */
+    position: relative;
+    overflow: visible;
+}
+
+/* ==== Footer-blomman ==== */
+.footer-flower {
+    position: absolute;
+    inset-block-end: 0; /* bottom: 0 */
+    inset-inline-end: 0; /* right: 0, RTL-säkert */
+    width: clamp(90px, 12vw, 180px);
+    height: auto;
+    pointer-events: none;
+    z-index: 1; /* bakom footer-innehåll */
+}
+
+footer .footer-inner,
+footer .social-icons {
+    position: relative;
+    z-index: 2; /* text/ikoner över blomman */
+}
+
+.cards-container .card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* pressar footern neråt */
+    align-items: flex-start;
+    position: relative;
+    border-radius: 20px;
+    padding: 1rem;
+    background-color: #fdf3ec !important;
+    min-height: 340px;
+    height: 100%;
+    text-align: left;
+    /* Kortets egen skugga i rosa/röd ton */
+    box-shadow: 0 10px 24px rgba(196, 138, 125, 0.18);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.cards-container .card-img-wrapper::before {
+    filter: blur(14px) brightness(1.08) saturate(1.05);
+    transform: scale(1.08);
+}
+
+/* 👇 neutralisera bootstrap-stilar för card-footer */
+.card-footer {
+    margin-top: auto;
+    align-self: flex-end; /* högerjustera footern */
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+    /* Knappen i footern */
+    .card-footer .btn {
+        background-color: #C48A7D; /* SarasBlogg-rosa */
+        color: #fff;
+        border: none !important; /* ingen kant */
+        border-radius: 9999px; /* helt rund pill-form */
+        padding: 0.35rem 1rem;
+        font-size: 0.9rem;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+        .card-footer .btn:hover {
+            background-color: #a86d62; /* mörkare rosa vid hover */
+            color: #fff;
+            box-shadow: none !important;
+            text-shadow: none !important;
+        }
+
+/* 1) Sätt samma bruna färg som menyn */
+.cards-container .card-title,
+.cards-container .card-content {
+    color: #5a4632; /* ← samma som menyn */
+}
+
+    /* 2) Stäng av alla hover-effekter på texten i korten */
+    .cards-container .card-title:hover,
+    .cards-container .card-content:hover,
+    .cards-container .card:hover .card-title,
+    .cards-container .card:hover .card-content {
+        color: #5a4632 !important;
+        text-decoration: none !important;
+    }
+
+    /* 3) Om p:et skulle råka innehålla länkar – lås dem också */
+    .cards-container .card-content a,
+    .cards-container .card-content a:hover,
+    .cards-container .card-content a:focus {
+        color: #5a4632 !important;
+        text-decoration: underline; /* eller none om du vill utan underline */
+    }
+
+/* (valfritt) Understreck/”ram” under titeln */
+.cards-container .card-title {
+    font-family: 'Cormorant SC', serif;
+    text-transform: uppercase;
+    font-weight: 600;
+    font-size: 1.4rem;
+    margin: 0.5rem 0;
+    color: #5c4433;
+    border: none; /* ingen linje */
+}
+
+/* Content-typsnittet */
+.cards-container .card-content {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    line-height: 1.4;
+}
+/* Titlar i postlistan på startsidan */
+.card-title {
+    font-family: 'Cormorant SC', serif;
+    text-transform: uppercase;
+    font-weight: 700; /* gör fetstil */
+    font-size: 1.4rem;
+    margin: 0.5rem 0;
+    color: #7e6655; /* samma bruna som menyn */
+    -webkit-text-stroke: 0.2px #000;
+    text-stroke: 0.2px #000;
+}
+
+/* Content under titeln */
+.card-content {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: 1rem;
+    line-height: 1.4;
+    color: #7e6655;
+    text-align: left;
+}
+/* ContactMe titel */
+.contact-title {
+    font-family: 'Cormorant SC', serif;
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 1.6rem;
+    margin-bottom: 1rem;
+    color: #7e6655;
+    -webkit-text-stroke: 0.2px #000;
+}
+
+/* ContactMe innehåll (labels, inputs, textarea) */
+.contact-content,
+.contact-form label {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: 1rem;
+    color: #7e6655;
+}
+
+/* Input och textarea */
+.contact-form .form-control {
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-family: 'Cormorant Garamond', serif;
+    color: #7e6655;
+    background-color: #fbefe2; /* samma bakgrundston */
+}
+
+/* Knappen (återanvänder blog-btn) */
+.blog-btn {
+    background-color: #C48A7D !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 9999px;
+    padding: 0.35rem 1rem;
+    font-size: 0.9rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    transition: background-color 0.2s ease-in-out;
+}
+
+    .blog-btn:hover {
+        background-color: #a86d62 !important;
+    }
+.menutext-sm {
+    color: #7e6655; /* samma bruna */
+    font-family: 'Cormorant SC', serif;
+    text-transform: uppercase;
+    font-size: 14px; /* mindre än menyns 19px */
+    text-decoration: none;
+    -webkit-text-stroke: 0.2px #000;
+}
+
+    .menutext-sm:hover {
+        font-weight: bold;
+    }
+
+/* Login-länkarna */
+.login-links a {
+    color: #7e6655; /* samma bruna som menyn */
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.95rem;
+    text-decoration: none;
+}
+
+    .login-links a:hover {
+        font-weight: bold;
+        text-decoration: underline;
+    }
+/* Se till att karusellens kontroller alltid ligger ovanför bilden */
+.carousel .carousel-control-prev,
+.carousel .carousel-control-next,
+.carousel .carousel-indicators {
+    z-index: 10 !important;
+    pointer-events: auto !important;
+}
+
+/* Bilden ska ligga under kontrollerna */
+.card-img-wrapper .bloggimg {
+    position: relative; /* redan så, men säkerställ */
+    z-index: 1 !important;
+}
+
+/* Säkerställ att wrappern skapar stacking context korrekt */
+.carousel,
+.carousel .carousel-inner,
+.card-img-wrapper {
+    position: relative;
+}
+.auth-links .auth-link {
+    color: #6c757d !important; /* neutral bas (grå) */
+    text-decoration: none !important;
+    font-weight: 500;
+    margin-right: 1rem;
+    position: relative;
+    transition: color .25s ease;
+}
+
+    .auth-links .auth-link::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: -2px;
+        width: 0;
+        height: 2px;
+        background-color: var(--sb-btn-hover); /* använd samma variabel/färg som knappens hover */
+        transition: width .25s ease;
+    }
+
+    .auth-links .auth-link:hover {
+        color: var(--sb-btn-hover) !important; /* samma färg som knappens hover */
+    }
+
+        .auth-links .auth-link:hover::after {
+            width: 100%;
+        }
+
+/* === Profile menu (Identity Manage) – matchar huvudmenyn === */
+.profile-nav .nav-link {
+    font-family: 'Cormorant SC', serif;
+    text-transform: uppercase;
+    font-size: 14px; /* samma som .menutext-sm */
+    color: #7e6655 !important; /* brun som menyn */
+    -webkit-text-stroke: 0.2px #000;
+    text-decoration: none !important;
+    background: transparent !important;
+    border: 1px solid transparent; /* diskret baseline */
+    border-radius: 9999px; /* pill-form */
+    padding: 0.35rem 0.8rem;
+    display: inline-block;
+    margin: 0.15rem 0;
+    transition: background-color .2s ease, color .2s ease, border-color .2s ease;
+}
+
+    /* Hover/fokus: lite tyngd och understruken accentlinje ala .auth-links */
+    .profile-nav .nav-link:hover,
+    .profile-nav .nav-link:focus {
+        font-weight: 700;
+        border-color: #C48A7D33; /* tunn rosa kant */
+        outline: none;
+        box-shadow: none;
+    }
+
+    /* Aktiv sida: fyll rosa piller, vit text (ersätter Bootstraps blå) */
+    .profile-nav .nav-link.active,
+    .profile-nav .nav-link[aria-current="page"] {
+        background-color: #C48A7D !important;
+        color: #fff !important;
+        border-color: #C48A7D !important;
+        font-weight: 700;
+    }
+
+/* Vertikal lista men utan stora blå pill-marginaler från BS */
+.profile-nav.nav {
+    gap: .25rem;
+}
+
+.profile-nav.flex-column .nav-link {
+    width: fit-content; /* snygga piller nära textbredden */
+}
+
+/* Mörkare vid hover på aktiv – konsekvent med knappar */
+.profile-nav .nav-link.active:hover {
+    background-color: #a86d62 !important;
+    border-color: #a86d62 !important;
+}
+
+/* Små skärmar: lite större klickyta */
+@media (max-width: 768px) {
+    .profile-nav .nav-link {
+        font-size: 15px;
+        padding: 0.45rem 0.95rem;
+    }
+}
+
+/* Innehållet i footern ska ligga ovanpå blomman */
+footer .container {
+    position: relative;
+    z-index: 1;
+}
+
+    /* Innehållet ska alltid ligga över blomman */
+    footer .footer-inner {
+        position: relative;
+        z-index: 2;
+    }
+
+    /* SVG-ikoner över blomman */
+    footer .social-icons {
+        position: relative;
+        z-index: 3;
+    }
+
+/* === Account-collapse: höger på xs === */
+@media (max-width: 575.98px) {
+    /* Om _LoginPartial_ renderar <ul class="navbar-nav"> ... */
+    #accountNav .navbar-nav {
+        flex-direction: column !important;
+        align-items: flex-end !important; /* flytta punkterna till höger */
+    }
+
+    #accountNav .nav-link {
+        text-align: right; /* texten högerställd */
+    }
+    /* Ev. profil-dropdown ska också öppna åt höger */
+    #accountNav .dropdown-menu {
+        left: auto;
+        right: 0;
+        text-align: right;
+    }
+}
+
+/* När en Bootstrap-modal är öppen, nolla z-index på layoutnoder som skapar stacking-context */
+.modal-open .page-wrapper,
+.modal-open header,
+.modal-open main,
+.modal-open footer,
+.modal-open .page-wrapper > .container { /* ← DENNA SAKNADES */
+    z-index: auto !important;
+}
+
+/* Se till att modalen alltid ligger över backdroppen */
+.modal {
+    z-index: 1065 !important;
+}
+
+.modal-backdrop {
+    z-index: 1060 !important;
+}
+
+/* === Force cookie banner on top of everything === */
+body > #cookieConsentdiv {
+    position: fixed !important; /* relativt viewport, inte en förälder */
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    bottom: 1rem !important;
+    z-index: 2147483647 !important; /* extremt högt, slår allt */
+    pointer-events: auto !important;
+}
+
+/* --- Confirm modal --- */
+.cmodal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1050
+}
+
+    .cmodal.is-open {
+        display: flex
+    }
+
+.cmodal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.45);
+    backdrop-filter: saturate(120%) blur(2px)
+}
+
+.cmodal__dialog {
+    position: relative;
+    max-width: 420px;
+    width: 92vw;
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.25)
+}
+
+.cmodal__title {
+    margin: 0 0 6px 0;
+    font-size: 1.2rem
+}
+
+.cmodal__text {
+    margin: 0 0 14px 0
+}
+
+.cmodal__actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end
+}
+
+@media (prefers-color-scheme: dark) {
+    .cmodal__dialog {
+        background: #1f1f1f;
+        color: #eee
+    }
+}
+
+/* AboutMe: placera "Läs mer" */
+.aboutme-link .readmore-link {
+    display: inline; /* desktop: efter ... på samma rad */
+    margin-left: 6px;
+    text-decoration: none;
+    /* valfritt: använd accentfärg i stället för standardlänk */
+    color: var(--color-teal, inherit);
+}
+
+    .aboutme-link .readmore-link:hover {
+        text-decoration: underline;
+    }
+
+/* Mobil: på egen rad och centrerad */
+@media (max-width:768px) {
+    .aboutme-link .readmore-link {
+        display: block;
+        margin: 8px auto 0; /* mitt under texten */
+        width: fit-content;
+        text-align: center;
+    }
+}
+
+.message-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 0.75rem 1rem;
+    border-left: 4px solid #C48A7D; /* accentfärg */
+    background-color: #fffdfb;
+}
+
+.message-header {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #5a4632;
+}
+
+    .message-header .text-muted {
+        font-weight: 400;
+        font-size: 0.9rem;
+    }
+
+.message-body {
+    font-size: 0.95rem;
+    color: #444;
+}
+
+.delete-form {
+    margin-top: 0.5rem;
+    align-self: flex-end;
+}
+
+.message-date {
+    font-size: 0.85rem;
+    color: #888;
+    margin-left: auto; /* trycker ut datum till höger */
+}
+
+.hp-field {
+    position: absolute;
+    left: -9999px;
+    top: -9999px;
+    height: 0;
+    width: 0;
+    overflow: hidden;
+}
+/* ===== START: Cropper customization (AboutMe) ===== */
+.cropper-crop-box {
+    pointer-events: auto !important;
+    z-index: 10 !important;
+}
+
+.cropper-drag-box {
+    pointer-events: none !important; /* släpp igenom till rutan */
+    z-index: 5 !important;
+}
+
+/* Face täcker hela rutan och tar emot drag */
+.cropper-crop-box .cropper-face {
+    position: absolute !important;
+    inset: 0 !important; /* top/right/bottom/left:0 */
+    width: 100% !important;
+    height: 100% !important;
+    pointer-events: auto !important;
+    z-index: 2 !important;
+    cursor: grab !important; /* byt ev. till 'move' för 4-pilar */
+    background-color: rgba(255,255,255,0.001) !important;
+    outline: 1px solid rgba(255,255,255,.85);
+}
+
+    .cropper-crop-box .cropper-face:active {
+        cursor: grabbing !important;
+    }
+
+/* Guider och viewbox ska inte stjäla events från face */
+.cropper-crop-box .cropper-view-box,
+.cropper-dashed {
+    pointer-events: none !important;
+    z-index: 1 !important;
+}
+
+/* Kanter/hörn ska kunna greppas för resize */
+.cropper-line,
+.cropper-point {
+    pointer-events: auto !important;
+}
+/* ===== END: Cropper customization (AboutMe) ===== */
+
+footer .footer-inner a {
+    color: #8c7454 !important;
+    transition: color 0.3s ease;
+}
+
+footer .footer-inner a:hover {
+    color: #a08666 !important;
+    text-decoration: underline !important;
+}
