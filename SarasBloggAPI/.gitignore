@@ -23,6 +23,12 @@ appsettings.json
 appsettings.Development.json
 secrets.json
 
+# Environment variables (lokala, ska aldrig committas)
+.env
+.env.local
+.env.development
+.env.production
+
 # Loggfiler och temporära filer
 *.log
 *.tmp
