@@ -8,7 +8,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$localMediaPath = Join-Path $PSScriptRoot "SarasBloggAPI\SarasBlogg-Media"
+$localMediaPath = Join-Path $PSScriptRoot "API\SarasBlogg-Media"
 $tempClonePath = Join-Path $env:TEMP "sarasblogg-media-sync"
 
 Write-Host "Synkar media från GitHub till lokal mapp..." -ForegroundColor Cyan

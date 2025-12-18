@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
@@ -24,12 +25,13 @@ namespace SarasBloggAPI.Controllers
             var configuredPath = config["LocalStorage:BasePath"];
             if (!string.IsNullOrEmpty(configuredPath))
             {
-                _basePath = Path.GetFullPath(configuredPath);
+                _basePath = Path.IsPathRooted(configuredPath)
+                    ? Path.GetFullPath(configuredPath)
+                    : Path.GetFullPath(configuredPath, _env.ContentRootPath);
             }
             else
             {
-                var apiDir = Directory.GetCurrentDirectory();
-                _basePath = Path.Combine(apiDir, "..", "SarasBlogg-Media");
+                _basePath = Path.Combine(_env.ContentRootPath, "SarasBlogg-Media");
             }
         }
 

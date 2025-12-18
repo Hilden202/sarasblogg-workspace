@@ -13,15 +13,15 @@ Detta repo samlar hela **SarasBlogg-ekosystemet** i ett gemensamt workspace (mon
 
 ```text
 sarasblogg-workspace/
-├── SarasBlogg/           # Razor Pages frontend
-├── SarasBloggAPI/        # Backend API (Identity, DB, media-hantering)
-├── SarasBlogg.sln        # Gemensam solution
-├── sync-media.ps1        # Lokalt DEV-verktyg för mediasynk
-└── README.md             # Detta dokument
+├── Frontend/                # Razor Pages frontend (SarasBlogg)
+├── API/                     # Backend API (Identity, DB, media-hantering)
+├── SarasBlogg-Workspace.sln # Gemensam solution
+├── sync-media.ps1           # Lokalt DEV-verktyg för mediasynk
+└── README.md                # Detta dokument
 ```
 
 ## 🎯 Arkitekturprinciper
-### Frontend (SarasBlogg)
+### Frontend (SarasBlogg Razor Pages)
 
 - Razor Pages
 
@@ -31,7 +31,7 @@ sarasblogg-workspace/
 
 - Ingen lokal bildlagring i produktion
 
-### Backend (SarasBloggAPI)
+### Backend (SarasBlogg API)
 
 - Äger all data, Identity och roller
 
@@ -60,7 +60,7 @@ Bilder hämtas från sarasblogg-media (raw GitHub).
 
 API använder en lokal mapp (gitignorerad), t.ex:
 ```text
-SarasBloggAPI/SarasBlogg-Media/
+API/SarasBlogg-Media/
 ```
 ### DEV-verktyg (valfritt)
 

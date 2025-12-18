@@ -24,14 +24,26 @@ appsettings.Development.json
 appsettings.Test.json
 secrets.json
 
+# Miljöfiler (ska inte checkas in)
+.env
+.env.local
+.env.development
+.env.production
+**/.env
+**/.env.local
+**/.env.development
+**/.env.production
+*.env
+!*.env.example
+
 # Behåll mappar för frontend
-!SarasBlogg/SarasBlogg/wwwroot/img/
-!SarasBlogg/SarasBlogg/wwwroot/img/blogg/
-!SarasBlogg/SarasBlogg/wwwroot/img/aboutme/
-!SarasBlogg/SarasBlogg/wwwroot/img/logo/
+!Frontend/wwwroot/img/
+!Frontend/wwwroot/img/blogg/
+!Frontend/wwwroot/img/aboutme/
+!Frontend/wwwroot/img/logo/
 
 # Tillåt loggan i logo-mappen
-!SarasBlogg/SarasBlogg/wwwroot/img/logo/sglogga.PNG
+!Frontend/wwwroot/img/logo/sglogga.PNG
 
 # Loggfiler och temporära filer
 *.log
@@ -52,4 +64,4 @@ secrets.json
 keys/
 
 # Lokal media-mapp för development
-SarasBloggAPI/SarasBlogg-Media/
+API/SarasBlogg-Media/
