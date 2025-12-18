@@ -15,6 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SarasBloggAPI", "SarasBlogg
 	ProjectSection(SolutionItems) = preProject
 		SarasBloggAPI\.env = SarasBloggAPI\.env
 		SarasBloggAPI\.env.example = SarasBloggAPI\.env.example
+		SarasBloggAPI\README.md = SarasBloggAPI\README.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SarasBloggAPI", "SarasBloggAPI\SarasBloggAPI\SarasBloggAPI.csproj", "{71426FE4-BA0A-40B9-9AAE-E402FC303842}"
