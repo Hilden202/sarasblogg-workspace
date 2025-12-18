@@ -49,11 +49,11 @@ Syftet är att skapa en responsiv, säker och utbyggbar blogg för både publikt
 ---
 
 ## 📂 Projektstruktur
-SarasBlogg/         # Huvudprojektet med Razor Pages
-SarasBloggAPI/      # API-projektet
+Frontend/   # Huvudprojektet med Razor Pages
+API/        # API-projektet
 
 ---
 
 ## 📑 Dokumentation
-Se **[docs/documentation.md](SarasBlogg/docs/documentation.md)** för teknisk översikt, arkitektur och drift.
+Se **[docs/documentation.md](docs/documentation.md)** för teknisk översikt, arkitektur och drift.
 
