@@ -5,7 +5,7 @@
 En bloggplattform byggd i **.NET Razor Pages** med ett separat **API-projekt** för databehandling, bildhantering och AI-funktioner.  
 Syftet är att skapa en responsiv, säker och utbyggbar blogg för både publikt läsande och avancerad admin-hantering.
 
-🔗 **Live-sida:** [https://sarasblogg-frontend.onrender.com](https://sarasblogg.onrender.com)
+🔗 **Live-sida:** [https://sarasblogg-frontend.onrender.com](https://sarasblogg-frontend.onrender.com)
 
 ---
 
