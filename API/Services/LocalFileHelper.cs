@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -16,21 +17,22 @@ namespace SarasBloggAPI.Services
         private readonly string _baseUrl;
         private readonly string _rootFolder = "uploads";
 
-        public LocalFileHelper(IConfiguration cfg, ILogger<LocalFileHelper>? logger = null)
+        public LocalFileHelper(IConfiguration cfg, IWebHostEnvironment env, ILogger<LocalFileHelper>? logger = null)
         {
             _logger = logger;
-            
+
             // Basväg till SarasBlogg-Media mapp (relativ till API-projektet)
             var configuredPath = cfg["LocalStorage:BasePath"];
             if (!string.IsNullOrEmpty(configuredPath))
             {
-                _basePath = Path.GetFullPath(configuredPath);
+                _basePath = Path.IsPathRooted(configuredPath)
+                    ? Path.GetFullPath(configuredPath)
+                    : Path.GetFullPath(configuredPath, env.ContentRootPath);
             }
             else
             {
                 // Default: SarasBlogg-Media i samma katalog som API-projektet
-                var apiDir = Directory.GetCurrentDirectory();
-                _basePath = Path.Combine(apiDir, "..", "SarasBlogg-Media");
+                _basePath = Path.Combine(env.ContentRootPath, "SarasBlogg-Media");
             }
 
             // Base URL för att nå filerna via API
