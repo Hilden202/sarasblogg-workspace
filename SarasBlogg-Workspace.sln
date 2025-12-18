@@ -2,11 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Frontend", "Frontend", "{DA02CCC4-A056-8E68-C116-5A1D0948F8E5}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SarasBlogg", "Frontend\\SarasBlogg.csproj", "{649A4DB1-4645-4E35-A019-F57CA1AB564E}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "API", "API", "{AF40AE28-D35A-CC6C-B843-440339DC26C3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SarasBloggAPI", "API\\SarasBloggAPI.csproj", "{71426FE4-BA0A-40B9-9AAE-E402FC303842}"
 EndProject
@@ -47,9 +43,5 @@ GlobalSection(ProjectConfigurationPlatforms) = postSolution
 EndGlobalSection
 GlobalSection(SolutionProperties) = preSolution
 HideSolutionNode = FALSE
-EndGlobalSection
-GlobalSection(NestedProjects) = preSolution
-{649A4DB1-4645-4E35-A019-F57CA1AB564E} = {DA02CCC4-A056-8E68-C116-5A1D0948F8E5}
-{71426FE4-BA0A-40B9-9AAE-E402FC303842} = {AF40AE28-D35A-CC6C-B843-440339DC26C3}
 EndGlobalSection
 EndGlobal
