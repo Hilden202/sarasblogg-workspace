@@ -4,6 +4,10 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SarasBlogg", "SarasBlogg", "{DA02CCC4-A056-8E68-C116-5A1D0948F8E5}"
+	ProjectSection(SolutionItems) = preProject
+		SarasBlogg\.env = SarasBlogg\.env
+		SarasBlogg\.env.example = SarasBlogg\.env.example
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SarasBlogg", "SarasBlogg\SarasBlogg\SarasBlogg.csproj", "{649A4DB1-4645-4E35-A019-F57CA1AB564E}"
 EndProject

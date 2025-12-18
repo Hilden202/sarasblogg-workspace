@@ -22,6 +22,12 @@ obj/
 appsettings.json
 appsettings.Development.json
 
+# Environment variables (lokala, ska aldrig committas)
+.env
+.env.local
+.env.development
+.env.production
+
 # Behåll mappar
 !SarasBlogg/wwwroot/img/
 !SarasBlogg/wwwroot/img/blogg/
