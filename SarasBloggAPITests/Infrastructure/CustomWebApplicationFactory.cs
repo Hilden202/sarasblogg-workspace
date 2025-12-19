@@ -21,9 +21,15 @@ public class CustomWebApplicationFactory<TProgram>
                 Environment.GetEnvironmentVariable("TEST_DB_USER") ?? "testuser"
             )
             .WithPassword(
-                Environment.GetEnvironmentVariable("TEST_DB_PASSWORD") ?? "testpassword"
+                Environment.GetEnvironmentVariable("TEST_DB_PASSWORD") ?? CreateTestPassword()
             )
+
             .Build();
+
+    private static string CreateTestPassword()
+    {
+        return Guid.NewGuid().ToString("N");
+    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
