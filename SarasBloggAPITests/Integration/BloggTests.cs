@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
+using System.Net.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using SarasBloggAPI;
 using SarasBloggAPI.Data;
@@ -120,6 +121,36 @@ public class BloggTests
             response,
             endpoint,
             method: "GET"
+        );
+    }
+    [Fact]
+    public async Task Post_Blogg_Returns401_WhenAnonymous()
+    {
+        // Arrange
+        var endpoint = "/api/blogg";
+        var expectedStatusCode = HttpStatusCode.Unauthorized;
+
+        var payload = new
+        {
+            title = "Blocked blog",
+            content = "Should not be created",
+            author = "IntegrationTest",
+            launchDate = DateTime.UtcNow
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync(endpoint, payload);
+        var actualStatusCode = response.StatusCode;
+
+        // Assert
+        Assert.Equal(expectedStatusCode, actualStatusCode);
+
+        // Output
+        await HttpResponseOutput.WriteAsync(
+            _output,
+            response,
+            endpoint,
+            method: "POST"
         );
     }
 }
