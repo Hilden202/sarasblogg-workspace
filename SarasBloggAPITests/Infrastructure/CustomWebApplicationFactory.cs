@@ -16,8 +16,13 @@ public class CustomWebApplicationFactory<TProgram>
         new PostgreSqlBuilder()
             .WithImage("postgres:16-alpine")
             .WithDatabase("sarasblogg_test")
-            .WithUsername("postgres")
-            .WithPassword("postgres")
+            // Test-only credentials (used by Testcontainers, not production)
+            .WithUsername(
+                Environment.GetEnvironmentVariable("TEST_DB_USER") ?? "testuser"
+            )
+            .WithPassword(
+                Environment.GetEnvironmentVariable("TEST_DB_PASSWORD") ?? "testpassword"
+            )
             .Build();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
