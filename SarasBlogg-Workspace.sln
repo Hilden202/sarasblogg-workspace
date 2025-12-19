@@ -6,6 +6,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SarasBlogg", "Frontend\\Sar
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SarasBloggAPI", "API\\SarasBloggAPI.csproj", "{71426FE4-BA0A-40B9-9AAE-E402FC303842}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SarasBloggAPITests", "SarasBloggAPITests\SarasBloggAPITests.csproj", "{7C87EBE6-2BAD-4040-B0E6-EFE9A44D2B7C}"
+EndProject
 Global
 GlobalSection(SolutionConfigurationPlatforms) = preSolution
 Debug|Any CPU = Debug|Any CPU
@@ -40,6 +42,18 @@ GlobalSection(ProjectConfigurationPlatforms) = postSolution
 {71426FE4-BA0A-40B9-9AAE-E402FC303842}.Release|x64.Build.0 = Release|Any CPU
 {71426FE4-BA0A-40B9-9AAE-E402FC303842}.Release|x86.ActiveCfg = Release|Any CPU
 {71426FE4-BA0A-40B9-9AAE-E402FC303842}.Release|x86.Build.0 = Release|Any CPU
+	{7C87EBE6-2BAD-4040-B0E6-EFE9A44D2B7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+	{7C87EBE6-2BAD-4040-B0E6-EFE9A44D2B7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+	{7C87EBE6-2BAD-4040-B0E6-EFE9A44D2B7C}.Debug|x64.ActiveCfg = Debug|Any CPU
+	{7C87EBE6-2BAD-4040-B0E6-EFE9A44D2B7C}.Debug|x64.Build.0 = Debug|Any CPU
+	{7C87EBE6-2BAD-4040-B0E6-EFE9A44D2B7C}.Debug|x86.ActiveCfg = Debug|Any CPU
+	{7C87EBE6-2BAD-4040-B0E6-EFE9A44D2B7C}.Debug|x86.Build.0 = Debug|Any CPU
+	{7C87EBE6-2BAD-4040-B0E6-EFE9A44D2B7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	{7C87EBE6-2BAD-4040-B0E6-EFE9A44D2B7C}.Release|Any CPU.Build.0 = Release|Any CPU
+	{7C87EBE6-2BAD-4040-B0E6-EFE9A44D2B7C}.Release|x64.ActiveCfg = Release|Any CPU
+	{7C87EBE6-2BAD-4040-B0E6-EFE9A44D2B7C}.Release|x64.Build.0 = Release|Any CPU
+	{7C87EBE6-2BAD-4040-B0E6-EFE9A44D2B7C}.Release|x86.ActiveCfg = Release|Any CPU
+	{7C87EBE6-2BAD-4040-B0E6-EFE9A44D2B7C}.Release|x86.Build.0 = Release|Any CPU
 EndGlobalSection
 GlobalSection(SolutionProperties) = preSolution
 HideSolutionNode = FALSE
