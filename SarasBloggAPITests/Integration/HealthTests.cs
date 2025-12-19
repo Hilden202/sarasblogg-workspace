@@ -39,7 +39,8 @@ public class HealthTests
         await HttpResponseOutput.WriteAsync(
             _output,
             response,
-            body[..Math.Min(body.Length, 300)]
+            endpoint,
+            method: "GET"
         );
     }
 }

@@ -7,13 +7,13 @@ using Xunit.Abstractions;
 
 namespace SarasBloggAPITests.Integration;
 
-public class BloggTests
+public class AuthTests
     : IClassFixture<CustomWebApplicationFactory<Program>>
 {
     private readonly HttpClient _client;
     private readonly ITestOutputHelper _output;
 
-    public BloggTests(
+    public AuthTests(
         CustomWebApplicationFactory<Program> factory,
         ITestOutputHelper output)
     {
@@ -22,35 +22,11 @@ public class BloggTests
     }
 
     [Fact]
-    public async Task Get_Bloggs_ReturnsOk_AndJson()
+    public async Task Get_Me_Returns401_WhenAnonymous()
     {
         // Arrange
-        var endpoint = "/api/blogg";
-
-        // Act
-        var response = await _client.GetAsync(endpoint);
-
-        // Assert
-        response.EnsureSuccessStatusCode();
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
-
-        // Output
-        var body = await response.Content.ReadAsStringAsync();
-        await HttpResponseOutput.WriteAsync(
-            _output,
-            response,
-            endpoint,
-            method: "GET"
-        );
-    }
-    [Fact]
-    public async Task Get_BloggById_Returns404_WhenNotFound()
-    {
-        // Arrange
-        var bloggId = 999999;
-        var endpoint = $"/api/blogg/{bloggId}";
-        var expectedStatusCode = HttpStatusCode.NotFound;
+        var endpoint = "/api/users/me";
+        var expectedStatusCode = HttpStatusCode.Unauthorized;
 
         // Act
         var response = await _client.GetAsync(endpoint);
