@@ -1,5 +1,9 @@
-﻿using System.Net;
+﻿using Microsoft.AspNetCore.Mvc.Testing;
+using System.Net;
+using Microsoft.Extensions.DependencyInjection;
 using SarasBloggAPI;
+using SarasBloggAPI.Data;
+using SarasBloggAPI.Models;
 using SarasBloggAPITests.Infrastructure;
 using SarasBloggAPITests.TestHelpers;
 using Xunit;
@@ -12,6 +16,8 @@ public class BloggTests
 {
     private readonly HttpClient _client;
     private readonly ITestOutputHelper _output;
+    private readonly CustomWebApplicationFactory<Program> _factory;
+
 
     public BloggTests(
         CustomWebApplicationFactory<Program> factory,
@@ -19,6 +25,8 @@ public class BloggTests
     {
         _client = factory.CreateClient();
         _output = output;
+        _factory = factory;
+
     }
 
     [Fact]
@@ -58,6 +66,52 @@ public class BloggTests
 
         // Assert
         Assert.Equal(expectedStatusCode, actualStatusCode);
+
+        // Output
+        var body = await response.Content.ReadAsStringAsync();
+        await HttpResponseOutput.WriteAsync(
+            _output,
+            response,
+            endpoint,
+            method: "GET"
+        );
+    }
+    [Fact]
+    public async Task Get_BloggById_Returns200_WhenExists()
+    {
+        // Arrange
+        var expectedStatusCode = HttpStatusCode.OK;
+        int bloggId;
+        
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+
+            var blogg = new Blogg
+            {
+                Title = "Test blog",
+                Content = "Integration test content",
+                Author = "IntegrationTest",
+                LaunchDate = DateTime.UtcNow,
+                IsArchived = false,
+                Hidden = false
+            };
+
+            db.Bloggs.Add(blogg);
+            await db.SaveChangesAsync();
+
+            bloggId = blogg.Id;
+        }
+
+        var endpoint = $"/api/blogg/{bloggId}";
+
+        // Act
+        var response = await _client.GetAsync(endpoint);
+        var actualStatusCode = response.StatusCode;
+
+        // Assert
+        Assert.Equal(expectedStatusCode, actualStatusCode);
+        Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
 
         // Output
         var body = await response.Content.ReadAsStringAsync();
