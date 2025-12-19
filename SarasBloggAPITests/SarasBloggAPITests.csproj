@@ -29,9 +29,4 @@
       <ProjectReference Include="..\API\SarasBloggAPI.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Data\" />
-      <Folder Include="Services\" />
-    </ItemGroup>
-
 </Project>
