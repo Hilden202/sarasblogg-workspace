@@ -153,4 +153,30 @@ public class BloggTests
             method: "POST"
         );
     }
+    [Fact]
+    public async Task Get_Bloggs_ReturnsEmptyList_WhenDatabaseIsEmpty()
+    {
+        // Arrange
+        var endpoint = "/api/blogg";
+        var expectedStatusCode = HttpStatusCode.OK;
+        var expectedBody = "[]";
+
+        // Act
+        var response = await _client.GetAsync(endpoint);
+        var actualStatusCode = response.StatusCode;
+        var body = await response.Content.ReadAsStringAsync();
+
+        // Assert
+        Assert.Equal(expectedStatusCode, actualStatusCode);
+        Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
+        Assert.Equal(expectedBody, body.Trim());
+
+        // Output
+        await HttpResponseOutput.WriteAsync(
+            _output,
+            response,
+            endpoint,
+            method: "GET"
+        );
+    }
 }
