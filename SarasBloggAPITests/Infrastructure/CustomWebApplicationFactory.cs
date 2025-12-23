@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SarasBloggAPI.Data;
 using Testcontainers.PostgreSql;
@@ -11,40 +12,36 @@ public class CustomWebApplicationFactory<TProgram>
     : WebApplicationFactory<TProgram>
     where TProgram : class
 {
-    private const string TestDbUser = "postgres_test";
-    private const string TestDbPassword = "postgres-test-only";
-
-    private readonly PostgreSqlContainer _postgresContainer;
-
-    public CustomWebApplicationFactory()
-    {
-        _postgresContainer = new PostgreSqlBuilder()
+    private readonly PostgreSqlContainer _postgresContainer =
+        new PostgreSqlBuilder()
             .WithImage("postgres:16-alpine")
             .WithDatabase("sarasblogg_test")
-            .WithUsername(
-                Environment.GetEnvironmentVariable("TEST_DB_USER") ?? TestDbUser
-            )
-            .WithPassword(
-                Environment.GetEnvironmentVariable("TEST_DB_PASSWORD") ?? TestDbPassword
-            )
+            .WithUsername("postgres_test")
+            .WithPassword("postgres-test-only")
             .Build();
-
-        // 🔴 STARTA CONTAINERN HÄR
-        _postgresContainer.StartAsync().GetAwaiter().GetResult();
-    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        // 🔹 Starta containern här (inte i ctor)
+        _postgresContainer.StartAsync().GetAwaiter().GetResult();
+
+        builder.ConfigureAppConfiguration(config =>
+        {
+            config.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ConnectionStrings:DefaultConnection"] =
+                    _postgresContainer.GetConnectionString()
+            });
+        });
+
         builder.ConfigureServices(services =>
         {
-            // Ta bort befintlig DbContext
+            // Ta bort original DbContext
             var descriptor = services.SingleOrDefault(d =>
                 d.ServiceType == typeof(DbContextOptions<MyDbContext>));
 
             if (descriptor != null)
-            {
                 services.Remove(descriptor);
-            }
 
             // Lägg till test-DbContext
             services.AddDbContext<MyDbContext>(options =>
@@ -52,7 +49,7 @@ public class CustomWebApplicationFactory<TProgram>
                 options.UseNpgsql(_postgresContainer.GetConnectionString());
             });
 
-            // 🔴 Kör migrationer EFTER att DI är klart
+            // Kör migrationer
             var sp = services.BuildServiceProvider();
             using var scope = sp.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
