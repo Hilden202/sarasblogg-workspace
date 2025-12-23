@@ -12,17 +12,21 @@ public class CustomWebApplicationFactory<TProgram>
     : WebApplicationFactory<TProgram>
     where TProgram : class
 {
+    private const string TestDbUser = "postgres_test";
+    private const string TestDbPassword = "postgres-test-only";
+
     private readonly PostgreSqlContainer _postgresContainer =
         new PostgreSqlBuilder()
             .WithImage("postgres:16-alpine")
             .WithDatabase("sarasblogg_test")
             // Test-only credentials (used by Testcontainers, not production)
             .WithUsername(
-                Environment.GetEnvironmentVariable("TEST_DB_USER") ?? "testuser"
+                Environment.GetEnvironmentVariable("TEST_DB_USER") ?? TestDbUser
             )
             .WithPassword(
-                Environment.GetEnvironmentVariable("TEST_DB_PASSWORD") ?? "testpassword"
+                Environment.GetEnvironmentVariable("TEST_DB_PASSWORD") ?? TestDbPassword
             )
+
 
             .Build();
 
