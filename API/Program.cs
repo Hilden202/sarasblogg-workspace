@@ -414,5 +414,7 @@ namespace SarasBloggAPI
 
             app.Run();
         }
+        
     }
 }
+    public partial class Program { }
