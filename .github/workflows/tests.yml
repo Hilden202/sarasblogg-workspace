@@ -1,0 +1,34 @@
+name: Tests
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      docker:
+        image: docker:27-dind
+        options: --privileged
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore SarasBlogg-Workspace.sln
+
+      - name: Build
+        run: dotnet build SarasBlogg-Workspace.sln --no-restore
+
+      - name: Run tests
+        run: dotnet test SarasBlogg-Workspace.sln --no-build --verbosity normal
