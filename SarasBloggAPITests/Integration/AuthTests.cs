@@ -1,0 +1,47 @@
+﻿using System.Net;
+using SarasBloggAPI;
+using SarasBloggAPITests.Infrastructure;
+using SarasBloggAPITests.TestHelpers;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace SarasBloggAPITests.Integration;
+
+public class AuthTests
+    : IClassFixture<CustomWebApplicationFactory<Program>>
+{
+    private readonly HttpClient _client;
+    private readonly ITestOutputHelper _output;
+
+    public AuthTests(
+        CustomWebApplicationFactory<Program> factory,
+        ITestOutputHelper output)
+    {
+        _client = factory.CreateClient();
+        _output = output;
+    }
+
+    [Fact]
+    public async Task Get_Me_Returns401_WhenAnonymous()
+    {
+        // Arrange
+        var endpoint = "/api/users/me";
+        var expectedStatusCode = HttpStatusCode.Unauthorized;
+
+        // Act
+        var response = await _client.GetAsync(endpoint);
+        var actualStatusCode = response.StatusCode;
+
+        // Assert
+        Assert.Equal(expectedStatusCode, actualStatusCode);
+
+        // Output
+        var body = await response.Content.ReadAsStringAsync();
+        await HttpResponseOutput.WriteAsync(
+            _output,
+            response,
+            endpoint,
+            method: "GET"
+        );
+    }
+}
