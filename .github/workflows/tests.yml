@@ -10,11 +10,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    services:
-      docker:
-        image: docker:27-dind
-        options: --privileged
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
