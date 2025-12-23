@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using SarasBloggAPI.Data;
 using Testcontainers.PostgreSql;
 
@@ -15,26 +14,30 @@ public class CustomWebApplicationFactory<TProgram>
     private const string TestDbUser = "postgres_test";
     private const string TestDbPassword = "postgres-test-only";
 
-    private readonly PostgreSqlContainer _postgresContainer =
-        new PostgreSqlBuilder()
+    private readonly PostgreSqlContainer _postgresContainer;
+
+    public CustomWebApplicationFactory()
+    {
+        _postgresContainer = new PostgreSqlBuilder()
             .WithImage("postgres:16-alpine")
             .WithDatabase("sarasblogg_test")
-            // Test-only credentials (used by Testcontainers, not production)
             .WithUsername(
                 Environment.GetEnvironmentVariable("TEST_DB_USER") ?? TestDbUser
             )
             .WithPassword(
                 Environment.GetEnvironmentVariable("TEST_DB_PASSWORD") ?? TestDbPassword
             )
-
-
             .Build();
+
+        // 🔴 STARTA CONTAINERN HÄR
+        _postgresContainer.StartAsync().GetAwaiter().GetResult();
+    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureServices(services =>
         {
-            // Remove real DbContext
+            // Ta bort befintlig DbContext
             var descriptor = services.SingleOrDefault(d =>
                 d.ServiceType == typeof(DbContextOptions<MyDbContext>));
 
@@ -43,27 +46,18 @@ public class CustomWebApplicationFactory<TProgram>
                 services.Remove(descriptor);
             }
 
-            // Register test DbContext (Postgres)
+            // Lägg till test-DbContext
             services.AddDbContext<MyDbContext>(options =>
             {
                 options.UseNpgsql(_postgresContainer.GetConnectionString());
             });
+
+            // 🔴 Kör migrationer EFTER att DI är klart
+            var sp = services.BuildServiceProvider();
+            using var scope = sp.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+            db.Database.Migrate();
         });
-    }
-
-    protected override IHost CreateHost(IHostBuilder builder)
-    {
-        // Start Postgres container BEFORE host creation
-        _postgresContainer.StartAsync().GetAwaiter().GetResult();
-
-        var host = base.CreateHost(builder);
-
-        // Apply migrations
-        using var scope = host.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
-        db.Database.Migrate();
-
-        return host;
     }
 
     protected override void Dispose(bool disposing)
