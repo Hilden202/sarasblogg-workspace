@@ -90,9 +90,17 @@ namespace SarasBloggAPI
             // Hämta connection string (stöder både DefaultConnection och MyConnection)
             var rawConnectionString =
                 builder.Configuration.GetConnectionString("DefaultConnection")
-                ?? builder.Configuration.GetConnectionString("MyConnection")
-                ?? throw new InvalidOperationException(
-                    "No connection string found. Expected 'DefaultConnection' or 'MyConnection'.");
+                ?? builder.Configuration.GetConnectionString("MyConnection");
+
+            if (string.IsNullOrWhiteSpace(rawConnectionString))
+            {
+                if (!builder.Environment.IsEnvironment("Test"))
+                {
+                    throw new InvalidOperationException(
+                        "No connection string found. Expected 'DefaultConnection' or 'MyConnection'.");
+                }
+                // I Test-miljö: DbContext sätts av CustomWebApplicationFactory
+            }
 
             // 🔹 Bygg Npgsql-connectionstring med SSL/Trust (stöd för postgres:// och Npgsql-format)
             string BuildNpgsqlCs(string cs)

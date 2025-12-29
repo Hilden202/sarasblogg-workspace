@@ -25,9 +25,11 @@ public class CustomWebApplicationFactory<TProgram>
             .WithPassword(CreateTestPassword())
             .Build();
 
-
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        // 🔹 VIKTIGT: sätt miljön FÖRST
+        builder.UseEnvironment("Test");
+
         // 🔹 Starta containern här (inte i ctor)
         _postgresContainer.StartAsync().GetAwaiter().GetResult();
 
