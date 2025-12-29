@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -28,51 +29,67 @@ public class CustomWebApplicationFactory<TProgram>
             .WithPassword(CreateTestPassword())
             .Build();
 
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
+protected override void ConfigureWebHost(IWebHostBuilder builder)
+{
+    // 🔹 VIKTIGT: sätt miljön FÖRST
+    builder.UseEnvironment("Test");
+
+    // 🔹 Starta containern här (inte i ctor)
+    _postgresContainer.StartAsync().GetAwaiter().GetResult();
+
+    builder.ConfigureAppConfiguration(config =>
     {
-        // 🔹 VIKTIGT: sätt miljön FÖRST
-        builder.UseEnvironment("Test");
-
-        // 🔹 Starta containern här (inte i ctor)
-        _postgresContainer.StartAsync().GetAwaiter().GetResult();
-
-        builder.ConfigureAppConfiguration(config =>
+        config.AddInMemoryCollection(new Dictionary<string, string?>
         {
-            config.AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["ConnectionStrings:DefaultConnection"] =
-                    _postgresContainer.GetConnectionString()
-            });
+            ["ConnectionStrings:DefaultConnection"] =
+                _postgresContainer.GetConnectionString()
+        });
+    });
+
+    builder.ConfigureServices(services =>
+    {
+        // --------------------------------------------------
+        // 🔹 DataProtection: INTE databaserad i tester
+        // --------------------------------------------------
+        services.AddDataProtection()
+            .PersistKeysToFileSystem(
+                new DirectoryInfo(
+                    Path.Combine(Path.GetTempPath(), "dp-keys-tests")
+                )
+            );
+
+        // --------------------------------------------------
+        // Ta bort original DbContext
+        // --------------------------------------------------
+        var descriptor = services.SingleOrDefault(d =>
+            d.ServiceType == typeof(DbContextOptions<MyDbContext>));
+
+        if (descriptor != null)
+            services.Remove(descriptor);
+
+        // --------------------------------------------------
+        // Lägg till test-DbContext (Postgres Testcontainer)
+        // --------------------------------------------------
+        services.AddDbContext<MyDbContext>(options =>
+        {
+            options.UseNpgsql(_postgresContainer.GetConnectionString());
         });
 
-        builder.ConfigureServices(services =>
-        {
-            // Ta bort original DbContext
-            var descriptor = services.SingleOrDefault(d =>
-                d.ServiceType == typeof(DbContextOptions<MyDbContext>));
+        // --------------------------------------------------
+        // Mock IFileHelper for integration tests
+        // --------------------------------------------------
+        services.RemoveAll<IFileHelper>();
+        services.AddSingleton<IFileHelper, FakeFileHelper>();
 
-            if (descriptor != null)
-                services.Remove(descriptor);
-
-            // Lägg till test-DbContext
-            services.AddDbContext<MyDbContext>(options =>
-            {
-                options.UseNpgsql(_postgresContainer.GetConnectionString());
-            });
-
-            // --------------------------------------------------
-            // Mock IFileHelper for integration tests
-            // --------------------------------------------------
-            services.RemoveAll<IFileHelper>();
-            services.AddSingleton<IFileHelper, FakeFileHelper>();
-
-            // Kör migrationer
-            var sp = services.BuildServiceProvider();
-            using var scope = sp.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
-            db.Database.Migrate();
-        });
-    }
+        // --------------------------------------------------
+        // Kör migrationer
+        // --------------------------------------------------
+        var sp = services.BuildServiceProvider();
+        using var scope = sp.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+        db.Database.Migrate();
+    });
+}
 
     protected override void Dispose(bool disposing)
     {
