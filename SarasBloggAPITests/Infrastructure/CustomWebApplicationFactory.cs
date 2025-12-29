@@ -12,13 +12,19 @@ public class CustomWebApplicationFactory<TProgram>
     : WebApplicationFactory<TProgram>
     where TProgram : class
 {
+    private static string CreateTestPassword()
+    {
+        return Guid.NewGuid().ToString("N");
+    }
+
     private readonly PostgreSqlContainer _postgresContainer =
         new PostgreSqlBuilder()
             .WithImage("postgres:16-alpine")
             .WithDatabase("sarasblogg_test")
-            .WithUsername("postgres_test")
-            .WithPassword("postgres-test-only")
+            .WithUsername("testuser") // ok: inte password-pattern
+            .WithPassword(CreateTestPassword())
             .Build();
+
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
