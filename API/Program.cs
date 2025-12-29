@@ -434,7 +434,7 @@ namespace SarasBloggAPI
             // 🔹 Root endpoint
             app.MapGet("/", () => Results.Ok("SarasBloggAPI is running"));
 
-            if (!app.Environment.IsProduction())
+            if (app.Environment.IsDevelopment())
             {
                 await StartupSeeder.CreateAdminUserAsync(app);
             }
