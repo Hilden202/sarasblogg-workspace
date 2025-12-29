@@ -3,7 +3,10 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using SarasBloggAPI.Data;
+using SarasBloggAPI.Services;
+using SarasBloggAPITests.TestHelpers;
 using Testcontainers.PostgreSql;
 
 namespace SarasBloggAPITests.Infrastructure;
@@ -56,6 +59,12 @@ public class CustomWebApplicationFactory<TProgram>
             {
                 options.UseNpgsql(_postgresContainer.GetConnectionString());
             });
+
+            // --------------------------------------------------
+            // Mock IFileHelper for integration tests
+            // --------------------------------------------------
+            services.RemoveAll<IFileHelper>();
+            services.AddSingleton<IFileHelper, FakeFileHelper>();
 
             // Kör migrationer
             var sp = services.BuildServiceProvider();
