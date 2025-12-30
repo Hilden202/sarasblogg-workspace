@@ -102,8 +102,6 @@ Frontend fungerar endast när API är igång (by design).
 
 - Gamla repos finns kvar under övergången (rollback möjligt)
 
-- Nästa steg: koppla Render till detta repo
-
 
 
 
