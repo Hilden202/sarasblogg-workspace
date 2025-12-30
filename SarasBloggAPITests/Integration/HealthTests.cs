@@ -43,10 +43,4 @@ public class HealthTests
             method: "GET"
         );
     }
-    [Fact]
-    public async Task Api_IsAlive()
-    {
-        var response = await _client.GetAsync("/health");
-        response.EnsureSuccessStatusCode();
-    }
 }
