@@ -1,9 +1,13 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using SarasBloggAPI.Data;
+using SarasBloggAPI.Services;
+using SarasBloggAPITests.TestHelpers;
 using Testcontainers.PostgreSql;
 
 namespace SarasBloggAPITests.Infrastructure;
@@ -12,59 +16,80 @@ public class CustomWebApplicationFactory<TProgram>
     : WebApplicationFactory<TProgram>
     where TProgram : class
 {
-    private const string TestDbUser = "postgres_test";
-    private const string TestDbPassword = "postgres-test-only";
+    private static string CreateTestPassword()
+    {
+        return Guid.NewGuid().ToString("N");
+    }
 
     private readonly PostgreSqlContainer _postgresContainer =
         new PostgreSqlBuilder()
             .WithImage("postgres:16-alpine")
             .WithDatabase("sarasblogg_test")
-            // Test-only credentials (used by Testcontainers, not production)
-            .WithUsername(
-                Environment.GetEnvironmentVariable("TEST_DB_USER") ?? TestDbUser
-            )
-            .WithPassword(
-                Environment.GetEnvironmentVariable("TEST_DB_PASSWORD") ?? TestDbPassword
-            )
-
-
+            .WithUsername("testuser") // ok: inte password-pattern
+            .WithPassword(CreateTestPassword())
             .Build();
 
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
+protected override void ConfigureWebHost(IWebHostBuilder builder)
+{
+    // 🔹 VIKTIGT: sätt miljön FÖRST
+    builder.UseEnvironment("Test");
+
+    // 🔹 Starta containern här (inte i ctor)
+    _postgresContainer.StartAsync().GetAwaiter().GetResult();
+
+    builder.ConfigureAppConfiguration(config =>
     {
-        builder.ConfigureServices(services =>
+        config.AddInMemoryCollection(new Dictionary<string, string?>
         {
-            // Remove real DbContext
-            var descriptor = services.SingleOrDefault(d =>
-                d.ServiceType == typeof(DbContextOptions<MyDbContext>));
-
-            if (descriptor != null)
-            {
-                services.Remove(descriptor);
-            }
-
-            // Register test DbContext (Postgres)
-            services.AddDbContext<MyDbContext>(options =>
-            {
-                options.UseNpgsql(_postgresContainer.GetConnectionString());
-            });
+            ["ConnectionStrings:DefaultConnection"] =
+                _postgresContainer.GetConnectionString()
         });
-    }
+    });
 
-    protected override IHost CreateHost(IHostBuilder builder)
+    builder.ConfigureServices(services =>
     {
-        // Start Postgres container BEFORE host creation
-        _postgresContainer.StartAsync().GetAwaiter().GetResult();
+        // --------------------------------------------------
+        // 🔹 DataProtection: INTE databaserad i tester
+        // --------------------------------------------------
+        services.AddDataProtection()
+            .PersistKeysToFileSystem(
+                new DirectoryInfo(
+                    Path.Combine(Path.GetTempPath(), "dp-keys-tests")
+                )
+            );
 
-        var host = base.CreateHost(builder);
+        // --------------------------------------------------
+        // Ta bort original DbContext
+        // --------------------------------------------------
+        var descriptor = services.SingleOrDefault(d =>
+            d.ServiceType == typeof(DbContextOptions<MyDbContext>));
 
-        // Apply migrations
-        using var scope = host.Services.CreateScope();
+        if (descriptor != null)
+            services.Remove(descriptor);
+
+        // --------------------------------------------------
+        // Lägg till test-DbContext (Postgres Testcontainer)
+        // --------------------------------------------------
+        services.AddDbContext<MyDbContext>(options =>
+        {
+            options.UseNpgsql(_postgresContainer.GetConnectionString());
+        });
+
+        // --------------------------------------------------
+        // Mock IFileHelper for integration tests
+        // --------------------------------------------------
+        services.RemoveAll<IFileHelper>();
+        services.AddSingleton<IFileHelper, FakeFileHelper>();
+
+        // --------------------------------------------------
+        // Kör migrationer
+        // --------------------------------------------------
+        var sp = services.BuildServiceProvider();
+        using var scope = sp.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
         db.Database.Migrate();
-
-        return host;
-    }
+    });
+}
 
     protected override void Dispose(bool disposing)
     {

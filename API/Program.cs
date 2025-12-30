@@ -23,7 +23,7 @@ namespace SarasBloggAPI
 {
     public class Program
     {
-        public static async Task Main(string[] args)   // 🔹 async för att kunna vänta in DB
+        public static async Task Main(string[] args) // 🔹 async för att kunna vänta in DB
         {
             var builder = WebApplication.CreateBuilder(args);
             var isLocalTest = builder.Environment.IsEnvironment("Test");
@@ -37,8 +37,8 @@ namespace SarasBloggAPI
                 .GetSection("Cors:AllowedOrigins")
                 .Get<string[]>() ?? Array.Empty<string>();
 
-            string? csv = builder.Configuration["Cors:AllowedOrigins"];              // tillåter Cors__AllowedOrigins="a,b,c"
-            csv ??= builder.Configuration["Cors:AllowedOriginsCsv"];                 // alternativ nyckel om du vill
+            string? csv = builder.Configuration["Cors:AllowedOrigins"]; // tillåter Cors__AllowedOrigins="a,b,c"
+            csv ??= builder.Configuration["Cors:AllowedOriginsCsv"]; // alternativ nyckel om du vill
 
             var originsFromCsv = string.IsNullOrWhiteSpace(csv)
                 ? Array.Empty<string>()
@@ -52,7 +52,8 @@ namespace SarasBloggAPI
                 .ToArray();
 
             // Logga för felsökning
-            Console.WriteLine("CORS origins => " + (allowedOrigins.Length == 0 ? "<EMPTY>" : string.Join(", ", allowedOrigins)));
+            Console.WriteLine("CORS origins => " +
+                              (allowedOrigins.Length == 0 ? "<EMPTY>" : string.Join(", ", allowedOrigins)));
 
             builder.Services.AddCors(options =>
             {
@@ -61,8 +62,8 @@ namespace SarasBloggAPI
                     if (allowedOrigins.Length > 0)
                     {
                         p.WithOrigins(allowedOrigins)
-                         .AllowAnyHeader()
-                         .AllowAnyMethod();
+                            .AllowAnyHeader()
+                            .AllowAnyMethod();
                     }
                     else
                     {
@@ -90,16 +91,24 @@ namespace SarasBloggAPI
             // Hämta connection string (stöder både DefaultConnection och MyConnection)
             var rawConnectionString =
                 builder.Configuration.GetConnectionString("DefaultConnection")
-                ?? builder.Configuration.GetConnectionString("MyConnection")
-                ?? throw new InvalidOperationException(
-                    "No connection string found. Expected 'DefaultConnection' or 'MyConnection'.");
+                ?? builder.Configuration.GetConnectionString("MyConnection");
+
+            if (string.IsNullOrWhiteSpace(rawConnectionString))
+            {
+                if (!builder.Environment.IsEnvironment("Test"))
+                {
+                    throw new InvalidOperationException(
+                        "No connection string found. Expected 'DefaultConnection' or 'MyConnection'.");
+                }
+                // I Test-miljö: DbContext sätts av CustomWebApplicationFactory
+            }
 
             // 🔹 Bygg Npgsql-connectionstring med SSL/Trust (stöd för postgres:// och Npgsql-format)
             string BuildNpgsqlCs(string cs)
             {
                 if (!string.IsNullOrWhiteSpace(cs) &&
                     (cs.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) ||
-                    cs.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase)))
+                     cs.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase)))
                 {
                     var uri = new Uri(cs.Replace("postgres://", "postgresql://", StringComparison.OrdinalIgnoreCase));
                     var userInfo = uri.UserInfo.Split(':');
@@ -112,8 +121,8 @@ namespace SarasBloggAPI
                         Username = userInfo[0],
                         Password = userInfo.Length > 1 ? userInfo[1] : "",
                         SslMode = (isLocalTest || uri.Host is "localhost" or "127.0.0.1")
-                                    ? SslMode.Disable
-                                    : SslMode.Require,
+                            ? SslMode.Disable
+                            : SslMode.Require,
                         TrustServerCertificate = true,
                         Pooling = true,
                         MinPoolSize = 0,
@@ -129,7 +138,6 @@ namespace SarasBloggAPI
                     b.SslMode = isInternal ? Npgsql.SslMode.Disable : Npgsql.SslMode.Require;
 
                     return b.ToString();
-
                 }
 
                 // --- "vanlig" connection string-gren (FIXEN) ---
@@ -137,8 +145,8 @@ namespace SarasBloggAPI
 
                 // sätt egenskaper efter att nb finns
                 nb.SslMode = (isLocalTest || nb.Host is "localhost" or "127.0.0.1")
-                                ? SslMode.Disable
-                                : SslMode.Require;
+                    ? SslMode.Disable
+                    : SslMode.Require;
                 nb.TrustServerCertificate = true;
                 nb.Pooling = true;
                 nb.MinPoolSize = 0;
@@ -192,7 +200,7 @@ namespace SarasBloggAPI
 
             // MANAGERS / DAL
             builder.Services.AddScoped<TokenService>();
-            
+
             // FILE HELPER: Local för Development, GitHub för Test/Prod
             if (builder.Environment.IsDevelopment())
             {
@@ -202,7 +210,7 @@ namespace SarasBloggAPI
             {
                 builder.Services.AddScoped<IFileHelper, GitHubFileHelper>();
             }
-            
+
             builder.Services.AddScoped<BloggManager>();
             builder.Services.AddScoped<BloggImageManager>();
             builder.Services.AddScoped<CommentManager>();
@@ -241,14 +249,20 @@ namespace SarasBloggAPI
             builder.Services.AddSingleton<HtmlSanitizer>(_ =>
             {
                 var s = new HtmlSanitizer();
-                s.AllowedTags.UnionWith(new[] { "p","h1","h2","h3","blockquote","ul","ol","li","figure","figcaption","hr","br","strong","em","span","a","img" });
-                s.AllowedAttributes.UnionWith(new[] { "href","title","src","alt","width","height","loading","decoding","rel","class" });
-                s.AllowedSchemes.UnionWith(new[] { "https","mailto" });
+                s.AllowedTags.UnionWith(new[]
+                {
+                    "p", "h1", "h2", "h3", "blockquote", "ul", "ol", "li", "figure", "figcaption", "hr", "br", "strong",
+                    "em", "span", "a", "img"
+                });
+                s.AllowedAttributes.UnionWith(new[]
+                    { "href", "title", "src", "alt", "width", "height", "loading", "decoding", "rel", "class" });
+                s.AllowedSchemes.UnionWith(new[] { "https", "mailto" });
                 s.AllowedClasses.Clear();
-                s.AllowedClasses.UnionWith(new[] { "soft-box","sara-quote","image-collage" });
+                s.AllowedClasses.UnionWith(new[] { "soft-box", "sara-quote", "image-collage" });
                 s.PostProcessNode += (_, args) =>
                 {
-                    if (args.Node is IElement element && element.NodeName.Equals("A", StringComparison.OrdinalIgnoreCase))
+                    if (args.Node is IElement element &&
+                        element.NodeName.Equals("A", StringComparison.OrdinalIgnoreCase))
                     {
                         element.SetAttribute("rel", "noopener");
                     }
@@ -262,8 +276,20 @@ namespace SarasBloggAPI
             // 🔐 JWT-config
             var jwt = builder.Configuration.GetSection("Jwt");
             var keyValue = jwt["Key"];
+
             if (string.IsNullOrWhiteSpace(keyValue) || keyValue == "___SET_VIA_SECRETS_OR_ENV___")
-                throw new InvalidOperationException("Jwt:Key is missing. Set via user-secrets or environment (Jwt__Key).");
+            {
+                if (builder.Environment.IsEnvironment("Test"))
+                {
+                    // 🔹 Test-only dummy key (not used for real tokens)
+                    keyValue = "TEST_ONLY_DUMMY_JWT_KEY_32_CHARS_MIN";
+                }
+                else
+                {
+                    throw new InvalidOperationException(
+                        "Jwt:Key is missing. Set via user-secrets or environment (Jwt__Key).");
+                }
+            }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyValue));
 
@@ -273,22 +299,21 @@ namespace SarasBloggAPI
                     o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                     o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                 })
-
-            .AddJwtBearer(o =>
-            {
-                o.TokenValidationParameters = new TokenValidationParameters
+                .AddJwtBearer(o =>
                 {
-                    ValidIssuer = jwt["Issuer"],
-                    ValidAudience = jwt["Audience"],
-                    IssuerSigningKey = key,
-                    ValidateIssuerSigningKey = true,
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ClockSkew = TimeSpan.FromSeconds(30),
-                    RoleClaimType = ClaimTypes.Role   // <-- viktigt
-                };
-            });
+                    o.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidIssuer = jwt["Issuer"],
+                        ValidAudience = jwt["Audience"],
+                        IssuerSigningKey = key,
+                        ValidateIssuerSigningKey = true,
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ClockSkew = TimeSpan.FromSeconds(30),
+                        RoleClaimType = ClaimTypes.Role // <-- viktigt
+                    };
+                });
 
             builder.Services.AddAuthorization(options =>
             {
@@ -344,7 +369,8 @@ namespace SarasBloggAPI
             app.UseAuthorization();
 
             // 🔹 Vänta in DB & ev. kör migreringar (kan stängas av via env)
-            if (!bool.TryParse(Environment.GetEnvironmentVariable("DISABLE_MIGRATIONS"), out var disableMigrations) || !disableMigrations)
+            if (!bool.TryParse(Environment.GetEnvironmentVariable("DISABLE_MIGRATIONS"), out var disableMigrations) ||
+                !disableMigrations)
             {
                 using (var scope = app.Services.CreateScope())
                 {
@@ -373,7 +399,8 @@ namespace SarasBloggAPI
                             ex.InnerException is Npgsql.NpgsqlException
                         )
                         {
-                            logger.LogWarning(ex, "DB not ready (attempt {Attempt}/{Max}). Waiting {Delay}...", attempt, maxAttempts, delay);
+                            logger.LogWarning(ex, "DB not ready (attempt {Attempt}/{Max}). Waiting {Delay}...", attempt,
+                                maxAttempts, delay);
                             if (attempt == maxAttempts) throw;
                             await Task.Delay(delay);
                             delay = TimeSpan.FromSeconds(Math.Min(delay.TotalSeconds * 2, 15));
@@ -407,7 +434,7 @@ namespace SarasBloggAPI
             // 🔹 Root endpoint
             app.MapGet("/", () => Results.Ok("SarasBloggAPI is running"));
 
-            if (!app.Environment.IsProduction())
+            if (app.Environment.IsDevelopment())
             {
                 await StartupSeeder.CreateAdminUserAsync(app);
             }
@@ -415,4 +442,8 @@ namespace SarasBloggAPI
             app.Run();
         }
     }
+}
+
+public partial class Program
+{
 }
