@@ -513,8 +513,8 @@ a.blogg-link:visited {
 /* === Blogginnehåll: respektera TinyMCE-storlek === */
 .blogg-content img,
 .blogg-content figure img {
-    max-width: none !important;        /* tillåt originalstorlek */
+    max-width: none !important;        /* 🔑 tillåt originalstorlek */
     height: auto !important;
-    display: inline-block !important;  /* hindrar auto-maxning */
+    display: inline-block !important;  /* 🔑 hindrar auto-maxning */
     border-radius: 6px !important;
 }
