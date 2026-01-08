@@ -63,11 +63,6 @@ namespace SarasBlogg.Pages.Admin
             IsSuperAdmin = User.IsInRole("superadmin");
             IsSuperUser = User.IsInRole("superuser");
 
-            if (IsSuperAdmin)
-            {
-                EditorAccessToken = _tokenStore.AccessToken;
-            }
-
             // Default date for the form (SE)
             NewBlogg ??= new Models.Blogg();
             if (NewBlogg.Id == 0 && NewBlogg.LaunchDate == default)
@@ -94,6 +89,11 @@ namespace SarasBlogg.Pages.Admin
 
             // load lists
             await LoadBloggsWithImagesAsync();
+            
+            if (IsSuperAdmin)
+            {
+                EditorAccessToken = _tokenStore.AccessToken;
+            }
 
             // open edit form (superadmin)
             if (IsSuperAdmin && editId.HasValue && editId.Value != 0)
