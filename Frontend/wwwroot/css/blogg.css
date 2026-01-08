@@ -518,3 +518,21 @@ a.blogg-link:visited {
     display: inline-block !important;  /* 🔑 hindrar auto-maxning */
     border-radius: 6px !important;
 }
+
+@media (max-width: 768px) {
+    .blogg-content img,
+    .blogg-content figure img {
+        max-width: 100% !important;    /* ← endast skydd mot overflow */
+        height: auto !important;
+    }
+
+    /* 🔒 Förhindra att innehåll (bilder) kan rinna ut horisontellt */
+    .blogg-content {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .blogg-content p {
+        max-width: 100%;
+    }
+}
