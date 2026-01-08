@@ -99,9 +99,15 @@ window.addEventListener("load", () => {
         const apiBase = (document.documentElement.dataset.apiBaseUrl || "").replace(/\/+$/, "");
         const editorToken = formAdmin?.dataset?.editorToken?.trim();
 
+        // 🔍 DEBUG – VIKTIG
+        console.log("🧪 Editor token exists:", !!editorToken);
+        console.log("🧪 Editor token length:", editorToken?.length);
+        console.log("🧪 Editor token preview:", editorToken ? editorToken.slice(0, 25) : "❌ MISSING");
+
         console.log("✅ Initierar TinyMCE för Admin...");
 
         initTinyMCE("#ContentEditor", {
+
             plugins: "lists link image table code",
             toolbar:
                 "undo redo | fontfamily fontsize | forecolor backcolor | highlight | bold italic underline strikethrough | " +
@@ -125,8 +131,15 @@ window.addEventListener("load", () => {
                     body: formData
                 };
 
-                fetchOptions.credentials = "include";
-
+                if (isLocal) {
+                    // 🔧 Lokal dev: cookie-auth
+                    fetchOptions.credentials = "include";
+                } else {
+                    // 🔐 Prod: Bearer token
+                    fetchOptions.headers = {
+                        "Authorization": `Bearer ${editorToken}`
+                    };
+                }
 
                 const response = await fetch(uploadUrl, fetchOptions);
 
