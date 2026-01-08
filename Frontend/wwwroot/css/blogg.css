@@ -509,3 +509,12 @@ a.blogg-link:visited {
 .comment .badge.bg-secondary {
     opacity: 0.9;
 }
+
+/* === Blogginnehåll: respektera TinyMCE-storlek === */
+.blogg-content img,
+.blogg-content figure img {
+    max-width: none !important;        /* tillåt originalstorlek */
+    height: auto !important;
+    display: inline-block !important;  /* hindrar auto-maxning */
+    border-radius: 6px !important;
+}
