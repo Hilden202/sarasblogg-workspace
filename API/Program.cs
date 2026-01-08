@@ -60,8 +60,19 @@ namespace SarasBloggAPI
                 options.AddPolicy("SarasPolicy", p =>
                 {
                     p.WithOrigins(
-                            "https://localhost:7130", // Frontend (Razor Pages)
-                            "https://localhost:5003"  // API (ok att ha med)
+                            "https://localhost:7130", // lokal frontend
+
+                            // Unicode-visning
+                            "https://medhjärtatsomkompass.se",
+                            "https://www.medhjärtatsomkompass.se",
+
+                            // Punycode (DETTA är den viktiga)
+                            "https://xn--medhjrtatsomkompass-kwb.se",
+                            "https://www.xn--medhjrtatsomkompass-kwb.se",
+                            
+                            // Render
+                            "https://sarasblogg-frontend.onrender.com/",
+                            "https://www.sarasblogg-frontend.onrender.com/"
                         )
                         .AllowAnyHeader()
                         .AllowAnyMethod()
