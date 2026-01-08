@@ -1,4 +1,5 @@
-﻿function initTinyMCE(selector, options = {}) {
+﻿console.log("🔥 TINYMCE CONFIG – COOKIE VERSION 🔥", new Date().toISOString());
+function initTinyMCE(selector, options = {}) {
     const baseOptions = {
         menubar: true,
         branding: false,
@@ -117,7 +118,7 @@ window.addEventListener("load", () => {
 
                 const response = await fetch(uploadUrl, {
                     method: "POST",
-                    headers: { "Authorization": `Bearer ${editorToken}` },
+                    credentials: "include", // 🔴 VIKTIGT
                     body: formData
                 });
 

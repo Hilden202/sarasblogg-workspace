@@ -59,20 +59,13 @@ namespace SarasBloggAPI
             {
                 options.AddPolicy("SarasPolicy", p =>
                 {
-                    if (allowedOrigins.Length > 0)
-                    {
-                        p.WithOrigins(allowedOrigins)
-                            .AllowAnyHeader()
-                            .AllowAnyMethod();
-                    }
-                    else
-                    {
-                        // Dev-fallback så du inte låser ut dig lokalt
-                        if (builder.Environment.IsDevelopment())
-                            p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
-                        else
-                            p.WithOrigins("https://example.com"); // håll hårt i prod
-                    }
+                    p.WithOrigins(
+                            "https://localhost:7130", // Frontend (Razor Pages)
+                            "https://localhost:5003"  // API (ok att ha med)
+                        )
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials(); // 🔴 KRITISK
                 });
             });
 
@@ -311,7 +304,27 @@ namespace SarasBloggAPI
                         ValidateAudience = true,
                         ValidateLifetime = true,
                         ClockSkew = TimeSpan.FromSeconds(30),
-                        RoleClaimType = ClaimTypes.Role // <-- viktigt
+                        RoleClaimType = ClaimTypes.Role
+                    };
+
+                    // 🔑 tillåt JWT från cookie
+                    o.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            // Om Authorization-header finns → använd den
+                            var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+                            if (!string.IsNullOrWhiteSpace(authHeader))
+                                return Task.CompletedTask;
+
+                            // Annars: försök läsa från cookie
+                            if (context.Request.Cookies.TryGetValue("api_access_token", out var token))
+                            {
+                                context.Token = token;
+                            }
+
+                            return Task.CompletedTask;
+                        }
                     };
                 });
 
