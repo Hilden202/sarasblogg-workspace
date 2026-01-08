@@ -125,15 +125,8 @@ window.addEventListener("load", () => {
                     body: formData
                 };
 
-                if (isLocal) {
-                    // 🔧 Lokal dev: cookie-auth
-                    fetchOptions.credentials = "include";
-                } else {
-                    // 🌍 Prod: Bearer token
-                    fetchOptions.headers = {
-                        "Authorization": `Bearer ${editorToken}`
-                    };
-                }
+                fetchOptions.credentials = "include";
+
 
                 const response = await fetch(uploadUrl, fetchOptions);
 
