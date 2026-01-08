@@ -8,12 +8,12 @@ namespace SarasBloggAPI.Controllers
 {
     [ApiController]
     [Route("api/editor")]
-    [Authorize(Policy = "CanManageBlogs")]
+    [Authorize(Policy = "AdminOrSuperadmin")]
     public class EditorUploadController : ControllerBase
     {
         private readonly IFileHelper _fileHelper;
         private readonly ILogger<EditorUploadController> _logger;
-        private static readonly SemaphoreSlim _gate = new(1, 1); // säkert vid samtidiga writes
+        private static readonly SemaphoreSlim _gate = new(1, 1); // sï¿½kert vid samtidiga writes
 
         public EditorUploadController(IFileHelper fileHelper, ILogger<EditorUploadController> logger)
         {
@@ -25,7 +25,7 @@ namespace SarasBloggAPI.Controllers
         [RequestFormLimits(MultipartBodyLengthLimit = 10 * 1024 * 1024)]
         [RequestSizeLimit(10 * 1024 * 1024)]
         [Consumes("multipart/form-data")]
-        [SwaggerOperation(Summary = "Ladda upp inbäddad TinyMCE-bild")]
+        [SwaggerOperation(Summary = "Ladda upp inbï¿½ddad TinyMCE-bild")]
         public async Task<IActionResult> Upload([FromForm] EditorImageUploadDto dto, [FromQuery] int bloggId = 0)
         {
             var file = dto.File;
@@ -39,7 +39,7 @@ namespace SarasBloggAPI.Controllers
 
             var ext = Path.GetExtension(file.FileName);
             if (!allowedExt.Contains(ext))
-                return BadRequest("Endast .jpg, .jpeg, .png, .webp tillåts.");
+                return BadRequest("Endast .jpg, .jpeg, .png, .webp tillï¿½ts.");
 
             if (!allowedMime.Contains(file.ContentType))
                 return BadRequest("Ogiltig MIME-typ: " + file.ContentType);
@@ -53,7 +53,7 @@ namespace SarasBloggAPI.Controllers
                 {
                     // ?? Spara i blogg/{id}/text/
                     var folderName = Path.Combine("blogg", bloggId.ToString(), "text");
-                    imageUrl = await _fileHelper.SaveImageAsync(file, bloggId, folderName);
+                    imageUrl = await _fileHelper.SaveImageAsync(file, bloggId, "blogg");
                 }
                 else
                 {

@@ -156,7 +156,7 @@
 		@if (Model.IsSuperAdmin)
 		{
 			<div id="editFormSection">
-                                <form id="blogForm" class="white-panel p-3 border rounded shadow-sm" method="post" enctype="multipart/form-data" novalidate data-editor-token="@Model.EditorAccessToken">
+                                <form id="blogForm" class="white-panel p-3 border rounded shadow-sm" method="post" enctype="multipart/form-data" novalidate data-editor-token="@Model.EditorAccessToken ?? string.Empty">
 					<div class="text-danger mb-2">
 						@Html.ValidationSummary(excludePropertyErrors: true)
 					</div>
@@ -436,5 +436,5 @@
 
 @section Scripts {
 	<script src="~/lib/tinymce/tinymce.min.js"></script>
-	<script src="~/js/tinymce-config.js"></script>
+	<script src="~/js/tinymce-config.admin.v2.js"></script>
 }

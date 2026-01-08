@@ -19,6 +19,13 @@ namespace SarasBlogg.Services
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
         {
+            // 🔴 VIKTIGT: TinyMCE / editor-upload ska ALDRIG få Authorization-header
+            if (request.RequestUri?.AbsolutePath.StartsWith("/api/editor", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                _logger.LogDebug("JwtAuthHandler: Skipping Authorization for editor endpoint {Url}", request.RequestUri);
+                return base.SendAsync(request, ct);
+            }
+            
             // Skicka bara Authorization om användaren är inloggad i webb-appen
             var isAuth = _http.HttpContext?.User?.Identity?.IsAuthenticated == true;
 
