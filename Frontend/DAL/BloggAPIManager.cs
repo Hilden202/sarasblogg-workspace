@@ -82,7 +82,7 @@ namespace SarasBlogg.DAL
         
         public async Task<string?> GetEditorAccessTokenAsync()
         {
-            var resp = await _httpClient.PostAsync("api/auth/editor-token", null);
+            var resp = await _httpClient.GetAsync("api/auth/editor-token");
 
             if (!resp.IsSuccessStatusCode)
                 return null;
