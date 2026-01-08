@@ -156,7 +156,12 @@
 		@if (Model.IsSuperAdmin)
 		{
 			<div id="editFormSection">
-                                <form id="blogForm" class="white-panel p-3 border rounded shadow-sm" method="post" enctype="multipart/form-data" novalidate data-editor-token="@Model.EditorAccessToken ?? string.Empty">
+				<form id="blogForm"
+				      class="white-panel p-3 border rounded shadow-sm"
+				      method="post"
+				      enctype="multipart/form-data"
+				      novalidate>
+
 					<div class="text-danger mb-2">
 						@Html.ValidationSummary(excludePropertyErrors: true)
 					</div>

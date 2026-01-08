@@ -17,7 +17,6 @@ namespace SarasBlogg.Pages.Admin
         private readonly BloggAPIManager _bloggApi;
         private readonly BloggImageAPIManager _imageApi;
         private readonly CommentAPIManager _commentApi;
-        private readonly IAccessTokenStore _tokenStore;
 
         // Cache-tjänst (publik listcache)
         private readonly BloggService _bloggService;
@@ -29,22 +28,18 @@ namespace SarasBlogg.Pages.Admin
             BloggAPIManager bloggApi,
             BloggImageAPIManager imageApi,
             CommentAPIManager commentApi,
-            BloggService bloggService,
-            IAccessTokenStore tokenStore)
+            BloggService bloggService)
         {
             _bloggApi = bloggApi;
             _imageApi = imageApi;
             _commentApi = commentApi;
             _bloggService = bloggService;
-            _tokenStore = tokenStore;
 
             NewBlogg = new Models.Blogg();
         }
 
         public List<BloggWithImage> BloggsWithImage { get; set; } = new();
         public BloggWithImage? EditedBloggWithImages { get; set; }
-
-        public string? EditorAccessToken { get; private set; }
 
         [BindProperty]
         public Models.Blogg NewBlogg { get; set; }
@@ -58,8 +53,6 @@ namespace SarasBlogg.Pages.Admin
 
         public async Task<IActionResult> OnGetAsync(int? hiddenId, int? archiveId, int? editId)
         {
-            EditorAccessToken = _tokenStore.AccessToken;
-
             // roles
             IsAdmin = User.IsInRole("admin");
             IsSuperAdmin = User.IsInRole("superadmin");
@@ -121,8 +114,6 @@ namespace SarasBlogg.Pages.Admin
         {
             IsSuperAdmin = User.IsInRole("superadmin");
             if (!IsSuperAdmin) return Forbid();
-
-            EditorAccessToken = _tokenStore.AccessToken;
 
             var uploadErrors = new List<string>();
             var currentBlogg = await _bloggApi.GetBloggAsync(NewBlogg.Id);
