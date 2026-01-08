@@ -317,17 +317,16 @@ namespace SarasBloggAPI
                         RoleClaimType = ClaimTypes.Role
                     };
 
-                    // 🔑 tillåt JWT från cookie
+                    // 🔑 Tillåt JWT även från HttpOnly-cookie (för TinyMCE, browser-POSTs m.m.)
                     o.Events = new JwtBearerEvents
                     {
                         OnMessageReceived = context =>
                         {
-                            // Om Authorization-header finns → använd den
-                            var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
-                            if (!string.IsNullOrWhiteSpace(authHeader))
+                            // Om token redan finns (Authorization: Bearer ...)
+                            if (!string.IsNullOrEmpty(context.Token))
                                 return Task.CompletedTask;
 
-                            // Annars: försök läsa från cookie
+                            // Fallback: läs från cookie
                             if (context.Request.Cookies.TryGetValue("api_access_token", out var token))
                             {
                                 context.Token = token;
