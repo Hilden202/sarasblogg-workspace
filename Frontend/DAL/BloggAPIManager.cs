@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json;
+using SarasBlogg.DTOs;
 using SarasBlogg.Models;
 
 namespace SarasBlogg.DAL
@@ -77,6 +78,19 @@ namespace SarasBlogg.DAL
         public async Task DeleteBloggAsync(int id)
         {
             await _httpClient.DeleteAsync($"api/Blogg/{id}");
+        }
+        
+        public async Task<string?> GetEditorAccessTokenAsync()
+        {
+            var resp = await _httpClient.PostAsync("api/auth/editor-token", null);
+
+            if (!resp.IsSuccessStatusCode)
+                return null;
+
+            var json = await resp.Content.ReadAsStringAsync();
+            var dto = JsonSerializer.Deserialize<AccessTokenDto>(json, _jsonOpts);
+
+            return dto?.AccessToken;
         }
     }
 }

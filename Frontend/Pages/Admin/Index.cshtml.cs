@@ -92,7 +92,7 @@ namespace SarasBlogg.Pages.Admin
             
             if (IsSuperAdmin)
             {
-                EditorAccessToken = _tokenStore.AccessToken;
+                EditorAccessToken = await _bloggApi.GetEditorAccessTokenAsync();
             }
 
             // open edit form (superadmin)

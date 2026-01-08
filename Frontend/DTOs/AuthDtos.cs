@@ -58,4 +58,8 @@
         bool EmailConfirmed,
         bool NotifyOnNewPost
     );
+    public sealed class AccessTokenDto
+    {
+        public string AccessToken { get; set; } = "";
+    }
 }

@@ -7,6 +7,7 @@ using SarasBloggAPI.Data;
 using SarasBloggAPI.DTOs;
 using SarasBloggAPI.Services;
 using System.Text;
+using Microsoft.AspNetCore.Authentication;
 
 namespace SarasBloggAPI.Controllers;
 
@@ -602,6 +603,23 @@ public class AuthController : ControllerBase
                 ConfirmEmailUrl = resetUrl
             });
         }
+    }
+    [Authorize]
+    [HttpGet("editor-token")]
+    [ProducesResponseType(typeof(AccessTokenDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<AccessTokenDto>> GetEditorToken()
+    {
+        // Hämtar access token från den aktuella autentiseringen (JWT/cookie)
+        var token = await HttpContext.GetTokenAsync("access_token");
+
+        if (string.IsNullOrWhiteSpace(token))
+            return Unauthorized();
+
+        return Ok(new AccessTokenDto
+        {
+            AccessToken = token
+        });
     }
 
 }

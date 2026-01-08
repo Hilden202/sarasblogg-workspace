@@ -61,3 +61,10 @@ public sealed class SetPasswordDto
 public sealed class ChangeEmailStartDto { public string NewEmail { get; set; } = ""; }
 public sealed class ChangeEmailConfirmDto { public string UserId { get; set; } = ""; public string Code { get; set; } = ""; }
 
+namespace SarasBloggAPI.DTOs
+{
+    public sealed class AccessTokenDto
+    {
+        public string AccessToken { get; set; } = "";
+    }
+}
