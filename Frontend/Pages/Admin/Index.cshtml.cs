@@ -17,6 +17,7 @@ namespace SarasBlogg.Pages.Admin
         private readonly BloggAPIManager _bloggApi;
         private readonly BloggImageAPIManager _imageApi;
         private readonly CommentAPIManager _commentApi;
+        private readonly IAccessTokenStore _tokenStore;
 
         // Cache-tjänst (publik listcache)
         private readonly BloggService _bloggService;
@@ -28,15 +29,19 @@ namespace SarasBlogg.Pages.Admin
             BloggAPIManager bloggApi,
             BloggImageAPIManager imageApi,
             CommentAPIManager commentApi,
-            BloggService bloggService)
+            BloggService bloggService,
+            IAccessTokenStore tokenStore)
         {
             _bloggApi = bloggApi;
             _imageApi = imageApi;
             _commentApi = commentApi;
             _bloggService = bloggService;
+            _tokenStore = tokenStore;
 
             NewBlogg = new Models.Blogg();
         }
+
+        public string? EditorAccessToken { get; private set; }
 
         public List<BloggWithImage> BloggsWithImage { get; set; } = new();
         public BloggWithImage? EditedBloggWithImages { get; set; }
@@ -57,6 +62,11 @@ namespace SarasBlogg.Pages.Admin
             IsAdmin = User.IsInRole("admin");
             IsSuperAdmin = User.IsInRole("superadmin");
             IsSuperUser = User.IsInRole("superuser");
+
+            if (IsSuperAdmin)
+            {
+                EditorAccessToken = _tokenStore.AccessToken;
+            }
 
             // Default date for the form (SE)
             NewBlogg ??= new Models.Blogg();

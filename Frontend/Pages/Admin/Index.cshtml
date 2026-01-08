@@ -155,12 +155,12 @@
 		<!-- FORMULÄR FÖR NY BLOGG / ÄNDRING: endast superadmin -->
 		@if (Model.IsSuperAdmin)
 		{
-			<div id="editFormSection">
 				<form id="blogForm"
 				      class="white-panel p-3 border rounded shadow-sm"
 				      method="post"
 				      enctype="multipart/form-data"
-				      novalidate>
+				      novalidate
+				      data-editor-token="@Model.EditorAccessToken">
 
 					<div class="text-danger mb-2">
 						@Html.ValidationSummary(excludePropertyErrors: true)
@@ -270,7 +270,6 @@
 						Skapa ny blogg/spara ändringar
 					</button>
 				</form>
-			</div>
 		}
 		else
 		{
