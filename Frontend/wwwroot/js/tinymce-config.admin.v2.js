@@ -1,4 +1,4 @@
-﻿console.log("🔥 TINYMCE CONFIG – COOKIE VERSION 🔥", new Date().toISOString());
+﻿console.log("🔥 TINYMCE CONFIG – BEARER TOKEN VERSION 🔥", new Date().toISOString());
 function initTinyMCE(selector, options = {}) {
     const baseOptions = {
         menubar: true,
@@ -116,11 +116,26 @@ window.addEventListener("load", () => {
                 const formData = new FormData();
                 formData.append("file", blobInfo.blob(), blobInfo.filename());
 
-                const response = await fetch(uploadUrl, {
+                const isLocal =
+                    location.hostname === "localhost" ||
+                    location.hostname === "127.0.0.1";
+
+                const fetchOptions = {
                     method: "POST",
-                    credentials: "include", // 🔴 VIKTIGT
                     body: formData
-                });
+                };
+
+                if (isLocal) {
+                    // 🔧 Lokal dev: cookie-auth
+                    fetchOptions.credentials = "include";
+                } else {
+                    // 🌍 Prod: Bearer token
+                    fetchOptions.headers = {
+                        "Authorization": `Bearer ${editorToken}`
+                    };
+                }
+
+                const response = await fetch(uploadUrl, fetchOptions);
 
                 if (!response.ok) {
                     const err = await response.text();
