@@ -60,23 +60,22 @@ namespace SarasBloggAPI
                 options.AddPolicy("SarasPolicy", p =>
                 {
                     p.WithOrigins(
-                            "https://localhost:7130", // lokal frontend
+                            // Local
+                            "https://localhost:7130",
 
-                            // Unicode-visning
+                            // Prod frontend (unicode + punycode)
                             "https://medhjärtatsomkompass.se",
                             "https://www.medhjärtatsomkompass.se",
-
-                            // Punycode (DETTA är den viktiga)
                             "https://xn--medhjrtatsomkompass-kwb.se",
                             "https://www.xn--medhjrtatsomkompass-kwb.se",
-                            
-                            // Render
-                            "https://sarasblogg-frontend.onrender.com/",
-                            "https://www.sarasblogg-frontend.onrender.com/"
+
+                            // Render frontend
+                            "https://sarasblogg-frontend.onrender.com",
+                            "https://www.sarasblogg-frontend.onrender.com"
                         )
                         .AllowAnyHeader()
                         .AllowAnyMethod()
-                        .AllowCredentials(); // 🔴 KRITISK
+                        .AllowCredentials();
                 });
             });
 
