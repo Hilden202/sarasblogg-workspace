@@ -61,8 +61,16 @@ namespace SarasBloggAPI
                 {
                     p.WithOrigins(
                             "https://localhost:7130", // lokal frontend
-                            "https://medhjartatsomkompass.se", // PROD frontend
-                            "https://www.medhjartatsomkompass.se", // om du använder www
+
+                            // Unicode-visning
+                            "https://medhjärtatsomkompass.se",
+                            "https://www.medhjärtatsomkompass.se",
+
+                            // Punycode (DETTA är den viktiga)
+                            "https://xn--medhjrtatsomkompass-kwb.se",
+                            "https://www.xn--medhjrtatsomkompass-kwb.se",
+                            
+                            // Render
                             "https://sarasblogg-frontend.onrender.com/",
                             "https://www.sarasblogg-frontend.onrender.com/"
                         )
