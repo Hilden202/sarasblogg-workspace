@@ -8,5 +8,7 @@ namespace SarasBloggAPI.Data
         public string? Name { get; set; }
         public string? ProfileImageUrl { get; set; }
         public bool NotifyOnNewPost { get; set; } = false;
+        
+        public bool RequiresUsernameSetup { get; set; } = false;
     }
 }
