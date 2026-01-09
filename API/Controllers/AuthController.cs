@@ -221,7 +221,8 @@ public class AuthController : ControllerBase
             PhoneNumber: phone,
             EmailConfirmed: user.EmailConfirmed,
             Roles: roles,
-            NotifyOnNewPost: user.NotifyOnNewPost
+            NotifyOnNewPost: user.NotifyOnNewPost,
+            RequiresUsernameSetup: user.RequiresUsernameSetup
         );
     }
 
