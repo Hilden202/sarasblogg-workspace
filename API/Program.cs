@@ -17,6 +17,7 @@ using System.IO;
 using System.Security.Claims;
 using AngleSharp.Dom;
 using Ganss.Xss;
+using Microsoft.AspNetCore.Authentication.Google;
 
 
 namespace SarasBloggAPI
@@ -335,6 +336,12 @@ namespace SarasBloggAPI
                             return Task.CompletedTask;
                         }
                     };
+                })
+                .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
+                {
+                    options.ClientId = builder.Configuration["GOOGLE_CLIENT_ID"]!;
+                    options.ClientSecret = builder.Configuration["GOOGLE_CLIENT_SECRET"]!;
+                    options.CallbackPath = "/api/auth/external/google/callback";
                 });
 
             builder.Services.AddAuthorization(options =>
