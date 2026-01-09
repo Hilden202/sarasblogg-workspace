@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
@@ -24,11 +25,11 @@ public class AuthController : ControllerBase
     private readonly ILogger<AuthController> _logger;
 
     public AuthController(SignInManager<ApplicationUser> signInManager,
-                          UserManager<ApplicationUser> userManager,
-                          TokenService tokenService,
-                          IConfiguration cfg,
-                          IEmailSender emailSender,
-                          ILogger<AuthController> logger)
+        UserManager<ApplicationUser> userManager,
+        TokenService tokenService,
+        IConfiguration cfg,
+        IEmailSender emailSender,
+        ILogger<AuthController> logger)
     {
         _signInManager = signInManager;
         _userManager = userManager;
@@ -222,7 +223,6 @@ public class AuthController : ControllerBase
             Roles: roles,
             NotifyOnNewPost: user.NotifyOnNewPost
         );
-
     }
 
 
@@ -262,11 +262,13 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<BasicResultDto>> ResendConfirmation([FromBody] EmailDto dto)
     {
         if (dto is null || string.IsNullOrWhiteSpace(dto.Email))
-            return Ok(new BasicResultDto { Succeeded = true, Message = "If the email exists, a confirmation link was sent." });
+            return Ok(new BasicResultDto
+                { Succeeded = true, Message = "If the email exists, a confirmation link was sent." });
 
         var user = await _userManager.FindByEmailAsync(dto.Email);
         if (user is null || await _userManager.IsEmailConfirmedAsync(user))
-            return Ok(new BasicResultDto { Succeeded = true, Message = "If the email exists, a confirmation link was sent." });
+            return Ok(new BasicResultDto
+                { Succeeded = true, Message = "If the email exists, a confirmation link was sent." });
 
         var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         var codeEncoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
@@ -413,7 +415,8 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<BasicResultDto>> ChangePassword([FromBody] ChangePasswordDto dto)
     {
         if (dto is null || string.IsNullOrWhiteSpace(dto.CurrentPassword) || string.IsNullOrWhiteSpace(dto.NewPassword))
-            return BadRequest(new BasicResultDto { Succeeded = false, Message = "Current and new password are required." });
+            return BadRequest(new BasicResultDto
+                { Succeeded = false, Message = "Current and new password are required." });
 
         var userName = User?.Identity?.Name;
         if (string.IsNullOrWhiteSpace(userName))
@@ -495,7 +498,8 @@ public class AuthController : ControllerBase
         var codeEncoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
         var frontendBase = _cfg["Frontend:BaseUrl"] ?? "https://sarasblogg.onrender.com";
-        var confirmUrl = $"{frontendBase}/Identity/Account/ConfirmEmailChange?userId={user.Id}&code={codeEncoded}&email={Uri.EscapeDataString(dto.NewEmail)}";
+        var confirmUrl =
+            $"{frontendBase}/Identity/Account/ConfirmEmailChange?userId={user.Id}&code={codeEncoded}&email={Uri.EscapeDataString(dto.NewEmail)}";
 
         // Skicka mejl (Prod) eller exponera länk (Dev)
         var expose = _cfg.GetValue("Auth:ExposeConfirmLinkInResponse", true);
@@ -506,9 +510,13 @@ public class AuthController : ControllerBase
                       <p>Klicka för att bekräfta ny e-post: <a href=""{confirmUrl}"">Bekräfta e-post</a></p>";
             await _emailSender.SendAsync(dto.NewEmail, subject, html);
         }
-        catch { /* vid dev kan vi exponera */ }
+        catch
+        {
+            /* vid dev kan vi exponera */
+        }
 
-        return Ok(new BasicResultDto { Succeeded = true, Message = "Confirmation sent.", ConfirmEmailUrl = expose ? confirmUrl : null });
+        return Ok(new BasicResultDto
+            { Succeeded = true, Message = "Confirmation sent.", ConfirmEmailUrl = expose ? confirmUrl : null });
     }
 
     // --- CHANGE EMAIL: CONFIRM ---
@@ -517,10 +525,13 @@ public class AuthController : ControllerBase
     [HttpPost("~/api/users/change-email/confirm")]
     [ProducesResponseType(typeof(BasicResultDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(BasicResultDto), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<BasicResultDto>> ChangeEmailConfirm([FromBody] ChangeEmailConfirmDto dto, [FromQuery] string? newEmail)
+    public async Task<ActionResult<BasicResultDto>> ChangeEmailConfirm([FromBody] ChangeEmailConfirmDto dto,
+        [FromQuery] string? newEmail)
     {
-        if (string.IsNullOrWhiteSpace(dto?.UserId) || string.IsNullOrWhiteSpace(dto.Code) || string.IsNullOrWhiteSpace(newEmail))
-            return BadRequest(new BasicResultDto { Succeeded = false, Message = "UserId, Code and newEmail are required." });
+        if (string.IsNullOrWhiteSpace(dto?.UserId) || string.IsNullOrWhiteSpace(dto.Code) ||
+            string.IsNullOrWhiteSpace(newEmail))
+            return BadRequest(new BasicResultDto
+                { Succeeded = false, Message = "UserId, Code and newEmail are required." });
 
         var user = await _userManager.FindByIdAsync(dto.UserId);
         if (user is null) return BadRequest(new BasicResultDto { Succeeded = false, Message = "Invalid user." });
@@ -572,6 +583,7 @@ public class AuthController : ControllerBase
                 ConfirmEmailUrl = resetUrl
             });
         }
+
         // 📧 Prod-läge → försök skicka via SendGrid
         _logger.LogInformation("SendResetLink: prod mode, attempting email send...");
         try
@@ -604,6 +616,7 @@ public class AuthController : ControllerBase
             });
         }
     }
+
     [Authorize]
     [HttpGet("editor-token")]
     [ProducesResponseType(typeof(AccessTokenDto), StatusCodes.Status200OK)]
@@ -622,4 +635,94 @@ public class AuthController : ControllerBase
         });
     }
 
+    // ---------- EXTERNAL LOGIN: GOOGLE (START) ----------
+    [AllowAnonymous]
+    [ApiExplorerSettings(IgnoreApi = true)]
+    [HttpGet("external/google/start")]
+    public IActionResult GoogleStart([FromQuery] string? returnUrl = null)
+    {
+        var redirectUrl = Url.Action(
+            action: nameof(GoogleCallback),
+            controller: "Auth",
+            values: new { returnUrl },
+            protocol: Request.Scheme);
+
+        var props = _signInManager.ConfigureExternalAuthenticationProperties(
+            provider: "Google",
+            redirectUrl: redirectUrl
+        );
+
+        return Challenge(props, "Google");
+    }
+
+    // ---------- EXTERNAL LOGIN: GOOGLE (CALLBACK) ----------
+    [AllowAnonymous]
+    [ApiExplorerSettings(IgnoreApi = true)]
+    [HttpGet("external/google")]
+    public async Task<IActionResult> GoogleCallback(
+        [FromQuery] string? returnUrl = null,
+        [FromQuery] string? remoteError = null)
+    {
+        if (!string.IsNullOrEmpty(remoteError))
+        {
+            _logger.LogWarning("Google login error: {Error}", remoteError);
+            return BadRequest("External login error.");
+        }
+
+        var info = await _signInManager.GetExternalLoginInfoAsync();
+        if (info == null)
+        {
+            return BadRequest("External login info missing.");
+        }
+
+        // 🔹 Hämta email (kan saknas – edge case)
+        var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return BadRequest("Email not provided by external provider.");
+        }
+
+        // 🔹 Finns användaren redan?
+        var user = await _userManager.FindByEmailAsync(email);
+
+        if (user == null)
+        {
+            user = new ApplicationUser
+            {
+                UserName = email,
+                Email = email,
+                EmailConfirmed = true // Google verifierar email
+            };
+
+            var createResult = await _userManager.CreateAsync(user);
+            if (!createResult.Succeeded)
+            {
+                return BadRequest("Failed to create user.");
+            }
+
+            await _userManager.AddToRoleAsync(user, "user");
+        }
+
+        // 🔹 Koppla Google-login om inte redan kopplad
+        var logins = await _userManager.GetLoginsAsync(user);
+        if (!logins.Any(l => l.LoginProvider == info.LoginProvider))
+        {
+            await _userManager.AddLoginAsync(user, info);
+        }
+
+        // 🔹 Skapa JWT exakt som vanlig login
+        var accessToken = await _tokenService.CreateAccessTokenAsync(user);
+        var accessExp = DateTime.UtcNow.AddMinutes(
+            int.Parse(_cfg["Jwt:AccessTokenMinutes"] ?? "60"));
+
+        var (refreshToken, refreshExp) = _tokenService.CreateRefreshToken();
+
+        return Ok(new LoginResponse(
+            accessToken,
+            accessExp,
+            refreshToken,
+            refreshExp
+        ));
+    }
 }
