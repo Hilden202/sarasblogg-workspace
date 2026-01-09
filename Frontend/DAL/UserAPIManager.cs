@@ -216,7 +216,8 @@ namespace SarasBlogg.DAL
                 BirthYear = me.BirthYear,
                 PhoneNumber = me.PhoneNumber,
                 EmailConfirmed = me.EmailConfirmed,
-                NotifyOnNewPost = me.NotifyOnNewPost
+                NotifyOnNewPost = me.NotifyOnNewPost,
+                RequiresUsernameSetup = me.RequiresUsernameSetup
             };
         }
 

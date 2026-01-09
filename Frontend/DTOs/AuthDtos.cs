@@ -56,7 +56,8 @@
         int? BirthYear,
         string? PhoneNumber,
         bool EmailConfirmed,
-        bool NotifyOnNewPost
+        bool NotifyOnNewPost,
+        bool RequiresUsernameSetup
     );
     public sealed class AccessTokenDto
     {
