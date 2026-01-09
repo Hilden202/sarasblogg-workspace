@@ -692,7 +692,8 @@ public class AuthController : ControllerBase
             {
                 UserName = email,
                 Email = email,
-                EmailConfirmed = true // Google verifierar email
+                EmailConfirmed = true, // Google verifierar email
+                RequiresUsernameSetup = true
             };
 
             var createResult = await _userManager.CreateAsync(user);
