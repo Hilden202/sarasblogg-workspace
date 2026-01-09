@@ -11,6 +11,6 @@
         public IList<string> Roles { get; set; } = new List<string>();
         public string? PhoneNumber { get; set; }
         public bool NotifyOnNewPost { get; set; }
-
+        public bool RequiresUsernameSetup { get; set; }
     }
 }
