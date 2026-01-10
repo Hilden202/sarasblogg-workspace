@@ -665,90 +665,90 @@ public class AuthController : ControllerBase
         return Challenge(props, "Google");
     }
 
-    // ---------- EXTERNAL LOGIN: GOOGLE (CALLBACK) ----------
-    [AllowAnonymous]
-    [ApiExplorerSettings(IgnoreApi = true)]
-    [HttpGet("external/google")]
-    public async Task<IActionResult> GoogleCallback(
-        [FromQuery] string? returnUrl = null,
-        [FromQuery] string? remoteError = null)
+// ---------- EXTERNAL LOGIN: GOOGLE (CALLBACK) ----------
+[AllowAnonymous]
+[ApiExplorerSettings(IgnoreApi = true)]
+[HttpGet("external/google")]
+public async Task<IActionResult> GoogleCallback(
+    [FromQuery] string? returnUrl = null,
+    [FromQuery] string? remoteError = null)
+{
+    if (!string.IsNullOrEmpty(remoteError))
     {
-        if (!string.IsNullOrEmpty(remoteError))
-        {
-            _logger.LogWarning("Google login error: {Error}", remoteError);
-            return BadRequest("External login error.");
-        }
-
-        var info = await _signInManager.GetExternalLoginInfoAsync();
-        if (info == null)
-        {
-            return BadRequest("External login info missing.");
-        }
-
-        // 🔹 Hämta email (kan saknas – edge case)
-        var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-
-        if (string.IsNullOrWhiteSpace(email))
-        {
-            return BadRequest("Email not provided by external provider.");
-        }
-
-        // 🔹 Finns användaren redan?
-        var user = await _userManager.FindByEmailAsync(email);
-
-        if (user == null)
-        {
-            user = new ApplicationUser
-            {
-                UserName = email,
-                Email = email,
-                EmailConfirmed = true, // Google verifierar email
-                RequiresUsernameSetup = true
-            };
-
-            var createResult = await _userManager.CreateAsync(user);
-            if (!createResult.Succeeded)
-            {
-                return BadRequest("Failed to create user.");
-            }
-
-            await _userManager.AddToRoleAsync(user, "user");
-        }
-
-        // 🔹 Koppla Google-login om inte redan kopplad
-        var logins = await _userManager.GetLoginsAsync(user);
-        if (!logins.Any(l => l.LoginProvider == info.LoginProvider))
-        {
-            await _userManager.AddLoginAsync(user, info);
-        }
-
-        // 🔹 Skapa JWT exakt som vanlig login
-        var accessToken = await _tokenService.CreateAccessTokenAsync(user);
-        var accessExp = DateTime.UtcNow.AddMinutes(
-            int.Parse(_cfg["Jwt:AccessTokenMinutes"] ?? "60"));
-
-        var (refreshToken, refreshExp) = _tokenService.CreateRefreshToken();
-
-        // 🔐 Skapa engångskod (kort och URL-säker)
-        var loginCode = Guid.NewGuid().ToString("N");
-
-        // 📦 Lägg tokens i cache i 2 minuter
-        _cache.Set(
-            $"external-login:{loginCode}",
-            new ExternalLoginCodeDto
-            {
-                AccessToken = accessToken,
-                RefreshToken = refreshToken,
-                AccessTokenExpiresUtc = accessExp
-            },
-            TimeSpan.FromMinutes(2)
-        );
-
-        // 🌍 Redirecta till frontend med ENDAST code
-        var frontendBase = _cfg["Frontend:BaseUrl"] ?? "https://localhost:7130";
-
-        return Redirect($"{frontendBase}/Identity/Account/ExternalLoginCallback?code={loginCode}");
+        _logger.LogWarning("Google login error: {Error}", remoteError);
+        return BadRequest("External login error.");
     }
+
+    var info = await _signInManager.GetExternalLoginInfoAsync();
+    if (info == null)
+        return BadRequest("External login info missing.");
+
+    var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+    if (string.IsNullOrWhiteSpace(email))
+        return BadRequest("Email not provided by external provider.");
+
+    var user = await _userManager.FindByEmailAsync(email);
+
+    if (user == null)
+    {
+        user = new ApplicationUser
+        {
+            UserName = email,
+            Email = email,
+            EmailConfirmed = true,
+            RequiresUsernameSetup = true
+        };
+
+        var createResult = await _userManager.CreateAsync(user);
+        if (!createResult.Succeeded)
+            return BadRequest("Failed to create user.");
+
+        // ⚠️ se till att rollnamnet är korrekt (User vs user)
+        await _userManager.AddToRoleAsync(user, "User");
+    }
+
+    // 🔗 Koppla Google-login
+    var logins = await _userManager.GetLoginsAsync(user);
+    if (!logins.Any(l => l.LoginProvider == info.LoginProvider))
+    {
+        await _userManager.AddLoginAsync(user, info);
+    }
+
+    // ============================
+    // 🔥 KRITISK DEL – NY
+    // ============================
+
+    // 🔄 HÄMTA ANVÄNDAREN IGEN
+    // så att roles + flags + claims är synkade
+    user = await _userManager.FindByIdAsync(user.Id);
+
+    // 🔐 Skapa JWT EFTER detta
+    var accessToken = await _tokenService.CreateAccessTokenAsync(user);
+
+    var accessExp = DateTime.UtcNow.AddMinutes(
+        int.Parse(_cfg["Jwt:AccessTokenMinutes"] ?? "60"));
+
+    var (refreshToken, refreshExp) = _tokenService.CreateRefreshToken();
+
+    var loginCode = Guid.NewGuid().ToString("N");
+
+    _cache.Set(
+        $"external-login:{loginCode}",
+        new ExternalLoginCodeDto
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+            AccessTokenExpiresUtc = accessExp
+        },
+        TimeSpan.FromMinutes(2)
+    );
+
+    var frontendBase = _cfg["Frontend:BaseUrl"] ?? "https://localhost:7130";
+
+    return Redirect(
+        $"{frontendBase}/Identity/Account/ExternalLoginCallback?code={loginCode}"
+    );
+}
     
     // ---------- EXTERNAL LOGIN: EXCHANGE CODE ----------
     [AllowAnonymous]
