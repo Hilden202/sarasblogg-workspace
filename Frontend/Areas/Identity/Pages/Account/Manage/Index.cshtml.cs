@@ -21,6 +21,7 @@ namespace SarasBlogg.Areas.Identity.Pages.Account.Manage
 
         [BindProperty]
         public InputModel Input { get; set; } = new();
+        public bool RequiresUsernameSetup { get; private set; }
 
         public class InputModel
         {
@@ -43,7 +44,10 @@ namespace SarasBlogg.Areas.Identity.Pages.Account.Manage
         private async Task LoadAsync()
         {
             var me = await _userApi.GetMeAsync();   // <- HÄMTA FRÅN API
+            
             Username = me?.UserName ?? User.Identity?.Name ?? "";
+            
+            RequiresUsernameSetup = me?.RequiresUsernameSetup ?? false;
 
             Input = new InputModel
             {

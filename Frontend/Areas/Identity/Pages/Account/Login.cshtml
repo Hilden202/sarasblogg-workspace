@@ -50,6 +50,12 @@
                     <a id="forgot-password" class="auth-link" asp-page="./ForgotPassword">Glömt lösenord?</a>
                     <a class="auth-link" asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Registrera nytt konto</a>
                 </div>
+                <hr class="my-4" />
+
+                <a class="btn btn-outline-danger w-100"
+                   href="https://localhost:7140/api/auth/external/google/start">
+                    Logga in med Google
+                </a>
             </form>
 
         </div>
