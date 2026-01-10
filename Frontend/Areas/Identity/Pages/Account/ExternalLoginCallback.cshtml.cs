@@ -87,7 +87,21 @@ public class ExternalLoginCallbackModel : PageModel
                 Expires = tokens.AccessTokenExpiresUtc
             });
 
-        // 🚀 6. Klar
+        // 🔎 6. Kolla om användaren måste sätta användarnamn
+        var meRequest = new HttpRequestMessage(HttpMethod.Get, $"{apiBase}/api/users/me");
+        meRequest.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
+            "Bearer", tokens.AccessToken);
+
+        using var meResponse = await client.SendAsync(meRequest);
+        if (meResponse.IsSuccessStatusCode)
+        {
+            var me = await meResponse.Content.ReadFromJsonAsync<MeResponse>();
+            if (me?.RequiresUsernameSetup == true)
+                return RedirectToPage("/Account/SetUsername");
+        }
+
+        // 🚀 7. Klar
+        
         return Redirect("/");
     }
 
@@ -96,6 +110,11 @@ public class ExternalLoginCallbackModel : PageModel
     {
         public string AccessToken { get; init; } = "";
         public DateTime AccessTokenExpiresUtc { get; init; }
+    }
+    
+    private sealed class MeResponse
+    {
+        public bool RequiresUsernameSetup { get; init; }
     }
     
 }
