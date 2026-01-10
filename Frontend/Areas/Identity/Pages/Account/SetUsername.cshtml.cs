@@ -30,9 +30,10 @@ namespace SarasBlogg.Areas.Identity.Pages.Account
         public async Task<IActionResult> OnGetAsync()
         {
             var me = await _userApi.GetMeAsync();
-            if (me == null) return RedirectToPage("/Account/Login");
 
-            // Om användarnamn redan är satt → tillbaka till profil
+            if (me == null)
+                return RedirectToPage("/Account/Login");
+
             if (!me.RequiresUsernameSetup)
                 return RedirectToPage("/Account/Manage/Index");
 

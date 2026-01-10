@@ -12,7 +12,8 @@ namespace SarasBloggAPI.DAL
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly MyDbContext _db;
 
-        public UserManagerService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, MyDbContext db)
+        public UserManagerService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager,
+            MyDbContext db)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -38,6 +39,7 @@ namespace SarasBloggAPI.DAL
                     NotifyOnNewPost = u.NotifyOnNewPost,
                 });
             }
+
             return list;
         }
 
@@ -84,6 +86,12 @@ namespace SarasBloggAPI.DAL
                     Succeeded = false,
                     Message = string.Join("; ", setRes.Errors.Select(e => e.Description))
                 };
+            
+            // 🔐 När användarnamn är satt är setup klar
+            if (user.RequiresUsernameSetup)
+            {
+                user.RequiresUsernameSetup = false;
+            }
 
             var upd = await _userManager.UpdateAsync(user);
             if (!upd.Succeeded)
@@ -149,7 +157,6 @@ namespace SarasBloggAPI.DAL
         }
 
 
-
         public async Task<bool> RemoveUserFromRoleAsync(string userId, string roleName)
         {
             var user = await _userManager.FindByIdAsync(userId);
@@ -163,7 +170,7 @@ namespace SarasBloggAPI.DAL
         }
 
         public async Task<ApplicationUser?> FindUserEntityAsync(string id)
-    => await _userManager.FindByIdAsync(id);
+            => await _userManager.FindByIdAsync(id);
 
         public async Task<BasicResultDto> DeleteMyAccountAsync(string userId, string? password)
         {
@@ -192,7 +199,8 @@ namespace SarasBloggAPI.DAL
             return new BasicResultDto { Succeeded = true, Message = "Account deleted." };
         }
 
-        public async Task<(byte[] Bytes, string FileName, string ContentType)?> BuildPersonalDataFileAsync(string userId)
+        public async Task<(byte[] Bytes, string FileName, string ContentType)?> BuildPersonalDataFileAsync(
+            string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null) return null;
@@ -246,7 +254,8 @@ namespace SarasBloggAPI.DAL
                 })
             };
 
-            var json = System.Text.Json.JsonSerializer.Serialize(export, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+            var json = System.Text.Json.JsonSerializer.Serialize(export,
+                new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
             var bytes = System.Text.Encoding.UTF8.GetBytes(json);
             var safeUser = (user.UserName ?? user.Email ?? "user").Replace('@', '_').Replace(':', '_');
             var fileName = $"{safeUser}_personal_data.json";

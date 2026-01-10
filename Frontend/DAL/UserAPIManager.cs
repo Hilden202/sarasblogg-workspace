@@ -206,17 +206,10 @@ namespace SarasBlogg.DAL
 
             if (!res.IsSuccessStatusCode)
             {
-                var raw = await res.Content.ReadAsStringAsync(ct);
-                _logger?.LogWarning(
-                    "GetMeAsync failed. Status={Status}. Body starts with: {Snippet}",
-                    res.StatusCode,
-                    raw.Length > 120 ? raw[..120] : raw
-                );
+                // ⚠️ Här kommer HTML / 401 / redirect
                 return null;
             }
 
-
-            // ✅ Endast nu försöker vi läsa JSON
             var me = await res.Content.ReadFromJsonAsync<MeResponse>(_json, ct);
             if (me is null) return null;
 
@@ -225,16 +218,10 @@ namespace SarasBlogg.DAL
                 Id = me.Id,
                 UserName = me.UserName,
                 Email = me.Email,
-                Roles = me.Roles?.ToList() ?? new List<string>(),
-                Name = me.Name,
-                BirthYear = me.BirthYear,
-                PhoneNumber = me.PhoneNumber,
-                EmailConfirmed = me.EmailConfirmed,
-                NotifyOnNewPost = me.NotifyOnNewPost,
-                RequiresUsernameSetup = me.RequiresUsernameSetup
+                RequiresUsernameSetup = me.RequiresUsernameSetup,
+                Roles = me.Roles?.ToList() ?? []
             };
         }
-
 
         public async Task<BasicResultDto?> ChangePasswordAsync(string currentPassword, string newPassword, CancellationToken ct = default)
         {

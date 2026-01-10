@@ -61,7 +61,7 @@ public class ExternalLoginCallbackModel : PageModel
 
         var principal = new ClaimsPrincipal(identity);
 
-        // 🍪 3. Skapa auth-cookie (DETTA VAR DET SOM SAKNADES)
+        // 🍪 3. Skapa auth-cookie
         await HttpContext.SignInAsync(
             CookieAuthenticationDefaults.AuthenticationScheme,
             principal,
@@ -97,4 +97,5 @@ public class ExternalLoginCallbackModel : PageModel
         public string AccessToken { get; init; } = "";
         public DateTime AccessTokenExpiresUtc { get; init; }
     }
+    
 }
