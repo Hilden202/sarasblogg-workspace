@@ -67,7 +67,17 @@ namespace SarasBlogg.Pages.Shared
             var postId = vm?.Blogg?.Id ?? 0;
             if (postId == 0 || vm?.Comments == null) return;
 
-            var allUsers = await _userApi.GetAllUsersAsync();
+            IEnumerable<IUserNameOnly> allUsers;
+
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                allUsers = await _userApi.GetAllUsersAsync();
+            }
+            else
+            {
+                allUsers = await _userApi.GetPublicUsersLiteAsync();
+            }
+
             if (allUsers == null) return;
 
             var byUserName = allUsers

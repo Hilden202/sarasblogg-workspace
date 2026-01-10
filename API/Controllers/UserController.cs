@@ -14,6 +14,7 @@ using SarasBloggAPI.Models;
 using System.Data;
 using System.Xml.Linq;
 using System.Reflection.Metadata;
+using Microsoft.EntityFrameworkCore;
 
 namespace SarasBloggAPI.Controllers
 {
@@ -397,6 +398,23 @@ namespace SarasBloggAPI.Controllers
 
             await _signInManager.SignOutAsync();
             return Ok(new BasicResultDto { Succeeded = true, Message = "Account deleted." });
+        }
+        
+        // 🔓 PUBLIC – minimal user-info för bloggar (ingen auth)
+        [AllowAnonymous]
+        [HttpGet("public-lite")]
+        [ProducesResponseType(typeof(IEnumerable<PublicUserLiteDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetPublicUserLite()
+        {
+            var users = await _userManager.Users
+                .Where(u => u.UserName != null)
+                .Select(u => new PublicUserLiteDto(
+                    u.Id,
+                    u.UserName!
+                ))
+                .ToListAsync();
+
+            return Ok(users);
         }
 
     }
