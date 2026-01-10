@@ -10,6 +10,7 @@ namespace SarasBlogg.DAL
     public class UserAPIManager
     {
         private readonly HttpClient _http;
+        private readonly ILogger<UserAPIManager>? _logger;
 
         // Läser case-insensitive och skriver camelCase i request
         private static readonly JsonSerializerOptions _json = new()
@@ -18,9 +19,10 @@ namespace SarasBlogg.DAL
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
-        public UserAPIManager(HttpClient http)
+        public UserAPIManager(HttpClient http, ILogger<UserAPIManager>? logger = null)
         {
             _http = http; // BaseAddress sätts i Program.cs
+            _logger = logger;
         }
 
         // ==== AUTH ====
@@ -200,9 +202,21 @@ namespace SarasBlogg.DAL
 
         public async Task<UserDto?> GetMeAsync(CancellationToken ct = default)
         {
-            using var res = await _http.GetAsync("api/users/me", ct); // <-- ny route
-            if (!res.IsSuccessStatusCode) return null;
+            using var res = await _http.GetAsync("api/users/me", ct);
 
+            if (!res.IsSuccessStatusCode)
+            {
+                var raw = await res.Content.ReadAsStringAsync(ct);
+                _logger?.LogWarning(
+                    "GetMeAsync failed. Status={Status}. Body starts with: {Snippet}",
+                    res.StatusCode,
+                    raw.Length > 120 ? raw[..120] : raw
+                );
+                return null;
+            }
+
+
+            // ✅ Endast nu försöker vi läsa JSON
             var me = await res.Content.ReadFromJsonAsync<MeResponse>(_json, ct);
             if (me is null) return null;
 
