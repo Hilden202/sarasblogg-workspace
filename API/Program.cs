@@ -18,6 +18,7 @@ using System.Security.Claims;
 using AngleSharp.Dom;
 using Ganss.Xss;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication;
 
 
 namespace SarasBloggAPI
@@ -298,12 +299,12 @@ namespace SarasBloggAPI
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyValue));
 
             builder.Services
-                .AddAuthentication(o =>
+                .AddAuthentication(options =>
                 {
-                    o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultScheme = IdentityConstants.ApplicationScheme;
+                    options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
                 })
-                .AddJwtBearer(o =>
+                .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, o =>
                 {
                     o.TokenValidationParameters = new TokenValidationParameters
                     {
@@ -318,17 +319,12 @@ namespace SarasBloggAPI
                         RoleClaimType = ClaimTypes.Role
                     };
 
-                    // 🔑 Tillåt JWT även från HttpOnly-cookie (för TinyMCE, browser-POSTs m.m.)
                     o.Events = new JwtBearerEvents
                     {
                         OnMessageReceived = context =>
                         {
-                            // Om token redan finns (Authorization: Bearer ...)
-                            if (!string.IsNullOrEmpty(context.Token))
-                                return Task.CompletedTask;
-
-                            // Fallback: läs från cookie
-                            if (context.Request.Cookies.TryGetValue("api_access_token", out var token))
+                            if (string.IsNullOrEmpty(context.Token) &&
+                                context.Request.Cookies.TryGetValue("api_access_token", out var token))
                             {
                                 context.Token = token;
                             }
@@ -337,12 +333,14 @@ namespace SarasBloggAPI
                         }
                     };
                 })
-                .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
+                .AddGoogle(options =>
                 {
+                    options.SignInScheme = IdentityConstants.ExternalScheme;
                     options.ClientId = builder.Configuration["GOOGLE_CLIENT_ID"]!;
                     options.ClientSecret = builder.Configuration["GOOGLE_CLIENT_SECRET"]!;
                     options.CallbackPath = "/api/auth/external/google/callback";
                 });
+
 
             builder.Services.AddAuthorization(options =>
             {

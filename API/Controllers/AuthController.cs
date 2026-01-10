@@ -640,8 +640,11 @@ public class AuthController : ControllerBase
     [AllowAnonymous]
     [ApiExplorerSettings(IgnoreApi = true)]
     [HttpGet("external/google/start")]
-    public IActionResult GoogleStart([FromQuery] string? returnUrl = null)
+    public async Task<IActionResult> GoogleStart([FromQuery] string? returnUrl = null)
     {
+        // 🔴 VIKTIGAST: rensa ev. gammal extern auth-state
+        await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+
         var redirectUrl = Url.Action(
             action: nameof(GoogleCallback),
             controller: "Auth",
@@ -653,13 +656,17 @@ public class AuthController : ControllerBase
             redirectUrl: redirectUrl
         );
 
+        // (valfritt men bra under dev)
+        // props.Items["prompt"] = "select_account";
+
         return Challenge(props, "Google");
     }
+
 
     // ---------- EXTERNAL LOGIN: GOOGLE (CALLBACK) ----------
     [AllowAnonymous]
     [ApiExplorerSettings(IgnoreApi = true)]
-    [HttpGet("external/google")]
+    [HttpGet("external/google/callback")]
     public async Task<IActionResult> GoogleCallback(
         [FromQuery] string? returnUrl = null,
         [FromQuery] string? remoteError = null)
