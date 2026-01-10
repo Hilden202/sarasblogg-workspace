@@ -1,6 +1,6 @@
 ﻿namespace SarasBlogg.DTOs
 {
-    public class UserDto
+    public class UserDto : IUserNameOnly
     {
         public string Id { get; set; } = string.Empty;
         public string UserName { get; set; } = "";

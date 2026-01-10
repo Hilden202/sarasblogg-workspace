@@ -61,6 +61,19 @@ namespace SarasBlogg.DAL
             var json = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<List<UserDto>>(json, _json) ?? new List<UserDto>();
         }
+        
+        public async Task<List<PublicUserLiteDto>> GetPublicUsersLiteAsync()
+        {
+            var response = await _http.GetAsync("api/User/public-lite");
+
+            if (!response.IsSuccessStatusCode)
+                return new List<PublicUserLiteDto>();
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            return JsonSerializer.Deserialize<List<PublicUserLiteDto>>(json, _json)
+                   ?? new List<PublicUserLiteDto>();
+        }
 
         public async Task<UserDto?> GetUserByIdAsync(string id)
         {
