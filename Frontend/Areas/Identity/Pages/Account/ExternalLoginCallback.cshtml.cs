@@ -93,16 +93,21 @@ public class ExternalLoginCallbackModel : PageModel
             "Bearer", tokens.AccessToken);
 
         using var meResponse = await client.SendAsync(meRequest);
-        if (meResponse.IsSuccessStatusCode)
-        {
-            var me = await meResponse.Content.ReadFromJsonAsync<MeResponse>();
-            if (me?.RequiresUsernameSetup == true)
-                return RedirectToPage("/Account/SetUsername");
-        }
+
+        if (!meResponse.IsSuccessStatusCode)
+            return Redirect("/");
+
+        var contentType = meResponse.Content.Headers.ContentType?.MediaType;
+        if (!string.Equals(contentType, "application/json", StringComparison.OrdinalIgnoreCase))
+            return Redirect("/");
+
+        var me = await meResponse.Content.ReadFromJsonAsync<MeResponse>();
+        if (me?.RequiresUsernameSetup == true)
+            return RedirectToPage("/Account/SetUsername");
 
         // 🚀 7. Klar
         
-        return Redirect("/");
+        return Redirect("/Identity/Account/Manage/Index");
     }
 
     // DTO som matchar API:ts exchange-response

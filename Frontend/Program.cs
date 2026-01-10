@@ -11,6 +11,8 @@ using System.Net.Http;
 using System.IO;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authentication;
+using SarasBlogg.Infrastructure;
+using Microsoft.AspNetCore.Mvc;
 
 
 namespace SarasBlogg
@@ -110,12 +112,16 @@ namespace SarasBlogg
             builder.Services.AddHttpContextAccessor();
 
             // BEHÖRIGHETER FÖR RAZOR PAGES
-            builder.Services.AddRazorPages(options =>
-            {
-                options.Conventions.AuthorizePage("/Admin", "SkaVaraAdmin");
-                options.Conventions.AuthorizeFolder("/Admin/RoleAdmin", "SkaVaraAdmin"); // båda får se
-            });
-
+            builder.Services
+                .AddRazorPages(options =>
+                {
+                    options.Conventions.AuthorizePage("/Admin", "SkaVaraAdmin");
+                    options.Conventions.AuthorizeFolder("/Admin/RoleAdmin", "SkaVaraAdmin");
+                })
+                .AddMvcOptions(options =>
+                {
+                    options.Filters.Add<NavbarUsernamePageFilter>();
+                });
 
             // 1) EN sammanhängande retry-policy (GET/HEAD) för 5xx/408/HttpRequestException + 429
             static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
@@ -141,6 +147,7 @@ namespace SarasBlogg
 
             // TJÄNSTER
             builder.Services.AddScoped<BloggService>();
+            builder.Services.AddScoped<NavbarUsernamePageFilter>();
 
             builder.Services.AddScoped<IAccessTokenStore, CookieAccessTokenStore>();
             

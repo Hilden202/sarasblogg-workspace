@@ -88,9 +88,13 @@ namespace SarasBlogg.DAL
         {
             var payload = new ChangeUserNameRequestDto { NewUserName = newUserName };
             using var res = await _http.PutAsJsonAsync($"api/User/{userId}/username", payload, _json, ct);
-            return await res.Content.ReadFromJsonAsync<BasicResultDto>(_json, ct);
+            return await ReadJsonIfAnyAsync<BasicResultDto>(res, ct)
+                   ?? new BasicResultDto
+                   {
+                       Succeeded = res.IsSuccessStatusCode,
+                       Message = res.ReasonPhrase
+                   };
         }
-
 
         public async Task<bool> RemoveUserFromRoleAsync(string id, string roleName)
         {
@@ -163,8 +167,12 @@ namespace SarasBlogg.DAL
         {
             var payload = new ConfirmEmailRequestDto { UserId = userId, Code = code };
             using var res = await _http.PostAsJsonAsync("api/auth/confirm-email", payload, _json, ct);
-            var body = await res.Content.ReadFromJsonAsync<BasicResultDto>(_json, ct);
-            return body ?? new BasicResultDto { Succeeded = res.IsSuccessStatusCode, Message = res.ReasonPhrase };
+            var body = await ReadJsonIfAnyAsync<BasicResultDto>(res, ct);
+            return body ?? new BasicResultDto
+            {
+                Succeeded = res.IsSuccessStatusCode,
+                Message = res.ReasonPhrase
+            };
         }
         public async Task<UserDto?> GetUserByUserNameAsync(string username)
         {
@@ -178,7 +186,7 @@ namespace SarasBlogg.DAL
         {
             var payload = new EmailDto(email);
             using var res = await _http.PostAsJsonAsync("api/auth/resend-confirmation", payload, _json, ct);
-            var body = await res.Content.ReadFromJsonAsync<BasicResultDto>(_json, ct);
+            var body = await ReadJsonIfAnyAsync<BasicResultDto>(res, ct);
             return body ?? new BasicResultDto { Succeeded = res.IsSuccessStatusCode, Message = res.ReasonPhrase };
         }
 
@@ -186,7 +194,7 @@ namespace SarasBlogg.DAL
         {
             var payload = new EmailDto(email);
             using var res = await _http.PostAsJsonAsync("api/auth/forgot-password", payload, _json, ct);
-            var body = await res.Content.ReadFromJsonAsync<BasicResultDto>(_json, ct);
+            var body = await ReadJsonIfAnyAsync<BasicResultDto>(res, ct);
             return body ?? new BasicResultDto { Succeeded = res.IsSuccessStatusCode, Message = res.ReasonPhrase };
         }
 
@@ -194,7 +202,7 @@ namespace SarasBlogg.DAL
         {
             var payload = new ResetPasswordDto(userId, token, newPassword);
             using var res = await _http.PostAsJsonAsync("api/auth/reset-password", payload, _json, ct);
-            var body = await res.Content.ReadFromJsonAsync<BasicResultDto>(_json, ct);
+            var body = await ReadJsonIfAnyAsync<BasicResultDto>(res, ct);
             return body ?? new BasicResultDto { Succeeded = res.IsSuccessStatusCode, Message = res.ReasonPhrase };
         }
 
@@ -202,8 +210,12 @@ namespace SarasBlogg.DAL
         {
             var payload = new ChangeUserNameRequestDto { NewUserName = newUserName };
             using var res = await _http.PutAsJsonAsync("api/User/me/username", payload, _json, ct);
-            return await res.Content.ReadFromJsonAsync<BasicResultDto>(_json, ct)
-                ?? new BasicResultDto { Succeeded = res.IsSuccessStatusCode, Message = res.ReasonPhrase };
+            return await ReadJsonIfAnyAsync<BasicResultDto>(res, ct)
+                   ?? new BasicResultDto
+                   {
+                       Succeeded = res.IsSuccessStatusCode,
+                       Message = res.ReasonPhrase
+                   };
         }
 
         public async Task<UserDto?> GetMeAsync(CancellationToken ct = default)
@@ -212,7 +224,12 @@ namespace SarasBlogg.DAL
 
             if (!res.IsSuccessStatusCode)
             {
-                // ⚠️ Här kommer HTML / 401 / redirect
+                return null;
+            }
+
+            var contentType = res.Content.Headers.ContentType?.MediaType;
+            if (!string.Equals(contentType, "application/json", StringComparison.OrdinalIgnoreCase))
+            {
                 return null;
             }
 
@@ -233,31 +250,72 @@ namespace SarasBlogg.DAL
         {
             var dto = new ChangePasswordDto { CurrentPassword = currentPassword, NewPassword = newPassword };
             using var res = await _http.PostAsJsonAsync("api/auth/change-password", dto, ct);
+            var body = await ReadJsonIfAnyAsync<BasicResultDto>(res, ct);
+
             if (!res.IsSuccessStatusCode)
             {
-                // Försök ändå läsa ev. BasicResultDto med felmeddelande
-                var err = await res.Content.ReadFromJsonAsync<BasicResultDto>(cancellationToken: ct);
-                return err ?? new BasicResultDto { Succeeded = false, Message = $"HTTP {(int)res.StatusCode}" };
+                return body ?? new BasicResultDto
+                {
+                    Succeeded = false,
+                    Message = $"HTTP {(int)res.StatusCode}"
+                };
             }
-            return await res.Content.ReadFromJsonAsync<BasicResultDto>(cancellationToken: ct);
+
+            return body;
         }
         public async Task<BasicResultDto?> SetPasswordAsync(string newPassword, CancellationToken ct = default)
         {
             var dto = new SetPasswordDto { NewPassword = newPassword };
             using var res = await _http.PostAsJsonAsync("api/auth/set-password", dto, ct);
-            var body = await res.Content.ReadFromJsonAsync<BasicResultDto>(cancellationToken: ct);
-            if (!res.IsSuccessStatusCode) return body ?? new BasicResultDto { Succeeded = false, Message = $"HTTP {(int)res.StatusCode}" };
+            var body = await ReadJsonIfAnyAsync<BasicResultDto>(res, ct);
+
+            if (!res.IsSuccessStatusCode)
+                return body ?? new BasicResultDto
+                {
+                    Succeeded = false,
+                    Message = $"HTTP {(int)res.StatusCode}"
+                };
+
             return body;
         }
 
         public Task<BasicResultDto?> ChangeEmailStartAsync(string newEmail, CancellationToken ct = default)
-             => _http.PostAsJsonAsync("api/auth/change-email/start", new ChangeEmailStartDto { NewEmail = newEmail }, ct)
-            .ContinueWith(async t => (await t.Result.Content.ReadFromJsonAsync<BasicResultDto>(cancellationToken: ct))!, ct).Unwrap();
+            => _http.PostAsJsonAsync(
+                    "api/auth/change-email/start",
+                    new ChangeEmailStartDto { NewEmail = newEmail },
+                    ct)
+                .ContinueWith(async t =>
+                {
+                    var res = t.Result;
+                    return await ReadJsonIfAnyAsync<BasicResultDto>(res, ct)
+                           ?? new BasicResultDto
+                           {
+                               Succeeded = res.IsSuccessStatusCode,
+                               Message = res.ReasonPhrase
+                           };
+                }, ct)
+                .Unwrap();
 
-        public Task<BasicResultDto?> ChangeEmailConfirmAsync(string userId, string code, string newEmail, CancellationToken ct = default)
-            => _http.PostAsJsonAsync($"api/auth/change-email/confirm?newEmail={Uri.EscapeDataString(newEmail)}",
-            new ChangeEmailConfirmDto { UserId = userId, Code = code }, ct)
-            .ContinueWith(async t => (await t.Result.Content.ReadFromJsonAsync<BasicResultDto>(cancellationToken: ct))!, ct).Unwrap();
+        public Task<BasicResultDto?> ChangeEmailConfirmAsync(
+            string userId,
+            string code,
+            string newEmail,
+            CancellationToken ct = default)
+            => _http.PostAsJsonAsync(
+                    $"api/auth/change-email/confirm?newEmail={Uri.EscapeDataString(newEmail)}",
+                    new ChangeEmailConfirmDto { UserId = userId, Code = code },
+                    ct)
+                .ContinueWith(async t =>
+                {
+                    var res = t.Result;
+                    return await ReadJsonIfAnyAsync<BasicResultDto>(res, ct)
+                           ?? new BasicResultDto
+                           {
+                               Succeeded = res.IsSuccessStatusCode,
+                               Message = res.ReasonPhrase
+                           };
+                }, ct)
+                .Unwrap();
 
         // ==== PROFILE ====
         public async Task<BasicResultDto?> UpdateMyProfileAsync(
@@ -274,9 +332,15 @@ namespace SarasBlogg.DAL
             };
 
             using var res = await _http.PutAsJsonAsync("api/User/me/profile", payload, _json, ct);
-            var body = await res.Content.ReadFromJsonAsync<BasicResultDto>(_json, ct);
+            var body = await ReadJsonIfAnyAsync<BasicResultDto>(res, ct);
+
             if (!res.IsSuccessStatusCode)
-                return body ?? new BasicResultDto { Succeeded = false, Message = $"HTTP {(int)res.StatusCode}" };
+                return body ?? new BasicResultDto
+                {
+                    Succeeded = false,
+                    Message = $"HTTP {(int)res.StatusCode}"
+                };
+
             return body;
         }
 
@@ -285,7 +349,7 @@ namespace SarasBlogg.DAL
         {
             using var res = await _http.GetAsync("api/User/me/personal-data", ct);
             if (!res.IsSuccessStatusCode) return null;
-            return await res.Content.ReadFromJsonAsync<PersonalDataDto>(_json, ct);
+            return await ReadJsonIfAnyAsync<PersonalDataDto>(res, ct);
         }
 
         public async Task<(byte[]? bytes, string filename, string contentType)> DownloadMyPersonalDataAsync(CancellationToken ct = default)
@@ -303,8 +367,18 @@ namespace SarasBlogg.DAL
             var req = new HttpRequestMessage(HttpMethod.Delete, "api/User/me")
             { Content = JsonContent.Create(payload) };
             using var res = await _http.SendAsync(req, ct);
-            return await res.Content.ReadFromJsonAsync<BasicResultDto>(_json, ct)
-                   ?? new BasicResultDto { Succeeded = res.IsSuccessStatusCode, Message = res.ReasonPhrase };
+            var body = await ReadJsonIfAnyAsync<BasicResultDto>(res, ct);
+
+            if (!res.IsSuccessStatusCode)
+            {
+                return body ?? new BasicResultDto
+                {
+                    Succeeded = false,
+                    Message = $"HTTP {(int)res.StatusCode}"
+                };
+            }
+
+            return body;
         }
         
         public async Task<UserDto?> GetUserByEmailAsync(string email)
@@ -322,7 +396,7 @@ namespace SarasBlogg.DAL
             using var res = await _http.PostAsJsonAsync("api/auth/send-reset-link", payload, _json, ct);
 
             // Försök läsa som BasicResultDto direkt
-            var body = await res.Content.ReadFromJsonAsync<BasicResultDto>(_json, ct);
+            var body = await ReadJsonIfAnyAsync<BasicResultDto>(res, ct);
 
             // Om inget kommer tillbaka (t.ex. null) → skapa fallback
             if (body == null)
@@ -344,6 +418,18 @@ namespace SarasBlogg.DAL
         {
             using var res = await _http.PostAsync("api/auth/refresh-session", null, ct);
             res.EnsureSuccessStatusCode();
+        }
+        
+        private async Task<T?> ReadJsonIfAnyAsync<T>(HttpResponseMessage res, CancellationToken ct)
+        {
+            if (!res.IsSuccessStatusCode)
+                return default;
+
+            var ctType = res.Content.Headers.ContentType?.MediaType;
+            if (!string.Equals(ctType, "application/json", StringComparison.OrdinalIgnoreCase))
+                return default;
+
+            return await res.Content.ReadFromJsonAsync<T>(_json, ct);
         }
     }
 }

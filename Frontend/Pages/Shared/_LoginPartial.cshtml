@@ -1,10 +1,5 @@
 ﻿@{
-	// Läs namn från claims som sattes i JWT -> cookie
-	var userName =
-	User.FindFirst("name")?.Value ??       // om du sätter "name" i token
-	User.Identity?.Name ??                 // fallback: standardnamn
-	"konto";
-
+	var userName = ViewData["NavbarUsername"] as string ?? "konto";
 }
 <!-- Dold POST-form för utloggning -->
 <form id="logoutForm" asp-area="Identity" asp-page="/Account/Logout"
