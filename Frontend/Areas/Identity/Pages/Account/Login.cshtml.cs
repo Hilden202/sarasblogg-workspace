@@ -20,12 +20,22 @@ namespace SarasBlogg.Areas.Identity.Pages.Account
         private readonly UserAPIManager _userApi;
         private readonly ILogger<LoginModel> _logger;
         private readonly IAccessTokenStore _tokenStore;
+        public string ApiBaseUrl { get; private set; } = "";
 
-        public LoginModel(UserAPIManager userApi, ILogger<LoginModel> logger, IAccessTokenStore tokenStore)
+        public LoginModel(
+            UserAPIManager userApi,
+            ILogger<LoginModel> logger,
+            IAccessTokenStore tokenStore,
+            IConfiguration config)
         {
             _userApi = userApi;
             _logger = logger;
             _tokenStore = tokenStore;
+
+            ApiBaseUrl =
+                config["Api:BaseUrl"]
+                ?? config["ApiSettings:BaseAddress"]
+                ?? "";
         }
 
         [BindProperty]
