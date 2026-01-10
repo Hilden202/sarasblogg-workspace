@@ -1,0 +1,21 @@
+﻿@page
+@model SetUsernameModel
+@{
+    ViewData["Title"] = "Välj användarnamn";
+}
+
+<h2>Välj ditt användarnamn</h2>
+
+<p>Du behöver välja ett användarnamn innan du kan fortsätta.</p>
+
+<form method="post">
+    <div class="form-group">
+        <label asp-for="Input.UserName"></label>
+        <input asp-for="Input.UserName" class="form-control" />
+        <span asp-validation-for="Input.UserName" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Spara användarnamn
+    </button>
+</form>

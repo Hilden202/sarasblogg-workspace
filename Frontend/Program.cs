@@ -11,6 +11,8 @@ using System.Net.Http;
 using System.IO;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authentication;
+using SarasBlogg.Infrastructure;
+using Microsoft.AspNetCore.Mvc;
 
 
 namespace SarasBlogg
@@ -20,6 +22,10 @@ namespace SarasBlogg
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            
+            // 🔹 Registrerar IHttpClientFactory för Razor Pages & PageModels
+            // Utan denna kraschar callbacken med ERR_EMPTY_RESPONSE
+            builder.Services.AddHttpClient();
 
             // 🔹 Frontend base-URL (används t.ex. i e-postlänkar)
             var frontendBase = builder.Configuration["Frontend:BaseUrl"]
@@ -106,12 +112,16 @@ namespace SarasBlogg
             builder.Services.AddHttpContextAccessor();
 
             // BEHÖRIGHETER FÖR RAZOR PAGES
-            builder.Services.AddRazorPages(options =>
-            {
-                options.Conventions.AuthorizePage("/Admin", "SkaVaraAdmin");
-                options.Conventions.AuthorizeFolder("/Admin/RoleAdmin", "SkaVaraAdmin"); // båda får se
-            });
-
+            builder.Services
+                .AddRazorPages(options =>
+                {
+                    options.Conventions.AuthorizePage("/Admin", "SkaVaraAdmin");
+                    options.Conventions.AuthorizeFolder("/Admin/RoleAdmin", "SkaVaraAdmin");
+                })
+                .AddMvcOptions(options =>
+                {
+                    options.Filters.Add<NavbarUsernamePageFilter>();
+                });
 
             // 1) EN sammanhängande retry-policy (GET/HEAD) för 5xx/408/HttpRequestException + 429
             static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
@@ -137,9 +147,10 @@ namespace SarasBlogg
 
             // TJÄNSTER
             builder.Services.AddScoped<BloggService>();
+            builder.Services.AddScoped<NavbarUsernamePageFilter>();
 
-            builder.Services.AddScoped<IAccessTokenStore, InMemoryAccessTokenStore>();
-
+            builder.Services.AddScoped<IAccessTokenStore, CookieAccessTokenStore>();
+            
             builder.Services.AddTransient<JwtAuthHandler>();
 
             // 🟨 Originalregistreringar — behållna men utkommenterade nedan:

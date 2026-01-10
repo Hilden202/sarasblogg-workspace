@@ -87,10 +87,23 @@ namespace SarasBlogg.DAL
             if (!resp.IsSuccessStatusCode)
                 return null;
 
-            var json = await resp.Content.ReadAsStringAsync();
-            var dto = JsonSerializer.Deserialize<AccessTokenDto>(json, _jsonOpts);
+            var contentType = resp.Content.Headers.ContentType?.MediaType;
 
-            return dto?.AccessToken;
+            // 🔒 Säkerhetsbälte: API måste svara JSON
+            if (!string.Equals(contentType, "application/json", StringComparison.OrdinalIgnoreCase))
+                return null;
+
+            try
+            {
+                var json = await resp.Content.ReadAsStringAsync();
+                var dto = JsonSerializer.Deserialize<AccessTokenDto>(json, _jsonOpts);
+                return dto?.AccessToken;
+            }
+            catch (JsonException)
+            {
+                // 🔇 Tyst fail – admin-sidan ska inte dö
+                return null;
+            }
         }
     }
 }

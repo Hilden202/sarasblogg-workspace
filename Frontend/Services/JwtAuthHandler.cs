@@ -4,37 +4,41 @@ using Microsoft.Extensions.Logging;
 
 namespace SarasBlogg.Services
 {
-    public class JwtAuthHandler : DelegatingHandler
+    public sealed class JwtAuthHandler : DelegatingHandler
     {
         private readonly IAccessTokenStore _store;
         private readonly IHttpContextAccessor _http;
         private readonly ILogger<JwtAuthHandler> _logger;
 
-        public JwtAuthHandler(IAccessTokenStore store, IHttpContextAccessor http, ILogger<JwtAuthHandler> logger)
+        public JwtAuthHandler(
+            IAccessTokenStore store,
+            IHttpContextAccessor http,
+            ILogger<JwtAuthHandler> logger)
         {
             _store = store;
             _http = http;
             _logger = logger;
         }
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken ct)
         {
-            // 🔴 VIKTIGT: TinyMCE / editor-upload ska ALDRIG få Authorization-header
-            if (request.RequestUri?.AbsolutePath.StartsWith("/api/editor", StringComparison.OrdinalIgnoreCase) == true)
+            // ❌ TinyMCE / editor-upload ska aldrig få Bearer-token
+            if (request.RequestUri?.AbsolutePath.StartsWith(
+                    "/api/editor",
+                    StringComparison.OrdinalIgnoreCase) == true)
             {
-                _logger.LogDebug("JwtAuthHandler: Skipping Authorization for editor endpoint {Url}", request.RequestUri);
                 return base.SendAsync(request, ct);
             }
-            
-            // Skicka bara Authorization om användaren är inloggad i webb-appen
-            var isAuth = _http.HttpContext?.User?.Identity?.IsAuthenticated == true;
 
-            if (isAuth && request.Headers.Authorization is null)
+            // ✅ Lägg Authorization om den saknas
+            if (request.Headers.Authorization is null)
             {
-                // 1) Försök med minnet (sätts vid login i samma request)
+                // 1️⃣ Försök från minnet (satt vid login/callback)
                 var token = _store.AccessToken;
 
-                // 2) Fallback: läs HttpOnly-kakan (per-user, överlev. sidladdningar)
+                // 2️⃣ Fallback: HttpOnly-cookie (överlever reloads)
                 if (string.IsNullOrWhiteSpace(token))
                 {
                     token = _http.HttpContext?.Request?.Cookies["api_access_token"];
@@ -42,18 +46,21 @@ namespace SarasBlogg.Services
 
                 if (!string.IsNullOrWhiteSpace(token))
                 {
-                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-                    _logger.LogDebug("JwtAuthHandler: Authorization header attached for {Method} {Url}", request.Method, request.RequestUri);
+                    request.Headers.Authorization =
+                        new AuthenticationHeaderValue("Bearer", token);
+
+                    _logger.LogDebug(
+                        "JwtAuthHandler: Bearer token attached for {Method} {Url}",
+                        request.Method,
+                        request.RequestUri);
                 }
                 else
                 {
-                    _logger.LogDebug("JwtAuthHandler: No token found (store & cookie empty). Request goes anonymous: {Method} {Url}", request.Method, request.RequestUri);
+                    _logger.LogDebug(
+                        "JwtAuthHandler: No token available, request sent anonymous: {Method} {Url}",
+                        request.Method,
+                        request.RequestUri);
                 }
-            }
-            else
-            {
-                _logger.LogDebug("JwtAuthHandler: Skipped attaching Authorization. isAuth={IsAuth}, hasAuthHeader={HasAuth}",
-                    isAuth, request.Headers.Authorization != null);
             }
 
             return base.SendAsync(request, ct);

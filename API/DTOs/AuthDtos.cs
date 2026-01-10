@@ -19,7 +19,8 @@
         bool EmailConfirmed,
         string? PhoneNumber,
         IEnumerable<string> Roles,
-        bool NotifyOnNewPost
+        bool NotifyOnNewPost,
+        bool RequiresUsernameSetup
     );
 
     // ---- REGISTER ----

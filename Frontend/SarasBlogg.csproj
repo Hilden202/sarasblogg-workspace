@@ -23,6 +23,7 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.*" />
     <PackageReference Include="Polly" Version="7.2.4" />
 	  <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.*" />
+	  <PackageReference Include="xunit.extensibility.execution" Version="2.9.2" />
   </ItemGroup>
 	<ItemGroup>
 		<!-- Stoppa C#-kodfiler i _archive från att kompilera -->

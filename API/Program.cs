@@ -17,6 +17,8 @@ using System.IO;
 using System.Security.Claims;
 using AngleSharp.Dom;
 using Ganss.Xss;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication;
 
 
 namespace SarasBloggAPI
@@ -201,8 +203,26 @@ namespace SarasBloggAPI
                 .AddEntityFrameworkStores<MyDbContext>()
                 .AddDefaultTokenProviders();
 
+            builder.Services.ConfigureApplicationCookie(options =>
+            {
+                options.Cookie.SameSite = SameSiteMode.None;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            });
+
+            builder.Services.ConfigureExternalCookie(options =>
+            {
+                options.Cookie.SameSite = SameSiteMode.None;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            });
+
+
             // MANAGERS / DAL
             builder.Services.AddScoped<TokenService>();
+
+            // 🔐 In-memory cache
+            // Används för kortlivade auth-flöden (t.ex. external login codes → tokens)
+            // Ersätter osäkra/långa querystrings och försvinner automatiskt vid restart
+            builder.Services.AddMemoryCache();
 
             // FILE HELPER: Local för Development, GitHub för Test/Prod
             if (builder.Environment.IsDevelopment())
@@ -296,13 +316,16 @@ namespace SarasBloggAPI
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyValue));
 
-            builder.Services
-                .AddAuthentication(o =>
+            var authBuilder = builder.Services
+                .AddAuthentication(options =>
                 {
-                    o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme =
+                        builder.Environment.IsEnvironment("Test")
+                            ? JwtBearerDefaults.AuthenticationScheme
+                            : GoogleDefaults.AuthenticationScheme;
                 })
-                .AddJwtBearer(o =>
+                .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, o =>
                 {
                     o.TokenValidationParameters = new TokenValidationParameters
                     {
@@ -317,17 +340,12 @@ namespace SarasBloggAPI
                         RoleClaimType = ClaimTypes.Role
                     };
 
-                    // 🔑 Tillåt JWT även från HttpOnly-cookie (för TinyMCE, browser-POSTs m.m.)
                     o.Events = new JwtBearerEvents
                     {
                         OnMessageReceived = context =>
                         {
-                            // Om token redan finns (Authorization: Bearer ...)
-                            if (!string.IsNullOrEmpty(context.Token))
-                                return Task.CompletedTask;
-
-                            // Fallback: läs från cookie
-                            if (context.Request.Cookies.TryGetValue("api_access_token", out var token))
+                            if (string.IsNullOrEmpty(context.Token) &&
+                                context.Request.Cookies.TryGetValue("api_access_token", out var token))
                             {
                                 context.Token = token;
                             }
@@ -336,6 +354,17 @@ namespace SarasBloggAPI
                         }
                     };
                 });
+            
+            if (!builder.Environment.IsEnvironment("Test"))
+            {
+                authBuilder.AddGoogle(options =>
+                {
+                    options.SignInScheme = IdentityConstants.ExternalScheme;
+                    options.ClientId = builder.Configuration["GOOGLE_CLIENT_ID"]!;
+                    options.ClientSecret = builder.Configuration["GOOGLE_CLIENT_SECRET"]!;
+                    options.CallbackPath = "/api/auth/external/google/callback";
+                });
+            }
 
             builder.Services.AddAuthorization(options =>
             {

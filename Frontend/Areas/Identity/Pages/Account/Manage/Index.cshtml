@@ -6,6 +6,14 @@
 }
 
 <h3>@ViewData["Title"]</h3>
+@if (Model.RequiresUsernameSetup)
+{
+    <div class="alert alert-warning">
+        <strong>Välj ett användarnamn</strong><br />
+        Du loggade in via extern inloggning.
+        För att kunna kommentera och synas publikt behöver du välja ett användarnamn.
+    </div>
+}
 <partial name="_StatusMessage" for="StatusMessage" />
 <div class="row">
     <div class="col-md-6">

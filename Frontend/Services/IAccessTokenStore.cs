@@ -7,10 +7,27 @@
         void Clear();
     }
 
-    public class InMemoryAccessTokenStore : IAccessTokenStore
+    public sealed class CookieAccessTokenStore : IAccessTokenStore
     {
-        public string? AccessToken { get; private set; }
-        public void Set(string token) => AccessToken = token;
-        public void Clear() => AccessToken = null;
+        private readonly IHttpContextAccessor _http;
+
+        public CookieAccessTokenStore(IHttpContextAccessor http)
+        {
+            _http = http;
+        }
+
+        public string? AccessToken
+            => _http.HttpContext?.Request?.Cookies["api_access_token"];
+
+        public void Set(string token)
+        {
+            // gör inget – cookien sätts redan vid login
+        }
+
+        public void Clear()
+        {
+            _http.HttpContext?.Response?.Cookies.Delete("api_access_token");
+        }
     }
+
 }

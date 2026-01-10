@@ -21,6 +21,7 @@ namespace SarasBlogg.Areas.Identity.Pages.Account.Manage
 
         [BindProperty]
         public InputModel Input { get; set; } = new();
+        public bool RequiresUsernameSetup { get; private set; }
 
         public class InputModel
         {
@@ -37,26 +38,32 @@ namespace SarasBlogg.Areas.Identity.Pages.Account.Manage
             [Display(Name = "Mejla mig vid nya blogginlägg")]
             public bool NotifyOnNewPost { get; set; }
         }
-
-
-
+        
         private async Task LoadAsync()
         {
-            var me = await _userApi.GetMeAsync();   // <- HÄMTA FRÅN API
-            Username = me?.UserName ?? User.Identity?.Name ?? "";
+            var me = await _userApi.GetMeAsync();
+            if (me == null) return;
+
+            Username = me.UserName;
+
+            RequiresUsernameSetup = me.RequiresUsernameSetup;
 
             Input = new InputModel
             {
-                PhoneNumber = me?.PhoneNumber,
-                Name = me?.Name,
-                BirthYear = me?.BirthYear,
-                NotifyOnNewPost = me?.NotifyOnNewPost ?? false
+                PhoneNumber = me.PhoneNumber,
+                Name = me.Name,
+                BirthYear = me.BirthYear,
+                NotifyOnNewPost = me.NotifyOnNewPost
             };
         }
 
         public async Task<IActionResult> OnGetAsync()
         {
             await LoadAsync();
+
+            if (RequiresUsernameSetup)
+                return RedirectToPage("/Account/SetUsername");
+
             return Page();
         }
 
