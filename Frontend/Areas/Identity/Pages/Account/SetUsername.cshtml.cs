@@ -45,15 +45,22 @@ namespace SarasBlogg.Areas.Identity.Pages.Account
             if (!ModelState.IsValid)
                 return Page();
 
+            // 1️⃣ Sätt användarnamn via API
             var res = await _userApi.ChangeMyUserNameAsync(Input.UserName);
 
             if (res?.Succeeded != true)
             {
-                ModelState.AddModelError(string.Empty, res?.Message ?? "Kunde inte spara användarnamn.");
+                ModelState.AddModelError(
+                    string.Empty,
+                    res?.Message ?? "Kunde inte spara användarnamn."
+                );
                 return Page();
             }
 
-            // 🎯 Klart → tillbaka till profilen
+            // 2️⃣ 🔥 KRITISK DEL: synka om frontend-sessionen (cookie + claims)
+            await _userApi.RefreshSessionAsync();
+
+            // 3️⃣ Klart → tillbaka till profilen
             return RedirectToPage("/Account/Manage/Index");
         }
     }

@@ -55,8 +55,8 @@ namespace SarasBlogg.Areas.Identity.Pages.Account.Manage
             var userId = await _userManager.GetUserIdAsync(user);
             _logger.LogInformation("Användare med ID '{UserId}' har återställt sin autentiseringsnyckel för app.", user.Id);
 
-            await _signInManager.RefreshSignInAsync(user);
-            StatusMessage = "Din autentiseringsapp-nyckel har återställts. Du behöver konfigurera din autentiseringsapp med den nya nyckeln.";
+            // await _signInManager.RefreshSignInAsync(user);
+            // StatusMessage = "Din autentiseringsapp-nyckel har återställts. Du behöver konfigurera din autentiseringsapp med den nya nyckeln.";
 
             return RedirectToPage("./EnableAuthenticator");
         }

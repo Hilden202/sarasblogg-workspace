@@ -30,7 +30,13 @@ namespace SarasBlogg.DAL
         {
             var payload = new LoginRequest(userOrEmail, password, rememberMe);
             using var res = await _http.PostAsJsonAsync("api/auth/login", payload, _json, ct);
-            if (!res.IsSuccessStatusCode) return null;
+            if (!res.IsSuccessStatusCode)
+            {
+                var body = await res.Content.ReadAsStringAsync();
+                throw new InvalidOperationException(
+                    $"API returned {(int)res.StatusCode} instead of JSON. Body:\n{body}");
+            }
+
             return await res.Content.ReadFromJsonAsync<LoginResponse>(_json, ct);
         }
 
@@ -332,6 +338,12 @@ namespace SarasBlogg.DAL
             }
 
             return body;
+        }
+        
+        public async Task RefreshSessionAsync(CancellationToken ct = default)
+        {
+            using var res = await _http.PostAsync("api/auth/refresh-session", null, ct);
+            res.EnsureSuccessStatusCode();
         }
     }
 }

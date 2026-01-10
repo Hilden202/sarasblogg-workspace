@@ -776,4 +776,22 @@ public class AuthController : ControllerBase
         ));
     }
 
+    // ---------- REFRESH SESSION ----------
+    [Authorize]
+    [HttpPost("refresh-session")]
+    public async Task<IActionResult> RefreshSession()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+            return Unauthorized();
+
+        // 🔥 BYGG OM COOKIE + CLAIMS
+        await _signInManager.SignInAsync(user, isPersistent: true);
+
+        return Ok();
+    }
 }

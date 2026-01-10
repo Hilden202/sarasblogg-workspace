@@ -76,9 +76,9 @@ namespace SarasBlogg.Areas.Identity.Pages.Account.Manage
                 return RedirectToPage();
             }
 
-            await _signInManager.RefreshSignInAsync(user);
-            StatusMessage = "Det externa inloggningsalternativet har tagits bort.";
-            return RedirectToPage();
+            // await _signInManager.RefreshSignInAsync(user);
+            // StatusMessage = "Det externa inloggningsalternativet har tagits bort.";
+            // return RedirectToPage();
         }
 
         public async Task<IActionResult> OnPostLinkLoginAsync(string provider)

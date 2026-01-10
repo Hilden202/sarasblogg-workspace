@@ -142,8 +142,8 @@ namespace SarasBlogg
             // TJÄNSTER
             builder.Services.AddScoped<BloggService>();
 
-            builder.Services.AddScoped<IAccessTokenStore, InMemoryAccessTokenStore>();
-
+            builder.Services.AddScoped<IAccessTokenStore, CookieAccessTokenStore>();
+            
             builder.Services.AddTransient<JwtAuthHandler>();
 
             // 🟨 Originalregistreringar — behållna men utkommenterade nedan:

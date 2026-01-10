@@ -160,7 +160,19 @@ namespace SarasBloggAPI.Controllers
                 return BadRequest(new BasicResultDto { Succeeded = false, Message = "Username already in use." });
 
             var result = await _userManagerService.ChangeUserNameAsync(myId, dto.NewUserName);
+
+            if (result.Succeeded)
+            {
+                var user = await _userManager.FindByIdAsync(myId);
+                if (user != null)
+                {
+                    // 🔐 KRITISKT: uppdaterar auth-cookie/claims
+                    await _signInManager.RefreshSignInAsync(user);
+                }
+            }
+
             return result.Succeeded ? Ok(result) : BadRequest(result);
+
         }
         // ---------- UPDATE MY PROFILE ----------
         [Authorize]
