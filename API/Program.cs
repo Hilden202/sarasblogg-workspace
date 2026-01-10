@@ -203,6 +203,19 @@ namespace SarasBloggAPI
                 .AddEntityFrameworkStores<MyDbContext>()
                 .AddDefaultTokenProviders();
 
+            builder.Services.ConfigureApplicationCookie(options =>
+            {
+                options.Cookie.SameSite = SameSiteMode.None;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            });
+
+            builder.Services.ConfigureExternalCookie(options =>
+            {
+                options.Cookie.SameSite = SameSiteMode.None;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            });
+
+
             // MANAGERS / DAL
             builder.Services.AddScoped<TokenService>();
 
@@ -301,9 +314,11 @@ namespace SarasBloggAPI
             builder.Services
                 .AddAuthentication(options =>
                 {
-                    options.DefaultScheme = IdentityConstants.ApplicationScheme;
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
                     options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
                 })
+
                 .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, o =>
                 {
                     o.TokenValidationParameters = new TokenValidationParameters

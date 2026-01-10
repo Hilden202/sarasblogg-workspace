@@ -642,22 +642,21 @@ public class AuthController : ControllerBase
     [HttpGet("external/google/start")]
     public async Task<IActionResult> GoogleStart([FromQuery] string? returnUrl = null)
     {
-        // 🔴 VIKTIGAST: rensa ev. gammal extern auth-state
+        // 🔴 Rensa gammalt state (viktigt i dev)
         await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
         var redirectUrl = Url.Action(
-            action: nameof(GoogleCallback),
-            controller: "Auth",
-            values: new { returnUrl },
-            protocol: Request.Scheme);
-
-        var props = _signInManager.ConfigureExternalAuthenticationProperties(
-            provider: "Google",
-            redirectUrl: redirectUrl
+            nameof(GoogleCallback),
+            "Auth",
+            new { returnUrl },
+            protocol: Request.Scheme   // 🔑 INTE hårdkodat https
         );
 
-        // (valfritt men bra under dev)
-        // props.Items["prompt"] = "select_account";
+        var props =
+            _signInManager.ConfigureExternalAuthenticationProperties(
+                "Google",
+                redirectUrl
+            );
 
         return Challenge(props, "Google");
     }
@@ -666,7 +665,7 @@ public class AuthController : ControllerBase
     // ---------- EXTERNAL LOGIN: GOOGLE (CALLBACK) ----------
     [AllowAnonymous]
     [ApiExplorerSettings(IgnoreApi = true)]
-    [HttpGet("external/google/callback")]
+    [HttpGet("external/google")]
     public async Task<IActionResult> GoogleCallback(
         [FromQuery] string? returnUrl = null,
         [FromQuery] string? remoteError = null)
@@ -727,11 +726,15 @@ public class AuthController : ControllerBase
 
         var (refreshToken, refreshExp) = _tokenService.CreateRefreshToken();
 
-        return Ok(new LoginResponse(
-            accessToken,
-            accessExp,
-            refreshToken,
-            refreshExp
-        ));
+        var frontendBase = _cfg["Frontend:BaseUrl"] ?? "https://localhost:7130";
+
+        var redirectUrl =
+            $"{frontendBase}/Identity/Account/ExternalLoginCallback" +
+            $"?accessToken={Uri.EscapeDataString(accessToken)}" +
+            $"&refreshToken={Uri.EscapeDataString(refreshToken)}" +
+            $"&accessTokenExpiresUtc={accessExp:o}";
+
+        return Redirect(redirectUrl);
+
     }
 }
