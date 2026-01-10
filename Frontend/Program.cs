@@ -20,6 +20,10 @@ namespace SarasBlogg
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            
+            // 🔹 Registrerar IHttpClientFactory för Razor Pages & PageModels
+            // Utan denna kraschar callbacken med ERR_EMPTY_RESPONSE
+            builder.Services.AddHttpClient();
 
             // 🔹 Frontend base-URL (används t.ex. i e-postlänkar)
             var frontendBase = builder.Configuration["Frontend:BaseUrl"]

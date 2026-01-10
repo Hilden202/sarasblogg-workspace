@@ -219,6 +219,11 @@ namespace SarasBloggAPI
             // MANAGERS / DAL
             builder.Services.AddScoped<TokenService>();
 
+            // 🔐 In-memory cache
+            // Används för kortlivade auth-flöden (t.ex. external login codes → tokens)
+            // Ersätter osäkra/långa querystrings och försvinner automatiskt vid restart
+            builder.Services.AddMemoryCache();
+
             // FILE HELPER: Local för Development, GitHub för Test/Prod
             if (builder.Environment.IsDevelopment())
             {
@@ -318,7 +323,6 @@ namespace SarasBloggAPI
                     options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
                     options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
                 })
-
                 .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, o =>
                 {
                     o.TokenValidationParameters = new TokenValidationParameters

@@ -9,6 +9,7 @@ using SarasBloggAPI.DTOs;
 using SarasBloggAPI.Services;
 using System.Text;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace SarasBloggAPI.Controllers;
 
@@ -23,13 +24,15 @@ public class AuthController : ControllerBase
     private readonly IConfiguration _cfg;
     private readonly IEmailSender _emailSender;
     private readonly ILogger<AuthController> _logger;
+    private readonly IMemoryCache _cache;
 
     public AuthController(SignInManager<ApplicationUser> signInManager,
         UserManager<ApplicationUser> userManager,
         TokenService tokenService,
         IConfiguration cfg,
         IEmailSender emailSender,
-        ILogger<AuthController> logger)
+        ILogger<AuthController> logger,
+        IMemoryCache cache)
     {
         _signInManager = signInManager;
         _userManager = userManager;
@@ -37,6 +40,7 @@ public class AuthController : ControllerBase
         _cfg = cfg;
         _emailSender = emailSender;
         _logger = logger;
+        _cache = cache;
     }
 
     // ---------- REGISTER ----------
@@ -649,7 +653,7 @@ public class AuthController : ControllerBase
             nameof(GoogleCallback),
             "Auth",
             new { returnUrl },
-            protocol: Request.Scheme   // 🔑 INTE hårdkodat https
+            protocol: Request.Scheme // 🔑 INTE hårdkodat https
         );
 
         var props =
@@ -660,7 +664,6 @@ public class AuthController : ControllerBase
 
         return Challenge(props, "Google");
     }
-
 
     // ---------- EXTERNAL LOGIN: GOOGLE (CALLBACK) ----------
     [AllowAnonymous]
@@ -726,15 +729,51 @@ public class AuthController : ControllerBase
 
         var (refreshToken, refreshExp) = _tokenService.CreateRefreshToken();
 
+        // 🔐 Skapa engångskod (kort och URL-säker)
+        var loginCode = Guid.NewGuid().ToString("N");
+
+        // 📦 Lägg tokens i cache i 2 minuter
+        _cache.Set(
+            $"external-login:{loginCode}",
+            new ExternalLoginCodeDto
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken,
+                AccessTokenExpiresUtc = accessExp
+            },
+            TimeSpan.FromMinutes(2)
+        );
+
+        // 🌍 Redirecta till frontend med ENDAST code
         var frontendBase = _cfg["Frontend:BaseUrl"] ?? "https://localhost:7130";
 
-        var redirectUrl =
-            $"{frontendBase}/Identity/Account/ExternalLoginCallback" +
-            $"?accessToken={Uri.EscapeDataString(accessToken)}" +
-            $"&refreshToken={Uri.EscapeDataString(refreshToken)}" +
-            $"&accessTokenExpiresUtc={accessExp:o}";
-
-        return Redirect(redirectUrl);
-
+        return Redirect($"{frontendBase}/Identity/Account/ExternalLoginCallback?code={loginCode}");
     }
+    
+    // ---------- EXTERNAL LOGIN: EXCHANGE CODE ----------
+    [AllowAnonymous]
+    [HttpPost("external/exchange")]
+    [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public IActionResult ExchangeExternalLoginCode([FromBody] ExternalLoginExchangeDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Code))
+            return BadRequest("Missing code.");
+
+        var cacheKey = $"external-login:{dto.Code}";
+
+        if (!_cache.TryGetValue(cacheKey, out ExternalLoginCodeDto? payload))
+            return BadRequest("Invalid or expired code.");
+
+        // 🔥 Viktigt: engångskod – ta bort direkt
+        _cache.Remove(cacheKey);
+
+        return Ok(new LoginResponse(
+            payload.AccessToken,
+            payload.AccessTokenExpiresUtc,
+            payload.RefreshToken,
+            payload.AccessTokenExpiresUtc.AddDays(30)
+        ));
+    }
+
 }

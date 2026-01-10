@@ -1,12 +1,9 @@
 ﻿@page
-@model SarasBlogg.Areas.Identity.Pages.Account.ExternalLoginCallbackModel
+@model ExternalLoginCallbackModel
 
 <h2>Loggar in…</h2>
 <p>Du skickas vidare.</p>
 
 <script>
-    // Låt servern sätta cookies först
-    setTimeout(() => {
-        window.location.replace("/");
-    }, 100);
+    // ingen JS behövs – servern gör jobbet
 </script>
