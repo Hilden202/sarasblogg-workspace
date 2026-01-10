@@ -316,12 +316,14 @@ namespace SarasBloggAPI
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyValue));
 
-            builder.Services
+            var authBuilder = builder.Services
                 .AddAuthentication(options =>
                 {
                     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
-                    options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+                    options.DefaultChallengeScheme =
+                        builder.Environment.IsEnvironment("Test")
+                            ? JwtBearerDefaults.AuthenticationScheme
+                            : GoogleDefaults.AuthenticationScheme;
                 })
                 .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, o =>
                 {
@@ -351,15 +353,18 @@ namespace SarasBloggAPI
                             return Task.CompletedTask;
                         }
                     };
-                })
-                .AddGoogle(options =>
+                });
+            
+            if (!builder.Environment.IsEnvironment("Test"))
+            {
+                authBuilder.AddGoogle(options =>
                 {
                     options.SignInScheme = IdentityConstants.ExternalScheme;
                     options.ClientId = builder.Configuration["GOOGLE_CLIENT_ID"]!;
                     options.ClientSecret = builder.Configuration["GOOGLE_CLIENT_SECRET"]!;
                     options.CallbackPath = "/api/auth/external/google/callback";
                 });
-
+            }
 
             builder.Services.AddAuthorization(options =>
             {

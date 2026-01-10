@@ -241,6 +241,10 @@ namespace SarasBlogg.DAL
                 Id = me.Id,
                 UserName = me.UserName,
                 Email = me.Email,
+                Name = me.Name,
+                BirthYear = me.BirthYear,
+                PhoneNumber = me.PhoneNumber,
+                NotifyOnNewPost = me.NotifyOnNewPost,
                 RequiresUsernameSetup = me.RequiresUsernameSetup,
                 Roles = me.Roles?.ToList() ?? []
             };
