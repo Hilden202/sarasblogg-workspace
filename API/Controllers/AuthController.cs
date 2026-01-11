@@ -709,6 +709,19 @@ public class AuthController : ControllerBase
             return BadRequest("External login info missing.");
 
         var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+        
+        var adminEmail = _cfg["AdminUser:Email"];
+
+        if (!string.IsNullOrWhiteSpace(adminEmail) &&
+            email.Equals(adminEmail, StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogWarning(
+                "External Google login blocked for admin account: {Email}",
+                email);
+
+            return Forbid("External login is not allowed for this account.");
+        }
+
         if (string.IsNullOrWhiteSpace(email))
             return BadRequest("Email not provided by external provider.");
 
