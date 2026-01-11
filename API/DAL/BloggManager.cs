@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Text.RegularExpressions;
+using Microsoft.EntityFrameworkCore;
 using SarasBloggAPI.Data;
 using SarasBloggAPI.Models;
 using SarasBloggAPI.Services;
@@ -39,6 +40,15 @@ namespace SarasBloggAPI.DAL
 
         public async Task<bool> UpdateAsync(Blogg blogg)
         {
+            var existing = await _context.Bloggs
+                .AsNoTracking()
+                .FirstOrDefaultAsync(b => b.Id == blogg.Id);
+
+            if (existing == null)
+                return false;
+
+            await DeleteRemovedInlineImagesAsync(existing, blogg);
+
             _context.Bloggs.Update(blogg);
             return await _context.SaveChangesAsync() > 0;
         }
@@ -65,6 +75,63 @@ namespace SarasBloggAPI.DAL
 
             _context.Bloggs.Remove(blogg);
             return await _context.SaveChangesAsync() > 0;
+        }
+        
+        private async Task DeleteRemovedInlineImagesAsync(Blogg existing, Blogg updated)
+        {
+            var oldUrls = ExtractImageUrls(existing.Content);
+            var newUrls = ExtractImageUrls(updated.Content);
+
+            if (oldUrls.Count == 0)
+                return;
+
+            var removedUrls = oldUrls.Except(newUrls, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var url in removedUrls)
+            {
+                if (!ShouldDeleteImageUrl(url))
+                    continue;
+
+                try
+                {
+                    await _fileHelper.DeleteImageAsync(url, "blogg");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Kunde inte radera borttagen inline-bild: {Url}", url);
+                }
+            }
+        }
+
+        private static HashSet<string> ExtractImageUrls(string? html)
+        {
+            if (string.IsNullOrWhiteSpace(html))
+                return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            var matches = Regex.Matches(html, "<img[^>]*?\\s+src=[\"'](?<src>[^\"']+)[\"']", RegexOptions.IgnoreCase);
+            var urls = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (Match match in matches)
+            {
+                var src = match.Groups["src"].Value?.Trim();
+                if (string.IsNullOrWhiteSpace(src))
+                    continue;
+
+                urls.Add(src);
+            }
+
+            return urls;
+        }
+
+        private static bool ShouldDeleteImageUrl(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+                return false;
+
+            if (url.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            return url.Contains("/uploads/", StringComparison.OrdinalIgnoreCase);
         }
     }
 }
