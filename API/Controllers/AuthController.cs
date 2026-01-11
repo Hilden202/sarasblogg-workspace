@@ -117,7 +117,12 @@ public class AuthController : ControllerBase
         var codeBytes = Encoding.UTF8.GetBytes(code);
         var codeEncoded = WebEncoders.Base64UrlEncode(codeBytes);
 
-        var frontendBase = _cfg["Frontend:BaseUrl"] ?? "https://sarasblogg.onrender.com";
+        var frontendBase = _cfg["Frontend:BaseUrl"]
+                           ?? throw new InvalidOperationException("Frontend:BaseUrl is not configured");
+
+        var frontendUri = new Uri(frontendBase);
+        var frontendOrigin = frontendUri.GetLeftPart(UriPartial.Authority);
+
         var confirmUrl = $"{frontendBase}/Identity/Account/ConfirmEmail?userId={user.Id}&code={codeEncoded}";
 
         var expose = _cfg.GetValue("Auth:ExposeConfirmLinkInResponse", false);
@@ -278,7 +283,12 @@ public class AuthController : ControllerBase
         var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         var codeEncoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
-        var frontendBase = _cfg["Frontend:BaseUrl"] ?? "https://sarasblogg.onrender.com";
+        var frontendBase = _cfg["Frontend:BaseUrl"]
+                           ?? throw new InvalidOperationException("Frontend:BaseUrl is not configured");
+
+        var frontendUri = new Uri(frontendBase);
+        var frontendOrigin = frontendUri.GetLeftPart(UriPartial.Authority);
+
         var confirmUrl = $"{frontendBase}/Identity/Account/ConfirmEmail?userId={user.Id}&code={codeEncoded}";
 
         await _emailSender.SendAsync(
@@ -316,7 +326,12 @@ public class AuthController : ControllerBase
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
         var tokenEncoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
-        var frontendBase = _cfg["Frontend:BaseUrl"] ?? "https://sarasblogg.onrender.com";
+        var frontendBase = _cfg["Frontend:BaseUrl"]
+                           ?? throw new InvalidOperationException("Frontend:BaseUrl is not configured");
+
+        var frontendUri = new Uri(frontendBase);
+        var frontendOrigin = frontendUri.GetLeftPart(UriPartial.Authority);
+
         var resetPath = "/Identity/Account/ResetPassword";
         var resetUrl = QueryHelpers.AddQueryString(
             $"{frontendBase.TrimEnd('/')}{resetPath}",
@@ -502,7 +517,12 @@ public class AuthController : ControllerBase
         var token = await _userManager.GenerateChangeEmailTokenAsync(user, dto.NewEmail);
         var codeEncoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
-        var frontendBase = _cfg["Frontend:BaseUrl"] ?? "https://sarasblogg.onrender.com";
+        var frontendBase = _cfg["Frontend:BaseUrl"]
+                           ?? throw new InvalidOperationException("Frontend:BaseUrl is not configured");
+
+        var frontendUri = new Uri(frontendBase);
+        var frontendOrigin = frontendUri.GetLeftPart(UriPartial.Authority);
+
         var confirmUrl =
             $"{frontendBase}/Identity/Account/ConfirmEmailChange?userId={user.Id}&code={codeEncoded}&email={Uri.EscapeDataString(dto.NewEmail)}";
 
@@ -574,7 +594,12 @@ public class AuthController : ControllerBase
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
         var tokenEncoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
-        var frontendBase = _cfg["Frontend:BaseUrl"] ?? "https://sarasblogg.onrender.com";
+        var frontendBase = _cfg["Frontend:BaseUrl"]
+                           ?? throw new InvalidOperationException("Frontend:BaseUrl is not configured");
+
+        var frontendUri = new Uri(frontendBase);
+        var frontendOrigin = frontendUri.GetLeftPart(UriPartial.Authority);
+
         var resetUrl = $"{frontendBase}/Identity/Account/ResetPassword?userId={user.Id}&token={tokenEncoded}";
 
         var mode = _cfg["Email:Mode"] ?? "Dev";
@@ -684,6 +709,19 @@ public class AuthController : ControllerBase
             return BadRequest("External login info missing.");
 
         var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+        
+        var adminEmail = _cfg["AdminUser:Email"];
+
+        if (!string.IsNullOrWhiteSpace(adminEmail) &&
+            email.Equals(adminEmail, StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogWarning(
+                "External Google login blocked for admin account: {Email}",
+                email);
+
+            return Forbid("External login is not allowed for this account.");
+        }
+
         if (string.IsNullOrWhiteSpace(email))
             return BadRequest("Email not provided by external provider.");
 
