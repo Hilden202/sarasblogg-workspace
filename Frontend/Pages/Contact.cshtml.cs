@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using SarasBlogg.DAL;
-using SarasBlogg.Extensions; // för visning i vyer (ToSwedishTime)
+using SarasBlogg.Extensions; // fï¿½r visning i vyer (ToSwedishTime)
 
 namespace SarasBlogg.Pages
 {
@@ -45,8 +45,12 @@ namespace SarasBlogg.Pages
 
         public async Task OnGetAsync()
         {
-            // Hämta alla meddelanden (vy ansvarar för ToSwedishTime vid render)
-            ContactMes = await _contactManager.GetAllMessagesAsync();
+            ContactMes = new List<Models.ContactMe>();
+            if (User.IsInRole("admin") || User.IsInRole("superadmin"))
+            {
+                // Hï¿½mta alla meddelanden (vy ansvarar fï¿½r ToSwedishTime vid render)
+                ContactMes = await _contactManager.GetAllMessagesAsync();
+            }
 
             var issuedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
             FormIssuedAt = issuedAt;
@@ -55,11 +59,11 @@ namespace SarasBlogg.Pages
 
         public async Task<IActionResult> OnPostAsync(Models.ContactMe contactMe, int deleteId)
         {
-            // 1) RADERA — prio först, och endast superadmin
+            // 1) RADERA ï¿½ prio fï¿½rst, och endast superadmin
             if (deleteId != 0)
             {
                 if (!User.IsInRole("superadmin"))
-                    return Forbid(); // extra säkerhet
+                    return Forbid(); // extra sï¿½kerhet
 
                 await _contactManager.DeleteMessageAsync(deleteId);
                 TempData["deleteMessage"] = "Meddelandet raderades.";
@@ -69,12 +73,12 @@ namespace SarasBlogg.Pages
             // 1.5)--- Anti-spam ---
             if (!string.IsNullOrWhiteSpace(Website))
             {
-                TempData["addMessage"] = "Tack för ditt meddelande!";
+                TempData["addMessage"] = "Tack fï¿½r ditt meddelande!";
                 return RedirectToPage("./Contact");
             }
             if (!Verify(FormIssuedAt, FormToken))
             {
-                TempData["addMessage"] = "Tack för ditt meddelande!";
+                TempData["addMessage"] = "Tack fï¿½r ditt meddelande!";
                 return RedirectToPage("./Contact");
             }
             if (long.TryParse(FormIssuedAt, out var ts))
@@ -82,11 +86,11 @@ namespace SarasBlogg.Pages
                 var age = DateTimeOffset.UtcNow - DateTimeOffset.FromUnixTimeSeconds(ts);
                 if (age.TotalSeconds < 5)
                 {
-                    TempData["addMessage"] = "Tack för ditt meddelande!";
+                    TempData["addMessage"] = "Tack fï¿½r ditt meddelande!";
                     return RedirectToPage("./Contact");
                 }
             }
-            // blocka länkar/domäner
+            // blocka lï¿½nkar/domï¿½ner
             string msg = contactMe?.Message ?? "";
             string subj = contactMe?.Subject ?? "";
             string email = contactMe?.Email ?? "";
@@ -96,12 +100,12 @@ namespace SarasBlogg.Pages
                                  email.Contains(b, StringComparison.OrdinalIgnoreCase)) ||
                 System.Text.RegularExpressions.Regex.IsMatch(msg, @"https?://|www\.", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
             {
-                TempData["addMessage"] = "Tack för ditt meddelande!";
+                TempData["addMessage"] = "Tack fï¿½r ditt meddelande!";
                 return RedirectToPage("./Contact");
             }
             // --- /Anti-spam ---
 
-            // 2) SKICKA — samma logik som du hade
+            // 2) SKICKA ï¿½ samma logik som du hade
             if (ModelState.IsValid)
             {
                 if (contactMe.CreatedAt == default)
@@ -121,11 +125,11 @@ namespace SarasBlogg.Pages
                 await _contactManager.SaveMessageAsync(contactMe);
                 _ = SendToFormspreeAsync(contactMe);
 
-                TempData["addMessage"] = "Tack för ditt meddelande!";
+                TempData["addMessage"] = "Tack fï¿½r ditt meddelande!";
                 return RedirectToPage("./Contact", new { contactId = "1" });
             }
 
-            // 3) Ogiltigt formulär: visa sidan med valideringsfel
+            // 3) Ogiltigt formulï¿½r: visa sidan med valideringsfel
             return Page();
         }
 
