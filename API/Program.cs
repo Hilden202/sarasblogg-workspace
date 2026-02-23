@@ -64,6 +64,7 @@ namespace SarasBloggAPI
                     p.WithOrigins(
                             // Local
                             "https://localhost:7130",
+                            "http://localhost:5173",
 
                             // Prod frontend (unicode + punycode)
                             "https://medhjärtatsomkompass.se",
