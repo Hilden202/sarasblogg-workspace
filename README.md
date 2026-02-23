@@ -15,7 +15,7 @@ Detta repo samlar hela **SarasBlogg-ekosystemet** i ett gemensamt workspace (mon
 sarasblogg-workspace/
 ├── Frontend/                 # Razor Pages frontend (SarasBlogg)
 ├── API/                      # Backend API (Identity, DB, media-hantering)
-├── SarasBloggAPITests/       # Integrationstester för API
+├── APITests/                 # Integrationstester för API
 ├── SarasBlogg-Workspace.sln  # Gemensam solution
 ├── sync-media.ps1            # Lokalt DEV-verktyg för mediasynk
 └── README.md                 # Detta dokument
@@ -54,7 +54,7 @@ sarasblogg-workspace/
 
 ## 🧪 Tester
 
-- API:t testas via ett separat testprojekt (`SarasBloggAPITests`)
+- API:t testas via ett separat testprojekt (`APITests`)
 - Fokus på integrationstester (API + databas)
 - Tester körs mot isolerad testmiljö (PostgreSQL via Testcontainers)
 - CI kör `dotnet test` mot hela solutionen

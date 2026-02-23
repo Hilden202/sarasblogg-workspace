@@ -6,7 +6,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SarasBlogg", "Frontend\\Sar
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SarasBloggAPI", "API\\SarasBloggAPI.csproj", "{71426FE4-BA0A-40B9-9AAE-E402FC303842}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SarasBloggAPITests", "SarasBloggAPITests\SarasBloggAPITests.csproj", "{7C87EBE6-2BAD-4040-B0E6-EFE9A44D2B7C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APITests", "APITests\APITests.csproj", "{7C87EBE6-2BAD-4040-B0E6-EFE9A44D2B7C}"
 EndProject
 Global
 GlobalSection(SolutionConfigurationPlatforms) = preSolution
