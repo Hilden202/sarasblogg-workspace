@@ -9,6 +9,7 @@ using SarasBloggAPI.DTOs;
 using SarasBloggAPI.Services;
 using System.Text;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace SarasBloggAPI.Controllers;
@@ -671,31 +672,35 @@ public class AuthController : ControllerBase
     [HttpGet("external/google/start")]
     public async Task<IActionResult> GoogleStart([FromQuery] string? returnUrl = null)
     {
-        // 🔴 Rensa gammalt state (viktigt i dev)
+        if (string.IsNullOrWhiteSpace(returnUrl))
+            return BadRequest("Missing returnUrl.");
+
         await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
         var redirectUrl = Url.Action(
             nameof(GoogleCallback),
             "Auth",
-            new { returnUrl },
-            protocol: Request.Scheme // 🔑 INTE hårdkodat https
+            null,
+            protocol: Request.Scheme
         );
 
-        var props =
-            _signInManager.ConfigureExternalAuthenticationProperties(
-                "Google",
-                redirectUrl
-            );
 
-        return Challenge(props, "Google");
+        var props = _signInManager.ConfigureExternalAuthenticationProperties(
+            "Google",
+            redirectUrl
+        );
+
+        // 🔥 DETTA ÄR DET VIKTIGA
+        props.Items["returnUrl"] = returnUrl;
+
+        return Challenge(props, GoogleDefaults.AuthenticationScheme);
     }
 
 // ---------- EXTERNAL LOGIN: GOOGLE (CALLBACK) ----------
     [AllowAnonymous]
     [ApiExplorerSettings(IgnoreApi = true)]
-    [HttpGet("external/google")]
+    [HttpGet("external/google/callback")]
     public async Task<IActionResult> GoogleCallback(
-        [FromQuery] string? returnUrl = null,
         [FromQuery] string? remoteError = null)
     {
         if (!string.IsNullOrEmpty(remoteError))
@@ -707,6 +712,19 @@ public class AuthController : ControllerBase
         var info = await _signInManager.GetExternalLoginInfoAsync();
         if (info == null)
             return BadRequest("External login info missing.");
+
+        string? returnUrl = null;
+
+        if (info.AuthenticationProperties?.Items != null)
+        {
+            info.AuthenticationProperties.Items.TryGetValue("returnUrl", out returnUrl);
+        }
+
+        if (string.IsNullOrWhiteSpace(returnUrl))
+        {
+            _logger.LogWarning("GoogleCallback: missing returnUrl");
+            return BadRequest("Missing returnUrl.");
+        }
 
         var email = info.Principal.FindFirstValue(ClaimTypes.Email);
         
@@ -781,24 +799,24 @@ public class AuthController : ControllerBase
             TimeSpan.FromMinutes(2)
         );
 
-        var frontendBase =
-            _cfg["Frontend:BaseUrl"]
-            ?? throw new InvalidOperationException(
-                "Frontend:BaseUrl is not configured");
+// 🔐 Validera mot CORS allowed origins (CSV från user-secrets)
+        var csv = _cfg["Cors:AllowedOrigins"];
 
-        if (!Uri.TryCreate(frontendBase, UriKind.Absolute, out var frontendUri))
+        var allowedOrigins = string.IsNullOrWhiteSpace(csv)
+            ? Array.Empty<string>()
+            : csv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        var isAllowed = allowedOrigins.Any(o =>
+            returnUrl.StartsWith(o, StringComparison.OrdinalIgnoreCase));
+
+        if (!isAllowed)
         {
-            _logger.LogError(
-                "GoogleCallback: invalid Frontend:BaseUrl '{FrontendBase}'",
-                frontendBase);
-
-            return StatusCode(500, "Invalid frontend configuration");
+            _logger.LogWarning("GoogleCallback: invalid returnUrl {ReturnUrl}", returnUrl);
+            return Forbid();
         }
 
-        var frontendOrigin = frontendUri.GetLeftPart(UriPartial.Authority);
-
         return Redirect(
-            $"{frontendOrigin}/Identity/Account/ExternalLoginCallback?code={loginCode}"
+            $"{returnUrl.TrimEnd('/')}/Identity/Account/ExternalLoginCallback?code={loginCode}"
         );
     }
 
