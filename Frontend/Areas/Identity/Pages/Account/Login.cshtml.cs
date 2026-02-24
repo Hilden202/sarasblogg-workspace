@@ -21,6 +21,9 @@ namespace SarasBlogg.Areas.Identity.Pages.Account
         private readonly ILogger<LoginModel> _logger;
         private readonly IAccessTokenStore _tokenStore;
         public string ApiBaseUrl { get; private set; } = "";
+        
+        public string CurrentOrigin =>
+            $"{Request.Scheme}://{Request.Host}";
 
         public LoginModel(
             UserAPIManager userApi,
@@ -92,8 +95,7 @@ namespace SarasBlogg.Areas.Identity.Pages.Account
             var principal = new ClaimsPrincipal(identity);
             var props = new AuthenticationProperties
             {
-                IsPersistent = Input.RememberMe,
-                ExpiresUtc = login.AccessTokenExpiresUtc
+                RedirectUri = "/api/auth/external/google/callback"
             };
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, props);
             _tokenStore.Set(login.AccessToken);
