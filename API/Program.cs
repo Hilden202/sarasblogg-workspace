@@ -64,6 +64,7 @@ namespace SarasBloggAPI
                     p.WithOrigins(
                             // Local
                             "https://localhost:7130",
+                            "http://localhost:5173",
 
                             // Prod frontend (unicode + punycode)
                             "https://medhjärtatsomkompass.se",
@@ -211,10 +212,9 @@ namespace SarasBloggAPI
 
             builder.Services.ConfigureExternalCookie(options =>
             {
-                options.Cookie.SameSite = SameSiteMode.None;
-                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                options.Cookie.SameSite = SameSiteMode.Lax;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
             });
-
 
             // MANAGERS / DAL
             builder.Services.AddScoped<TokenService>();
@@ -320,10 +320,7 @@ namespace SarasBloggAPI
                 .AddAuthentication(options =>
                 {
                     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultChallengeScheme =
-                        builder.Environment.IsEnvironment("Test")
-                            ? JwtBearerDefaults.AuthenticationScheme
-                            : GoogleDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                 })
                 .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, o =>
                 {
@@ -362,7 +359,7 @@ namespace SarasBloggAPI
                     options.SignInScheme = IdentityConstants.ExternalScheme;
                     options.ClientId = builder.Configuration["GOOGLE_CLIENT_ID"]!;
                     options.ClientSecret = builder.Configuration["GOOGLE_CLIENT_SECRET"]!;
-                    options.CallbackPath = "/api/auth/external/google/callback";
+                    options.CallbackPath = "/signin-google";
                 });
             }
 

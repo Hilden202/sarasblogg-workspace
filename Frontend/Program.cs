@@ -85,7 +85,10 @@ namespace SarasBlogg
                     options.Cookie.Name = "SarasAuth";
                     options.Cookie.HttpOnly = true;
                     options.Cookie.SameSite = SameSiteMode.Lax;
-                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                    options.Cookie.SecurePolicy =
+                        builder.Environment.IsDevelopment()
+                            ? CookieSecurePolicy.SameAsRequest
+                            : CookieSecurePolicy.Always;
                     options.SlidingExpiration = true;
                     options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
 

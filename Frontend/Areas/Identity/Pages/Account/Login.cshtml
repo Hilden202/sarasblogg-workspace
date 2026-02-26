@@ -1,4 +1,5 @@
 ﻿@page
+@using Polly
 @model LoginModel
 
 @{
@@ -53,7 +54,7 @@
                 <hr class="my-4" />
 
                 <a class="btn btn-outline-danger w-100"
-                   href="@($"{Model.ApiBaseUrl}/api/auth/external/google/start")">
+                   href="@($"{Model.ApiBaseUrl}/api/auth/external/google/start?returnUrl={Model.CurrentOrigin}")">
                     Logga in med Google
                 </a>
             </form>
