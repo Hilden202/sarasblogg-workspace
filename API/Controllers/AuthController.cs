@@ -186,17 +186,35 @@ public class AuthController : ControllerBase
         var access = await _tokenService.CreateAccessTokenAsync(user);
         var accessExp = DateTime.UtcNow.AddMinutes(int.Parse(_cfg["Jwt:AccessTokenMinutes"] ?? "60"));
         var (refresh, refreshExp) = _tokenService.CreateRefreshToken();
-
+        
+        // Lagrar access token i en HttpOnly-cookie för säker klient-autentisering.
+        // Secure + SameSite=None krävs för cross-site-scenarion (t.ex. separat frontend).
+        // Token är inte åtkomlig via JavaScript och följer samma livslängd som JWT-expiration.
+        Response.Cookies.Append("api_access_token", access, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Path = "/",
+            Expires = accessExp
+        });
+        
         return new LoginResponse(access, accessExp, refresh, refreshExp);
     }
 
     // ---------- LOGOUT ----------
     [Authorize]
     [HttpPost("logout")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> Logout()
+    public IActionResult Logout()
     {
-        await _signInManager.SignOutAsync();
+        Response.Cookies.Delete("api_access_token", new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Path = "/"
+        });
+
         return Ok(new { message = "Logged out" });
     }
 
