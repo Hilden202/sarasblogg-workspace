@@ -363,6 +363,15 @@ namespace SarasBloggAPI
                     options.ClientId = builder.Configuration["GOOGLE_CLIENT_ID"]!;
                     options.ClientSecret = builder.Configuration["GOOGLE_CLIENT_SECRET"]!;
                     options.CallbackPath = "/api/auth/external/google/callback";
+                    options.Events.OnRedirectToAuthorizationEndpoint = context =>
+                    {
+                        var uriBuilder = new UriBuilder(context.RedirectUri);
+                        var query = System.Web.HttpUtility.ParseQueryString(uriBuilder.Query);
+                        query["prompt"] = "select_account";
+                        uriBuilder.Query = query.ToString();
+                        context.Response.Redirect(uriBuilder.ToString());
+                        return Task.CompletedTask;
+                    };
                 });
             }
 
