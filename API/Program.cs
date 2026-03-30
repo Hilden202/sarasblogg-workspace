@@ -61,21 +61,7 @@ namespace SarasBloggAPI
             {
                 options.AddPolicy("SarasPolicy", p =>
                 {
-                    p.WithOrigins(
-                            // Local
-                            "https://localhost:7130",
-                            "http://localhost:5173",
-
-                            // Prod frontend (unicode + punycode)
-                            "https://medhjärtatsomkompass.se",
-                            "https://www.medhjärtatsomkompass.se",
-                            "https://xn--medhjrtatsomkompass-kwb.se",
-                            "https://www.xn--medhjrtatsomkompass-kwb.se",
-
-                            // Render frontend
-                            "https://sarasblogg-frontend.onrender.com",
-                            "https://www.sarasblogg-frontend.onrender.com"
-                        )
+                    p.WithOrigins(allowedOrigins)
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                         .AllowCredentials();
@@ -321,10 +307,7 @@ namespace SarasBloggAPI
                 .AddAuthentication(options =>
                 {
                     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultChallengeScheme =
-                        builder.Environment.IsEnvironment("Test")
-                            ? JwtBearerDefaults.AuthenticationScheme
-                            : GoogleDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                 })
                 .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, o =>
                 {
@@ -363,7 +346,7 @@ namespace SarasBloggAPI
                     options.SignInScheme = IdentityConstants.ExternalScheme;
                     options.ClientId = builder.Configuration["GOOGLE_CLIENT_ID"]!;
                     options.ClientSecret = builder.Configuration["GOOGLE_CLIENT_SECRET"]!;
-                    options.CallbackPath = "/api/auth/external/google/callback";
+                    options.CallbackPath = "/signin-google";
                     options.Events.OnRedirectToAuthorizationEndpoint = context =>
                     {
                         var uriBuilder = new UriBuilder(context.RedirectUri);
