@@ -150,7 +150,12 @@ public class AuthController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Register: email send failed to {Email}", user.Email);
-            expose = true;
+
+            // Do NOT expose confirmation link automatically in production
+            if (!mode.Equals("Prod", StringComparison.OrdinalIgnoreCase))
+            {
+                expose = true;
+            }
         }
 
         return Ok(new BasicResultDto
