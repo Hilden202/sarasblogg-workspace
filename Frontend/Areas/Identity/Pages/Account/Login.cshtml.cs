@@ -42,7 +42,12 @@ namespace SarasBlogg.Areas.Identity.Pages.Account
         }
 
         [BindProperty]
-        public InputModel Input { get; set; } = new();
+        public InputModel Input { get; set; } = new(); // låt vara
+        
+        public IActionResult OnPost(string? returnUrl = null)
+        {
+            return RedirectToPage();
+        }
 
         public string ReturnUrl { get; set; }
 
@@ -74,45 +79,47 @@ namespace SarasBlogg.Areas.Identity.Pages.Account
             // Ingen lokal Identity längre – inget att göra här
         }
 
-        public async Task<IActionResult> OnPostAsync(string? returnUrl = null)
-        {
-            if (!ModelState.IsValid) return Page();
-
-            // 1) Logga in via API
-            var login = await _userApi.LoginAsync(Input.UserNameOrEmail, Input.Password, Input.RememberMe);
-            if (login is null)
-            {
-                ModelState.AddModelError(string.Empty, "Ogiltigt inloggningsförsök.");
-                return Page();
-            }
-
-            // 2) Läs JWT-claims
-            var handler = new JwtSecurityTokenHandler();
-            var jwt = handler.ReadJwtToken(login.AccessToken);
-
-            // 3) Skapa cookie i vårt generiska cookie-scheme
-            var identity = new ClaimsIdentity(jwt.Claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var principal = new ClaimsPrincipal(identity);
-            var props = new AuthenticationProperties
-            {
-                RedirectUri = "/api/auth/external/google/callback"
-            };
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, props);
-            _tokenStore.Set(login.AccessToken);
-
-            // 4) 
-            Response.Cookies.Append("api_access_token", login.AccessToken, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.None, // viktigt vid eventuella cross-site flöden
-                Path = "/",               // KRITISKT: gör cookien giltig för hela sajten
-                Expires = login.AccessTokenExpiresUtc
-            });
-
-
-            _logger.LogInformation("User logged in via API.");
-            return LocalRedirect(returnUrl ?? Url.Content("~/"));
-        }
+        // LOCAL LOGIN DISABLED - Google only mode
+        // public async Task<IActionResult> OnPostAsync(string? returnUrl = null)
+        // {
+        //     if (!ModelState.IsValid) return Page();
+        //
+        //     // 1) Logga in via API
+        //     var login = await _userApi.LoginAsync(Input.UserNameOrEmail, Input.Password, Input.RememberMe);
+        //     if (login is null)
+        //     {
+        //         ModelState.AddModelError(string.Empty, "Ogiltigt inloggningsförsök.");
+        //         return Page();
+        //     }
+        //
+        //     // 2) Läs JWT-claims
+        //     var handler = new JwtSecurityTokenHandler();
+        //     var jwt = handler.ReadJwtToken(login.AccessToken);
+        //
+        //     // 3) Skapa cookie i vårt generiska cookie-scheme
+        //     var identity = new ClaimsIdentity(jwt.Claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        //     var principal = new ClaimsPrincipal(identity);
+        //     var props = new AuthenticationProperties
+        //     {
+        //         RedirectUri = "/api/auth/external/google/callback"
+        //     };
+        //     await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, props);
+        //     _tokenStore.Set(login.AccessToken);
+        //
+        //     // 4) 
+        //     Response.Cookies.Append("api_access_token", login.AccessToken, new CookieOptions
+        //     {
+        //         HttpOnly = true,
+        //         Secure = true,
+        //         SameSite = SameSiteMode.None, // viktigt vid eventuella cross-site flöden
+        //         Path = "/",               // KRITISKT: gör cookien giltig för hela sajten
+        //         Expires = login.AccessTokenExpiresUtc
+        //     });
+        //
+        //
+        //     _logger.LogInformation("User logged in via API.");
+        //     return LocalRedirect(returnUrl ?? Url.Content("~/"));
+        // }
+        // LOCAL LOGIN DISABLED - Google only mode
     }
 }
