@@ -322,10 +322,16 @@ namespace SarasBlogg
             var app = builder.Build();
 
             // Viktigt bakom proxy (Render) – tidigt i pipelinen
-            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            var forwardedOptions = new ForwardedHeadersOptions
             {
-                ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor
-            });
+                ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor,
+                ForwardLimit = null
+            };
+
+            forwardedOptions.KnownNetworks.Clear();
+            forwardedOptions.KnownProxies.Clear();
+
+            app.UseForwardedHeaders(forwardedOptions);
 
             try
             {
