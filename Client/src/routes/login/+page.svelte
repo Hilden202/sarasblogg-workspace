@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { login, getCurrentUser, mapToFrontendUser } from '$lib/services/authService';
-	import type { Role } from '$lib/types/auth';
 	import { auth } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
 
@@ -23,6 +22,10 @@
 			goto('/');
 		}
 	}
+	function loginWithGoogle() {
+		const returnUrl = window.location.origin;
+		window.location.href = `https://localhost:5003/api/auth/external/google/start?returnUrl=${encodeURIComponent(returnUrl)}`;
+	}
 </script>
 
 <h2>Login</h2>
@@ -31,6 +34,8 @@
 <input type="password" bind:value={password} placeholder="Password" />
 
 <button on:click={handleLogin}> Login </button>
+
+<button on:click={loginWithGoogle}> Logga in med Google </button>
 
 {#if error}
 	<p style="color:red">{error}</p>
