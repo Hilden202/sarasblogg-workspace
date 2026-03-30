@@ -20,7 +20,7 @@ namespace SarasBlogg.Areas.Identity.Pages.Account
             _logger = logger;
         }
 
-        [BindProperty] public InputModel Input { get; set; } = new();
+        [BindProperty] public InputModel Input { get; set; } = new(); // låt vara
 
         public string? DevConfirmLink { get; set; } // visas om API:t skickar länk i dev
         public bool IsManageContext { get; private set; }
@@ -69,43 +69,43 @@ namespace SarasBlogg.Areas.Identity.Pages.Account
             }
         }
 
-        public async Task<IActionResult> OnPostAsync()
-        {
-            IsManageContext = Request?.Query.ContainsKey("manage") == true;
-            if (IsManageContext)
-            {
-                ViewData["ActivePage"] = ManageNavPages.Register;
-            }
-
-            if (!ModelState.IsValid) return Page();
-
-            var result = await _userApi.RegisterAsync(
-                Input.UserName, Input.Email, Input.Password, Input.Name, Input.BirthYear,
-                subscribeNewPosts: Input.SubscribeNewPosts);
-
-            if (result is null)
-            {
-                ModelState.AddModelError(string.Empty, "Kunde inte nå API:t. Försök igen.");
-                return Page();
-            }
-
-            if (!result.Succeeded)
-            {
-                ModelState.AddModelError(string.Empty, result.Message ?? "Registreringen misslyckades.");
-                return Page();
-            }
-
-            // Dev-läge: API returnerar ConfirmEmailUrl om ExposeConfirmLinkInResponse = true
-            if (!string.IsNullOrEmpty(result.ConfirmEmailUrl))
-            {
-                DevConfirmLink = result.ConfirmEmailUrl;
-                TempData["RegisterInfo"] = "Kontot skapades. Klicka på länken nedan för att bekräfta e-post.";
-                return Page();
-            }
-
-            // Prod-läge: visa info och skicka till bekräftelsesida
-            TempData["RegisterInfo"] = "Kontot skapades. Kolla din e-post för att bekräfta.";
-            return RedirectToPage("./RegisterConfirmation");
-        }
+        // public async Task<IActionResult> OnPostAsync()
+        // {
+        //     IsManageContext = Request?.Query.ContainsKey("manage") == true;
+        //     if (IsManageContext)
+        //     {
+        //         ViewData["ActivePage"] = ManageNavPages.Register;
+        //     }
+        //
+        //     if (!ModelState.IsValid) return Page();
+        //
+        //     var result = await _userApi.RegisterAsync(
+        //         Input.UserName, Input.Email, Input.Password, Input.Name, Input.BirthYear,
+        //         subscribeNewPosts: Input.SubscribeNewPosts);
+        //
+        //     if (result is null)
+        //     {
+        //         ModelState.AddModelError(string.Empty, "Kunde inte nå API:t. Försök igen.");
+        //         return Page();
+        //     }
+        //
+        //     if (!result.Succeeded)
+        //     {
+        //         ModelState.AddModelError(string.Empty, result.Message ?? "Registreringen misslyckades.");
+        //         return Page();
+        //     }
+        //
+        //     // Dev-läge: API returnerar ConfirmEmailUrl om ExposeConfirmLinkInResponse = true
+        //     if (!string.IsNullOrEmpty(result.ConfirmEmailUrl))
+        //     {
+        //         DevConfirmLink = result.ConfirmEmailUrl;
+        //         TempData["RegisterInfo"] = "Kontot skapades. Klicka på länken nedan för att bekräfta e-post.";
+        //         return Page();
+        //     }
+        //
+        //     // Prod-läge: visa info och skicka till bekräftelsesida
+        //     TempData["RegisterInfo"] = "Kontot skapades. Kolla din e-post för att bekräfta.";
+        //     return RedirectToPage("./RegisterConfirmation");
+        // }
     }
 }
