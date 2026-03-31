@@ -89,7 +89,7 @@ namespace SarasBlogg.Pages.Admin
 
             // load lists
             await LoadBloggsWithImagesAsync();
-            
+
             if (IsSuperAdmin)
             {
                 EditorAccessToken = await _bloggApi.GetEditorAccessTokenAsync();
@@ -138,6 +138,10 @@ namespace SarasBlogg.Pages.Admin
 
             if (NewBlogg.Id == 0)
             {
+                NewBlogg.Title = string.IsNullOrWhiteSpace(NewBlogg.Title)
+                    ? null
+                    : NewBlogg.Title;
+
                 var savedBlogg = await _bloggApi.SaveBloggAsync(NewBlogg);
                 if (savedBlogg == null)
                 {
@@ -153,6 +157,10 @@ namespace SarasBlogg.Pages.Admin
             {
                 if (currentBlogg == null)
                     return NotFound();
+
+                NewBlogg.Title = string.IsNullOrWhiteSpace(NewBlogg.Title)
+                    ? null
+                    : NewBlogg.Title;
 
                 await _bloggApi.UpdateBloggAsync(NewBlogg);
             }
