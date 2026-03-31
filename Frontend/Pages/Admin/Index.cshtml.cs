@@ -102,7 +102,17 @@ namespace SarasBlogg.Pages.Admin
                 if (row != null)
                 {
                     EditedBloggWithImages = new BloggWithImage { Blogg = row.Blogg, Images = row.Images };
-                    NewBlogg = row.Blogg;
+                    NewBlogg = new Models.Blogg
+                    {
+                        Id = row.Blogg.Id,
+                        Title = row.Blogg.Title,
+                        Content = row.Blogg.Content,
+                        Author = row.Blogg.Author,
+                        LaunchDate = row.Blogg.LaunchDate,
+                        UserId = row.Blogg.UserId
+                    };
+                    
+                        ModelState.Clear();
 
                     if (NewBlogg.LaunchDate.Kind == DateTimeKind.Utc)
                     {
