@@ -45,7 +45,7 @@ namespace SarasBlogg.Extensions
                 {
                     var text = html[lastIndex..match.Index];
                     if (!string.IsNullOrEmpty(text))
-                        sb.Append(WebUtility.HtmlEncode(text));
+                        sb.Append(WebUtility.HtmlDecode(text));
                 }
 
                 var rawTag = match.Value;
@@ -89,7 +89,7 @@ namespace SarasBlogg.Extensions
 
             if (lastIndex < html.Length)
             {
-                sb.Append(WebUtility.HtmlEncode(html[lastIndex..]));
+                sb.Append(WebUtility.HtmlDecode(html[lastIndex..]));
             }
 
             while (strongDepth-- > 0)
