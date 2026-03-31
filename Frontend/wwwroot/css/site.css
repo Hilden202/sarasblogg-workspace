@@ -109,10 +109,6 @@ header {
     color: #212529 !important;
 }
 
-div {
-    color: #212529;
-}
-
 .container-site {
     max-width: 850px;
     margin: 0rem auto 5rem auto;
@@ -857,7 +853,6 @@ footer .social-icons {
     font-weight: 400;
     font-size: 1rem;
     line-height: 1.4;
-    color: #7e6655;
     text-align: left;
 }
 /* ContactMe titel */
