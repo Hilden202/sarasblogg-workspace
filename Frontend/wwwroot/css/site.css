@@ -204,12 +204,10 @@ header {
     }
 
 
-    .cards-container .card-link {
-        flex: 0 0 250px;
-        width: 250px;
-        display: flex;
-        align-items: stretch;
-    }
+.cards-container .card-link {
+    flex: 0 0 270px;
+    width: 270px;
+}
 
     .cards-container .card-title {
         margin: 0 0 0.5rem 0;
@@ -224,12 +222,11 @@ header {
         min-height: 3.2rem;
     }
 
-    .cards-container .card-link,
-    .cards-container .card {
-        min-width: 250px;
-        max-width: 250px;
-        box-sizing: border-box;
-    }
+.cards-container .card-link,
+.cards-container .card {
+    min-width: 270px;
+    max-width: 270px;
+}
 
     .cards-container .flower {
         font-size: 2rem;
