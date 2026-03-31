@@ -51,7 +51,6 @@ namespace SarasBloggAPI.Controllers
         public async Task<IActionResult> Create([FromBody] Blogg blogg)
         {
 
-                blogg.Title ??= string.Empty;
                 blogg.Content = _sanitizer.Sanitize(blogg.Content ?? string.Empty);
 
                 var created = await _BloggManager.CreateAsync(blogg);
@@ -71,7 +70,6 @@ namespace SarasBloggAPI.Controllers
             if (id != updatedBlogg.Id)
                 return BadRequest();
 
-            updatedBlogg.Title ??= string.Empty;
             updatedBlogg.Content = _sanitizer.Sanitize(updatedBlogg.Content ?? string.Empty);
 
             var result = await _BloggManager.UpdateAsync(updatedBlogg);
