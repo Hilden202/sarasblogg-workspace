@@ -10,7 +10,8 @@ namespace SarasBlogg.DAL
         private readonly HttpClient _httpClient;
         private static readonly JsonSerializerOptions _jsonOpts = new()
         {
-            PropertyNameCaseInsensitive = true
+            PropertyNameCaseInsensitive = true,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.Never
         };
 
         public BloggAPIManager(HttpClient httpClient)
@@ -38,7 +39,7 @@ namespace SarasBlogg.DAL
 
         public async Task<Blogg?> SaveBloggAsync(Blogg blogg)
         {
-            var content = new StringContent(JsonSerializer.Serialize(blogg), Encoding.UTF8, "application/json");
+            var content = new StringContent(JsonSerializer.Serialize(blogg, _jsonOpts), Encoding.UTF8, "application/json");
             var resp = await _httpClient.PostAsync("api/Blogg", content);
             if (!resp.IsSuccessStatusCode) return null;
 
@@ -48,7 +49,7 @@ namespace SarasBlogg.DAL
 
         public async Task UpdateBloggAsync(Blogg blogg)
         {
-            var content = new StringContent(JsonSerializer.Serialize(blogg), Encoding.UTF8, "application/json");
+            var content = new StringContent(JsonSerializer.Serialize(blogg, _jsonOpts), Encoding.UTF8, "application/json");
             await _httpClient.PutAsync($"api/Blogg/{blogg.Id}", content);
         }
 
@@ -79,7 +80,7 @@ namespace SarasBlogg.DAL
         {
             await _httpClient.DeleteAsync($"api/Blogg/{id}");
         }
-        
+
         public async Task<string?> GetEditorAccessTokenAsync()
         {
             var resp = await _httpClient.GetAsync("api/auth/editor-token");
