@@ -639,6 +639,12 @@ footer.border-top {
         border-radius: 9999px !important;
         object-fit: cover !important;
     }
+
+    .aboutme-image {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+    }
 }
 
 /* 5) Säkra att om-mig inte får någon oväntad offset */
@@ -1271,7 +1277,7 @@ footer .footer-inner a:hover {
 
 /* === AboutMe preview fix (TinyMCE-safe truncation) === */
 .preview-inner {
-    max-height: 120px; /* justera efter smak */
+    max-height: 250px; /* justera efter smak */
     overflow: hidden;
 }
 
@@ -1280,7 +1286,7 @@ footer .footer-inner a:hover {
 }
 
 .cards-container .card-content {
-    display: -webkit-box;
+    display: -webkit-box; 
     -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
     overflow: hidden;
