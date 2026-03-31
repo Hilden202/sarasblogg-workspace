@@ -34,8 +34,8 @@
             </div>
             @* <div class="flower">🌸</div> *@
             <h4 class="card-title">@post.Title.LimitLength(20)</h4>
-            <div class="card-content prose">
-                @Html.Raw(post.Content.LimitLength(200, true))
+            <div class="card-content prose preview-clamp">
+                @Html.Raw(post.Content.LimitLength(200, false))
             </div>
             <div class="card-footer">
                 <a asp-page="/Blogg" asp-route-showId="@post.Id" class="btn btn-primary btn-sm">Läs mer…</a>
