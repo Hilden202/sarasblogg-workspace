@@ -31,6 +31,10 @@ namespace SarasBlogg.Extensions
         {
             html = ScriptAndStyleRegex.Replace(html, string.Empty);
 
+            // 🔥 FIX: Ta bort TinyMCE "fake whitespace"
+            html = html.Replace("&nbsp;", " ");
+            html = Regex.Replace(html, @"\s*\u00A0\s*", " "); // extra säkerhet (unicode nbsp)
+
             var sb = new StringBuilder();
             var lastIndex = 0;
             var strongDepth = 0;
