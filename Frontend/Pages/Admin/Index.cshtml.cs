@@ -111,8 +111,8 @@ namespace SarasBlogg.Pages.Admin
                         LaunchDate = row.Blogg.LaunchDate,
                         UserId = row.Blogg.UserId
                     };
-                    
-                        ModelState.Clear();
+
+                    ModelState.Clear();
 
                     if (NewBlogg.LaunchDate.Kind == DateTimeKind.Utc)
                     {
@@ -132,6 +132,8 @@ namespace SarasBlogg.Pages.Admin
         // Skapa/ändra blogg: endast superadmin
         public async Task<IActionResult> OnPostAsync()
         {
+            ModelState.Clear();
+
             IsSuperAdmin = User.IsInRole("superadmin");
             if (!IsSuperAdmin) return Forbid();
 
@@ -148,6 +150,8 @@ namespace SarasBlogg.Pages.Admin
 
             if (NewBlogg.Id == 0)
             {
+                ModelState.Clear();
+
                 NewBlogg.Title = string.IsNullOrWhiteSpace(NewBlogg.Title)
                     ? null
                     : NewBlogg.Title;
@@ -168,11 +172,16 @@ namespace SarasBlogg.Pages.Admin
                 if (currentBlogg == null)
                     return NotFound();
 
-                NewBlogg.Title = string.IsNullOrWhiteSpace(NewBlogg.Title)
+                currentBlogg.Title = string.IsNullOrWhiteSpace(NewBlogg.Title)
                     ? null
                     : NewBlogg.Title;
 
-                await _bloggApi.UpdateBloggAsync(NewBlogg);
+                currentBlogg.Content = NewBlogg.Content;
+                currentBlogg.Author = NewBlogg.Author;
+                currentBlogg.LaunchDate = NewBlogg.LaunchDate;
+                currentBlogg.UserId = NewBlogg.UserId;
+
+                await _bloggApi.UpdateBloggAsync(currentBlogg);
             }
 
             // Bilduppladdning
