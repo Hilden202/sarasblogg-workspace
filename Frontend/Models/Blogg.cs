@@ -11,7 +11,6 @@ namespace SarasBlogg.Models
         public int Id { get; set; }
 
         [JsonPropertyName("title")]
-        [Required(ErrorMessage = "Vänligen ange en titel")]
         [DisplayName("Titel")]
         public string? Title { get; set; }
 
