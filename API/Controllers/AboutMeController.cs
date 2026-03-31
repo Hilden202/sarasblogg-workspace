@@ -23,25 +23,28 @@ namespace SarasBloggAPI.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<ActionResult<AboutMe?>> GetAboutMe()
+        public async Task<ActionResult<AboutMeDto?>> GetAboutMe()
         {
             var aboutMe = await _manager.GetAsync();
             if (aboutMe == null) return NotFound();
-            return Ok(aboutMe);
+            return Ok(ToDto(aboutMe));
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateAboutMe([FromBody] AboutMe aboutMe)
+        public async Task<IActionResult> CreateAboutMe([FromBody] AboutMeDto dto)
         {
+            var aboutMe = ToEntity(dto);
             var created = await _manager.CreateAsync(aboutMe);
-            return CreatedAtAction(nameof(GetAboutMe), new { id = created.Id }, created);
+            return CreatedAtAction(nameof(GetAboutMe), new { id = created.Id }, ToDto(created));
         }
 
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateAboutMe(int id, [FromBody] AboutMe aboutMe)
+        public async Task<IActionResult> UpdateAboutMe(int id, [FromBody] AboutMeDto dto)
         {
-            if (aboutMe == null)
+            if (dto == null)
                 return BadRequest("Ingen data skickades.");
+
+            var aboutMe = ToEntity(dto);
 
             // säkerställ att route-id gäller
             aboutMe.Id = id;
@@ -87,5 +90,31 @@ namespace SarasBloggAPI.Controllers
             await _imgSvc.DeleteAsync();
             return NoContent();
         }
+
+        private static AboutMeDto ToDto(AboutMe aboutMe) => new()
+        {
+            Id = aboutMe.Id,
+            Title = aboutMe.Title,
+            Content = aboutMe.Content,
+            Image = aboutMe.Image,
+            Name = aboutMe.Name,
+            City = aboutMe.City,
+            Age = aboutMe.Age,
+            Family = aboutMe.Family,
+            UserId = aboutMe.UserId
+        };
+
+        private static AboutMe ToEntity(AboutMeDto dto) => new()
+        {
+            Id = dto.Id,
+            Title = dto.Title,
+            Content = dto.Content,
+            Image = dto.Image,
+            Name = dto.Name,
+            City = dto.City,
+            Age = dto.Age,
+            Family = dto.Family,
+            UserId = dto.UserId
+        };
     }
 }

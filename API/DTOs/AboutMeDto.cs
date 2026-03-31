@@ -1,6 +1,6 @@
-﻿namespace SarasBloggAPI.Models
+namespace SarasBloggAPI.DTOs
 {
-    public class AboutMe
+    public class AboutMeDto
     {
         public int Id { get; set; }
         public string? Title { get; set; }

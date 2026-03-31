@@ -22,9 +22,25 @@ namespace SarasBlogg.Models
         [Display(Name = "Bild")]
         public string? Image { get; set; }
 
+        [JsonPropertyName("name")]
+        [DisplayName("Namn")]
+        public string? Name { get; set; }
+
+        [JsonPropertyName("city")]
+        [DisplayName("Stad")]
+        public string? City { get; set; }
+
+        [JsonPropertyName("age")]
+        [DisplayName("Ålder")]
+        public int? Age { get; set; }
+
+        [JsonPropertyName("family")]
+        [DisplayName("Familj")]
+        public string? Family { get; set; }
+
         [JsonPropertyName("userId")]
         [DisplayName("Användare")]
-        public string UserId { get; set; }
+        public string? UserId { get; set; }
 
     }
 }

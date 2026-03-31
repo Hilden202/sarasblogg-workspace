@@ -21,24 +21,57 @@
 			</button>
 		</div>
 	}
-	@if (Model.AboutMe != null && (!string.IsNullOrWhiteSpace(Model.AboutMe.Title) || !string.IsNullOrWhiteSpace(Model.AboutMe.Content)))
+	@if (Model.AboutMe != null && (
+		!string.IsNullOrWhiteSpace(Model.AboutMe.Title) ||
+		!string.IsNullOrWhiteSpace(Model.AboutMe.Content) ||
+		!string.IsNullOrWhiteSpace(Model.AboutMe.Image) ||
+		Model.AboutMeView.HasStructuredInfo))
 	{
-		<div class="d-flex align-items-start gap-4 aboutme-wrapper">
-			@if (!string.IsNullOrWhiteSpace(Model.AboutMe.Image))
+		<div class="aboutme-page">
+			<div class="aboutme-top">
+				@if (!string.IsNullOrWhiteSpace(Model.AboutMe.Image))
+				{
+					<div class="aboutme-image-col">
+						<img class="aboutme-img"
+							 src="@(Model.AboutMe.Image)"
+							 onerror="this.onerror=null; this.src='/img/blogg/default.png';"
+							 alt="Om Mig-bild" />
+					</div>
+				}
+
+				@if (Model.AboutMeView.HasStructuredInfo)
+				{
+					<div class="aboutme-structured">
+						@if (!string.IsNullOrWhiteSpace(Model.AboutMe.Name))
+						{
+							<p><strong>Namn:</strong> @Model.AboutMe.Name</p>
+						}
+						@if (!string.IsNullOrWhiteSpace(Model.AboutMe.City))
+						{
+							<p><strong>Stad:</strong> @Model.AboutMe.City</p>
+						}
+						@if (Model.AboutMe.Age.HasValue)
+						{
+							<p><strong>Ålder:</strong> @Model.AboutMe.Age</p>
+						}
+						@if (!string.IsNullOrWhiteSpace(Model.AboutMe.Family))
+						{
+							<p><strong>Familj:</strong> @Model.AboutMe.Family</p>
+						}
+					</div>
+				}
+			</div>
+
+			@if (!string.IsNullOrWhiteSpace(Model.AboutMe.Title))
 			{
-				<div>
-					<img class="aboutme-img"
-						 src="@(Model.AboutMe.Image)"
-						 onerror="this.onerror=null; this.src='/img/blogg/default.png';"
-						 alt="Om Mig-bild" />
-				</div>
+				<h3 class="blogg-title aboutme-title">@Model.AboutMe.Title</h3>
 			}
-			<div>
-				<h3 class="blogg-title">@Model.AboutMe.Title</h3>
-				<div class="blogg-content prose">
+			@if (!string.IsNullOrWhiteSpace(Model.AboutMe.Content))
+			{
+				<div class="blogg-content prose aboutme-content">
 					@Html.Raw(Model.AboutMe.Content)
 				</div>
-			</div>
+			}
 		</div>
 	}
 	else
@@ -65,6 +98,22 @@
 						<label asp-for="AboutMe.Content"></label>
 						<textarea asp-for="AboutMe.Content" id="AboutMeEditor" class="form-control" placeholder="Ange innehåll här" rows="10" cols="60"></textarea>
 						<span asp-validation-for="AboutMe.Content" class="text-danger"></span>
+						<br />
+						<label asp-for="AboutMe.Name"></label>
+						<input asp-for="AboutMe.Name" class="form-control" placeholder="Ange namn" maxlength="100" />
+						<span asp-validation-for="AboutMe.Name" class="text-danger"></span>
+						<br />
+						<label asp-for="AboutMe.City"></label>
+						<input asp-for="AboutMe.City" class="form-control" placeholder="Ange stad" maxlength="100" />
+						<span asp-validation-for="AboutMe.City" class="text-danger"></span>
+						<br />
+						<label asp-for="AboutMe.Age"></label>
+						<input asp-for="AboutMe.Age" type="number" class="form-control" min="0" max="120" />
+						<span asp-validation-for="AboutMe.Age" class="text-danger"></span>
+						<br />
+						<label asp-for="AboutMe.Family"></label>
+						<input asp-for="AboutMe.Family" class="form-control" placeholder="Valfri familjeinformation" maxlength="200" />
+						<span asp-validation-for="AboutMe.Family" class="text-danger"></span>
 						<br />
 						<!-- Bildhantering -->
 						<label asp-for="AboutMe.Image"></label>

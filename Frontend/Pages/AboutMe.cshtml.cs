@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using SarasBlogg.DAL;
+using SarasBlogg.ViewModels;
 
 namespace SarasBlogg.Pages
 {
@@ -21,6 +22,7 @@ namespace SarasBlogg.Pages
         [BindProperty] public IFormFile? AboutMeImage { get; set; }
         [BindProperty] public bool RemoveImage { get; set; }
         [BindProperty] public string? CroppedImageData { get; set; }
+        public AboutMeViewModel AboutMeView => AboutMeViewModel.From(AboutMe);
 
 
         public async Task OnGetAsync()
