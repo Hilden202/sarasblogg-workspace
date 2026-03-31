@@ -290,15 +290,21 @@ header {
     object-fit: cover;
     border-radius: 50%;
     flex-shrink: 0;
-    /* ta bort margin: 0 auto; så den inte “drar” mot kanten */
-}
 
+    display: block;
+    margin: 0 auto;
+}
 
 .aboutme-wrapper {
     display: flex;
-    flex-direction: row;
-    align-items: flex-start;
+    flex-direction: column;   /* 🔥 nyckeln */
+    align-items: center;      /* centrera allt */
+    text-align: center;
     gap: 1rem;
+}
+
+.aboutme-wrapper > div {
+    max-width: 350px;
 }
 
 @media (max-width: 768px) {
@@ -628,14 +634,6 @@ footer.border-top {
         text-align: center !important;
     }
 
-    .aboutme-img {
-        margin: 0 auto !important;
-        width: 130px !important;
-        height: 130px !important;
-        border-radius: 9999px !important;
-        object-fit: cover !important;
-    }
-
     .aboutme-image {
         display: flex;
         justify-content: center;
@@ -645,7 +643,7 @@ footer.border-top {
 
 /* 5) Säkra att om-mig inte får någon oväntad offset */
 .om-mig-box {
-    width: 100%
+    width: 100%;
     background: #fdf3ec !important; /* samma som kortens bg (#fdf3ec) */
     border: var(--bs-card-border-width, 1px) solid var(--bs-card-border-color, rgba(0,0,0,.125)) !important; /* samma kant som .card */
     border-radius: 20px !important; /* matcha .cards-container .card */
@@ -1272,7 +1270,7 @@ footer .footer-inner a:hover {
 
 /* === AboutMe preview fix (TinyMCE-safe truncation) === */
 .preview-inner {
-    max-height: 250px; /* justera efter smak */
+    max-height: 325px; /* justera efter smak */
     overflow: hidden;
 }
 
