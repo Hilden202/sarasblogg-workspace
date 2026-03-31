@@ -1278,3 +1278,19 @@ footer .footer-inner a:hover {
 .preview-inner p {
     margin-bottom: 0.5rem;
 }
+
+.cards-container .card-content {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+
+    white-space: normal;      /* 🔥 viktigt */
+    word-break: break-word;
+}
+
+/* 🔥 KRITISK FIX */
+.cards-container .card-content p {
+    margin: 0;
+    display: inline; /* ← gör att <p> inte bryter layouten */
+}
