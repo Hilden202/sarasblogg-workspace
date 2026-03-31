@@ -23,22 +23,28 @@
 	}
 	@if (Model.AboutMe != null && (!string.IsNullOrWhiteSpace(Model.AboutMe.Title) || !string.IsNullOrWhiteSpace(Model.AboutMe.Content)))
 	{
-		<div class="d-flex align-items-start gap-4 aboutme-wrapper">
-			@if (!string.IsNullOrWhiteSpace(Model.AboutMe.Image))
-			{
-				<div>
-					<img class="aboutme-img"
-						 src="@(Model.AboutMe.Image)"
-						 onerror="this.onerror=null; this.src='/img/blogg/default.png';"
-						 alt="Om Mig-bild" />
-				</div>
-			}
-			<div>
-				<h3 class="blogg-title">@Model.AboutMe.Title</h3>
-				<div class="blogg-content prose">
-					@Html.Raw(Model.AboutMe.Content)
-				</div>
-			</div>
+		<div class="aboutme-container">
+
+		    <div class="aboutme-top">
+		        @if (!string.IsNullOrWhiteSpace(Model.AboutMe.Image))
+		        {
+		            <div class="aboutme-image">
+		                <img class="aboutme-img"
+		                     src="@(Model.AboutMe.Image)"
+		                     onerror="this.onerror=null; this.src='/img/blogg/default.png';"
+		                     alt="Om Mig-bild" />
+		            </div>
+		        }
+
+		        <div class="aboutme-title">
+		            <h3 class="blogg-title">@Model.AboutMe.Title</h3>
+		        </div>
+		    </div>
+
+		    <div class="aboutme-content blogg-content prose">
+		        @Html.Raw(Model.AboutMe.Content)
+		    </div>
+
 		</div>
 	}
 	else

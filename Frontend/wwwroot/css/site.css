@@ -1268,3 +1268,13 @@ footer .footer-inner a:hover {
     color: #a08666 !important;
     text-decoration: underline !important;
 }
+
+/* === AboutMe preview fix (TinyMCE-safe truncation) === */
+.preview-inner {
+    max-height: 120px; /* justera efter smak */
+    overflow: hidden;
+}
+
+.preview-inner p {
+    margin-bottom: 0.5rem;
+}
