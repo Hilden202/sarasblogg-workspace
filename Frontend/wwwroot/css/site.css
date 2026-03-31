@@ -639,6 +639,11 @@ footer.border-top {
         justify-content: center;
         width: 100%;
     }
+
+    .aboutme-img {
+        display: block;
+        margin: 0 auto !important;
+    }
 }
 
 /* 5) Säkra att om-mig inte får någon oväntad offset */
