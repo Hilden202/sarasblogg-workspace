@@ -112,8 +112,6 @@ namespace SarasBlogg.Pages.Admin
                         UserId = row.Blogg.UserId
                     };
 
-                    ModelState.Clear();
-
                     if (NewBlogg.LaunchDate.Kind == DateTimeKind.Utc)
                     {
                         var se = TimeZoneInfo.ConvertTimeFromUtc(NewBlogg.LaunchDate, TzSe).Date;
@@ -132,8 +130,15 @@ namespace SarasBlogg.Pages.Admin
         // Skapa/ändra blogg: endast superadmin
         public async Task<IActionResult> OnPostAsync()
         {
-            ModelState.Clear();
+            IsSuperAdmin = User.IsInRole("superadmin");
+            if (!IsSuperAdmin) return Forbid();
 
+            if (!ModelState.IsValid)
+            {
+                await LoadBloggsWithImagesAsync();
+                return Page();
+            }
+            
             IsSuperAdmin = User.IsInRole("superadmin");
             if (!IsSuperAdmin) return Forbid();
 
@@ -150,8 +155,6 @@ namespace SarasBlogg.Pages.Admin
 
             if (NewBlogg.Id == 0)
             {
-                ModelState.Clear();
-
                 NewBlogg.Title = string.IsNullOrWhiteSpace(NewBlogg.Title)
                     ? null
                     : NewBlogg.Title;

@@ -536,3 +536,19 @@ a.blogg-link:visited {
         max-width: 100%;
     }
 }
+
+.blogg-content.preview-clamp {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+
+    white-space: normal;
+    word-break: break-word;
+}
+
+/* 🔥 viktig */
+.blogg-content.preview-clamp p {
+    display: inline;
+    margin: 0;
+}
