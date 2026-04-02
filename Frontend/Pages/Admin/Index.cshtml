@@ -55,7 +55,7 @@
 										@* Ändra: endast superadmin *@
 										@if (Model.IsSuperAdmin)
 										{
-											<a asp-page="/Blogg" asp-route-editId="@item.Blogg.Id" class="btn btn-outline-primary ms-1">Ändra</a>
+											<button type="button" onclick="window.location.href='/Blogg?editId=@item.Blogg.Id'" class="btn btn-outline-primary ms-1">Ändra</button>
 										}
 									</div>
 								</td>
@@ -85,7 +85,7 @@
 
 										@if (Model.IsSuperAdmin)
 										{
-											<a asp-page="/Blogg" asp-route-editId="@item.Blogg.Id" class="btn btn-outline-primary w-100">Ändra</a>
+											<button type="button" onclick="window.location.href='/Blogg?editId=@item.Blogg.Id'" class="btn btn-outline-primary w-100">Ändra</button>
 										}
 									</div>
 								</td>
@@ -203,7 +203,7 @@
 											@* Ändra: endast superadmin *@
 											@if (Model.IsSuperAdmin)
 											{
-												<a asp-page="/Blogg" asp-route-editId="@item.Blogg.Id" class="btn btn-outline-primary">Ändra</a>
+												<button type="button" onclick="window.location.href='/Blogg?editId=@item.Blogg.Id'" class="btn btn-outline-primary">Ändra</button>
 											}
 										</div>
 									</td>
@@ -235,7 +235,7 @@
 
 											@if (Model.IsSuperAdmin)
 											{
-												<a asp-page="/Blogg" asp-route-editId="@item.Blogg.Id" class="btn btn-outline-primary w-100">Ändra</a>
+												<button type="button" onclick="window.location.href='/Blogg?editId=@item.Blogg.Id'" class="btn btn-outline-primary w-100">Ändra</button>
 											}
 										</div>
 									</td>

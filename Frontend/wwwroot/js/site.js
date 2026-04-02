@@ -21,7 +21,6 @@ function scrollToSectionIfParamExists(paramName, options = {}) {
 
 window.addEventListener('DOMContentLoaded', function () {
     scrollToSectionIfParamExists('showId', { id: 'bloggTopSection' });
-    scrollToSectionIfParamExists('editId', { id: 'editFormSection' });
     scrollToSectionIfParamExists('reloadId', { prefix: 'reloadPageFormSection' });
     scrollToSectionIfParamExists('commentId', { id: 'commentForm' });
     scrollToSectionIfParamExists('contactId', { id: 'contactForm' });

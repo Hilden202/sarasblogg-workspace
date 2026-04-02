@@ -1,118 +1,251 @@
 ﻿@page
 @using Extensions
+@using System.Text.Json
 @model SarasBlogg.Pages.BloggModel
 @{
 	ViewData["Title"] = "Blogg";
 }
+
+@* Tre-punkts meny för superadmin *@
+@if (Model.IsSuperAdmin)
+{
+	<div class="mt-2 three-dots-container">
+		<div class="dropdown">
+			<button class="btn btn-outline-secondary btn-sm rounded-circle d-flex align-items-center justify-content-center three-dots-btn"
+					type="button" data-bs-toggle="dropdown" aria-expanded="false">
+				<span class="three-dots-icon">
+					<span class="three-dot">&#x2022;</span>
+					<span class="three-dot">&#x2022;</span>
+					<span class="three-dot">&#x2022;</span>
+				</span>
+			</button>
+			<ul class="dropdown-menu">
+				<li>
+					<a class="dropdown-item" href="#"
+					   onclick="event.preventDefault(); openEditor(null)">
+						Skapa nytt inlägg
+					</a>
+				</li>
+				@if (Model.ViewModel.Blogg != null)
+				{
+					<li>
+						<a class="dropdown-item" href="#"
+						   onclick="event.preventDefault(); openEditor(@Model.ViewModel.Blogg.Id)">
+							Ändra detta inlägg
+						</a>
+					</li>
+				}
+			</ul>
+		</div>
+	</div>
+}
+
 @if (Model.ViewModel.Blogg == null || (!Model.ViewModel.Blogg.IsArchived && !Model.ViewModel.Blogg.Hidden))
 {
 	@await Html.PartialAsync("_BloggList", Model.ViewModel)
 }
 
-<!-- FORMULÄR FÖR NY BLOGG / ÄNDRING: endast superadmin -->
+@* Modal för blogg-redigering: endast superadmin *@
 @if (Model.IsSuperAdmin)
 {
-	<div class="container-site mt-4">
-		<br />
-		<hr class="m-1 border" />
-		<br />
-
-		<form id="blogForm" class="white-panel p-3 border rounded shadow-sm" method="post"
-			  asp-page-handler="SaveBlogg" enctype="multipart/form-data"
-			  novalidate data-editor-token="@Model.EditorAccessToken">
-
-			<div class="text-danger mb-2">
-				@Html.ValidationSummary(excludePropertyErrors: true)
-			</div>
-
-			<input asp-for="NewBlogg.Id" type="hidden" />
-			<input asp-for="NewBlogg.UserId" type="hidden" />
-
-			<label asp-for="NewBlogg.Title"></label>
-			<input asp-for="NewBlogg.Title" class="form-control" placeholder="Ange bloggtitel här" maxlength="100" />
-			<span asp-validation-for="NewBlogg.Title" class="text-danger"></span>
-			<br />
-
-			<label asp-for="NewBlogg.Content"></label>
-			<textarea asp-for="NewBlogg.Content" id="ContentEditor" class="form-control" placeholder="Ange innehåll här"
-					  rows="10" cols="60"></textarea>
-			<span asp-validation-for="NewBlogg.Content" class="text-danger"></span>
-			<br />
-
-			<label asp-for="NewBlogg.Author"></label>
-			<input asp-for="NewBlogg.Author" class="form-control" placeholder="Ange författare här" maxlength="100" />
-			<span asp-validation-for="NewBlogg.Author" class="text-danger"></span>
-			<br />
-
-			<label asp-for="NewBlogg.LaunchDate"></label>
-			<input asp-for="NewBlogg.LaunchDate" type="date" asp-format="{0:yyyy-MM-dd}" class="form-control" />
-			<span asp-validation-for="NewBlogg.LaunchDate" class="text-danger"></span>
-			<br />
-
-			<!-- Bildhantering -->
-			<label asp-for="BloggImages">Ladda upp en eller flera bilder:</label>
-			<input asp-for="BloggImages" data-val="false" type="file" multiple
-				   accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif" class="form-control" />
-			<br />
-
-			@if (Model.EditedBloggWithImages?.Images?.Any() == true)
-			{
-				var firstImage = Model.EditedBloggWithImages.FirstImage;
-
-				<div class="mb-3">
-					<label>Nuvarande bilder:</label><br />
-					<div class="d-flex flex-wrap gap-2">
-						@if (firstImage != null)
-						{
-							<div class="d-flex flex-column align-items-center d-none">
-								<div class="img-wrapper position-relative">
-									<img src="@firstImage.FilePath" class="admin-blog-img border rounded"
-										 onerror="this.onerror=null; this.src='/img/blogg/default.png';" alt="Första bloggbild" />
-								</div>
-							</div>
-						}
-						@foreach (var img in Model.EditedBloggWithImages.Images)
-						{
-							var isFirst = img.Id == Model.EditedBloggWithImages.FirstImage?.Id;
-
-							<div class="d-flex flex-column align-items-center">
-								<div class="img-wrapper position-relative">
-									<img src="@img.FilePath" class="admin-blog-img border rounded"
-										 onerror="this.onerror=null; this.src='/img/blogg/default.png';" alt="Bloggbild" />
-
-									<input type="hidden" name="bloggId" value="@Model.EditedBloggWithImages.Blogg.Id" />
-
-									<button type="submit" asp-page-handler="DeleteImage" asp-route-imageId="@img.Id"
-											asp-route-bloggId="@Model.EditedBloggWithImages.Blogg.Id" formnovalidate
-											class="btn btn-sm btn-danger p-1" data-busy-text="Tar bort…"
-											onclick="return handleDeleteButton(event, 'Ta bort bilden?')">
-										&times;
-									</button>
-								</div>
-
-								@if (isFirst)
-								{
-									<small class="text-info mt-1">Första bild</small>
-								}
-								else
-								{
-									<button type="submit" asp-page-handler="SetFirstImage" asp-route-imageId="@img.Id"
-											asp-route-bloggId="@Model.EditedBloggWithImages.Blogg.Id" formnovalidate
-											class="btn btn-sm btn-outline-primary" data-busy-text="Uppdaterar…">
-										Gör till första bild
-									</button>
-								}
-							</div>
-						}
-					</div>
+	<div class="modal fade" id="blogEditorModal" tabindex="-1"
+		 aria-labelledby="blogEditorModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="blogEditorModalLabel">Redigera blogg</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Stäng"></button>
 				</div>
+				<div class="modal-body">
+					<form id="blogForm" method="post"
+						  asp-page-handler="SaveBlogg" enctype="multipart/form-data"
+						  novalidate data-editor-token="@Model.EditorAccessToken">
+
+						<div class="text-danger mb-2">
+							@Html.ValidationSummary(excludePropertyErrors: true)
+						</div>
+
+						<input asp-for="NewBlogg.Id" type="hidden" />
+						<input asp-for="NewBlogg.UserId" type="hidden" />
+
+						<label asp-for="NewBlogg.Title"></label>
+						<input asp-for="NewBlogg.Title" class="form-control" placeholder="Ange bloggtitel här" maxlength="100" />
+						<span asp-validation-for="NewBlogg.Title" class="text-danger"></span>
+						<br />
+
+						<label asp-for="NewBlogg.Content"></label>
+						<textarea asp-for="NewBlogg.Content" id="ContentEditor" class="form-control"
+								  placeholder="Ange innehåll här" rows="10" cols="60"></textarea>
+						<span asp-validation-for="NewBlogg.Content" class="text-danger"></span>
+						<br />
+
+						<label asp-for="NewBlogg.Author"></label>
+						<input asp-for="NewBlogg.Author" class="form-control" placeholder="Ange författare här" maxlength="100" />
+						<span asp-validation-for="NewBlogg.Author" class="text-danger"></span>
+						<br />
+
+						<label asp-for="NewBlogg.LaunchDate"></label>
+						<input asp-for="NewBlogg.LaunchDate" type="date" asp-format="{0:yyyy-MM-dd}" class="form-control" />
+						<span asp-validation-for="NewBlogg.LaunchDate" class="text-danger"></span>
+						<br />
+
+						<!-- Bildhantering -->
+						<label asp-for="BloggImages">Ladda upp en eller flera bilder:</label>
+						<input asp-for="BloggImages" data-val="false" type="file" multiple
+							   accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif" class="form-control" />
+						<br />
+
+						@if (Model.EditedBloggWithImages?.Images?.Any() == true)
+						{
+							var firstImage = Model.EditedBloggWithImages.FirstImage;
+
+							<div class="mb-3">
+								<label>Nuvarande bilder:</label><br />
+								<div class="d-flex flex-wrap gap-2">
+									@if (firstImage != null)
+									{
+										<div class="d-flex flex-column align-items-center d-none">
+											<div class="img-wrapper position-relative">
+												<img src="@firstImage.FilePath" class="admin-blog-img border rounded"
+													 onerror="this.onerror=null; this.src='/img/blogg/default.png';" alt="Första bloggbild" />
+											</div>
+										</div>
+									}
+									@foreach (var img in Model.EditedBloggWithImages.Images)
+									{
+										var isFirst = img.Id == Model.EditedBloggWithImages.FirstImage?.Id;
+
+										<div class="d-flex flex-column align-items-center">
+											<div class="img-wrapper position-relative">
+												<img src="@img.FilePath" class="admin-blog-img border rounded"
+													 onerror="this.onerror=null; this.src='/img/blogg/default.png';" alt="Bloggbild" />
+
+												<input type="hidden" name="bloggId" value="@Model.EditedBloggWithImages.Blogg.Id" />
+
+												<button type="submit" asp-page-handler="DeleteImage" asp-route-imageId="@img.Id"
+														asp-route-bloggId="@Model.EditedBloggWithImages.Blogg.Id" formnovalidate
+														class="btn btn-sm btn-danger p-1" data-busy-text="Tar bort…"
+														onclick="return handleDeleteButton(event, 'Ta bort bilden?')">
+													&times;
+												</button>
+											</div>
+
+											@if (isFirst)
+											{
+												<small class="text-info mt-1">Första bild</small>
+											}
+											else
+											{
+												<button type="submit" asp-page-handler="SetFirstImage" asp-route-imageId="@img.Id"
+														asp-route-bloggId="@Model.EditedBloggWithImages.Blogg.Id" formnovalidate
+														class="btn btn-sm btn-outline-primary" data-busy-text="Uppdaterar…">
+													Gör till första bild
+												</button>
+											}
+										</div>
+									}
+								</div>
+							</div>
+						}
+
+						<button id="saveBtn" type="submit" class="btn btn-success" data-busy-text="Sparar…">
+							Skapa ny blogg/spara ändringar
+						</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		// Bloggar tillgängliga i listvy (publicerade, icke-dolda)
+		const bloggListData = @Html.Raw(JsonSerializer.Serialize(
+			(Model.ViewModel.Bloggs ?? new List<SarasBlogg.Models.Blogg>()).Select(b => new {
+				id         = b.Id,
+				title      = b.Title,
+				content    = b.Content,
+				author     = b.Author,
+				launchDate = b.LaunchDate.ToString("yyyy-MM-dd"),
+				userId     = b.UserId
+			})
+		));
+
+		// Aktuell blogg i detaljvy (om någon visas)
+		@if (Model.ViewModel.Blogg != null)
+		{
+			<text>
+		const currentBloggData = @Html.Raw(JsonSerializer.Serialize(new {
+			id         = Model.ViewModel.Blogg.Id,
+			title      = Model.ViewModel.Blogg.Title,
+			content    = Model.ViewModel.Blogg.Content,
+			author     = Model.ViewModel.Blogg.Author,
+			launchDate = Model.ViewModel.Blogg.LaunchDate.ToString("yyyy-MM-dd"),
+			userId     = Model.ViewModel.Blogg.UserId
+		}));
+			</text>
+		}
+		else
+		{
+			<text>
+		const currentBloggData = null;
+			</text>
+		}
+
+		function openEditor(blogId) {
+			const modalEl = document.getElementById('blogEditorModal');
+			const form    = document.getElementById('blogForm');
+			const titleEl = document.getElementById('blogEditorModalLabel');
+
+			if (blogId) {
+				const blog = (currentBloggData && currentBloggData.id === blogId)
+					? currentBloggData
+					: (bloggListData.find(b => b.id === blogId) || null);
+
+				if (!blog) return;
+
+				titleEl.textContent = 'Redigera blogg';
+				form.querySelector('[name="NewBlogg.Id"]').value       = blog.id;
+				form.querySelector('[name="NewBlogg.UserId"]').value   = blog.userId || '';
+				form.querySelector('[name="NewBlogg.Title"]').value    = blog.title || '';
+				form.querySelector('[name="NewBlogg.Author"]').value   = blog.author || '';
+				form.querySelector('[name="NewBlogg.LaunchDate"]').value = blog.launchDate || '';
+
+				const editor = (typeof tinymce !== 'undefined') ? tinymce.get('ContentEditor') : null;
+				if (editor) editor.setContent(blog.content || '');
+				else document.getElementById('ContentEditor').value = blog.content || '';
+
+			} else {
+				titleEl.textContent = 'Skapa nytt inlägg';
+				form.querySelector('[name="NewBlogg.Id"]').value       = '0';
+				form.querySelector('[name="NewBlogg.UserId"]').value   = '';
+				form.querySelector('[name="NewBlogg.Title"]').value    = '';
+				form.querySelector('[name="NewBlogg.Author"]').value   = '';
+				form.querySelector('[name="NewBlogg.LaunchDate"]').value =
+					new Date().toISOString().slice(0, 10);
+
+				const editor = (typeof tinymce !== 'undefined') ? tinymce.get('ContentEditor') : null;
+				if (editor) editor.setContent('');
+				else document.getElementById('ContentEditor').value = '';
 			}
 
-			<button id="saveBtn" type="submit" class="btn btn-success" data-busy-text="Sparar…">
-				Skapa ny blogg/spara ändringar
-			</button>
-		</form>
-	</div>
+			bootstrap.Modal.getOrCreateInstance(modalEl).show();
+		}
+
+		function closeEditor() {
+			const inst = bootstrap.Modal.getInstance(
+				document.getElementById('blogEditorModal'));
+			if (inst) inst.hide();
+		}
+
+		// Öppna automatiskt om formuläret är förifyllt via editId (server-side)
+		document.addEventListener('DOMContentLoaded', function () {
+			if (@(Model.NewBlogg.Id) > 0) {
+				document.getElementById('blogEditorModalLabel').textContent = 'Redigera blogg';
+				bootstrap.Modal.getOrCreateInstance(
+					document.getElementById('blogEditorModal')).show();
+			}
+		});
+	</script>
 }
 
 @section Scripts {
