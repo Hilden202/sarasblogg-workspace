@@ -43,7 +43,6 @@ namespace SarasBlogg.Pages
 
             await OnGetCoreAsync(showId, id, openComments);
 
-            NewBlogg ??= new Blogg();
             if (NewBlogg.Id == 0 && NewBlogg.LaunchDate == default)
             {
                 var todaySe = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TzSe).Date;

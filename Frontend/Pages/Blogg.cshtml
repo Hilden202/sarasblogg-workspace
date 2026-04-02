@@ -167,7 +167,8 @@
 				author     = b.Author,
 				launchDate = b.LaunchDate.ToString("yyyy-MM-dd"),
 				userId     = b.UserId
-			})
+			}),
+			new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.Default }
 		));
 
 		// Aktuell blogg i detaljvy (om någon visas)
@@ -181,7 +182,8 @@
 			author     = Model.ViewModel.Blogg.Author,
 			launchDate = Model.ViewModel.Blogg.LaunchDate.ToString("yyyy-MM-dd"),
 			userId     = Model.ViewModel.Blogg.UserId
-		}));
+		},
+		new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.Default }));
 			</text>
 		}
 		else
