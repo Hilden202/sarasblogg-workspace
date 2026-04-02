@@ -99,7 +99,7 @@
 						{
 							var firstImage = Model.EditedBloggWithImages.FirstImage;
 
-							<div class="mb-3">
+							<div class="mb-3" id="editImagesSection">
 								<label>Nuvarande bilder:</label><br />
 								<div class="d-flex flex-wrap gap-2">
 									@if (firstImage != null)
@@ -193,10 +193,30 @@
 			</text>
 		}
 
+		function setEditorContent(content) {
+			const editor = (typeof tinymce !== 'undefined') ? tinymce.get('ContentEditor') : null;
+			if (editor) {
+				editor.setContent(content || '');
+			} else {
+				const ta = document.getElementById('ContentEditor');
+				if (ta) ta.value = content || '';
+				// TinyMCE not yet initialised — set content when it is ready
+				if (typeof tinymce !== 'undefined') {
+					tinymce.on('AddEditor', function onAdd(e) {
+						if (e.editor.id === 'ContentEditor') {
+							e.editor.setContent(content || '');
+							tinymce.off('AddEditor', onAdd);
+						}
+					});
+				}
+			}
+		}
+
 		function openEditor(blogId) {
-			const modalEl = document.getElementById('blogEditorModal');
-			const form    = document.getElementById('blogForm');
-			const titleEl = document.getElementById('blogEditorModalLabel');
+			const modalEl   = document.getElementById('blogEditorModal');
+			const form      = document.getElementById('blogForm');
+			const titleEl   = document.getElementById('blogEditorModalLabel');
+			const imgSection = document.getElementById('editImagesSection');
 
 			if (blogId) {
 				const blog = (currentBloggData && currentBloggData.id === blogId)
@@ -206,28 +226,24 @@
 				if (!blog) return;
 
 				titleEl.textContent = 'Redigera blogg';
-				form.querySelector('[name="NewBlogg.Id"]').value       = blog.id;
-				form.querySelector('[name="NewBlogg.UserId"]').value   = blog.userId || '';
-				form.querySelector('[name="NewBlogg.Title"]').value    = blog.title || '';
-				form.querySelector('[name="NewBlogg.Author"]').value   = blog.author || '';
+				form.querySelector('[name="NewBlogg.Id"]').value        = blog.id;
+				form.querySelector('[name="NewBlogg.UserId"]').value    = blog.userId || '';
+				form.querySelector('[name="NewBlogg.Title"]').value     = blog.title || '';
+				form.querySelector('[name="NewBlogg.Author"]').value    = blog.author || '';
 				form.querySelector('[name="NewBlogg.LaunchDate"]').value = blog.launchDate || '';
-
-				const editor = (typeof tinymce !== 'undefined') ? tinymce.get('ContentEditor') : null;
-				if (editor) editor.setContent(blog.content || '');
-				else document.getElementById('ContentEditor').value = blog.content || '';
+				setEditorContent(blog.content);
+				if (imgSection) imgSection.style.display = '';
 
 			} else {
 				titleEl.textContent = 'Skapa nytt inlägg';
-				form.querySelector('[name="NewBlogg.Id"]').value       = '0';
-				form.querySelector('[name="NewBlogg.UserId"]').value   = '';
-				form.querySelector('[name="NewBlogg.Title"]').value    = '';
-				form.querySelector('[name="NewBlogg.Author"]').value   = '';
+				form.querySelector('[name="NewBlogg.Id"]').value        = '0';
+				form.querySelector('[name="NewBlogg.UserId"]').value    = '';
+				form.querySelector('[name="NewBlogg.Title"]').value     = '';
+				form.querySelector('[name="NewBlogg.Author"]').value    = '';
 				form.querySelector('[name="NewBlogg.LaunchDate"]').value =
 					new Date().toISOString().slice(0, 10);
-
-				const editor = (typeof tinymce !== 'undefined') ? tinymce.get('ContentEditor') : null;
-				if (editor) editor.setContent('');
-				else document.getElementById('ContentEditor').value = '';
+				setEditorContent('');
+				if (imgSection) imgSection.style.display = 'none';
 			}
 
 			bootstrap.Modal.getOrCreateInstance(modalEl).show();
@@ -239,9 +255,9 @@
 			if (inst) inst.hide();
 		}
 
-		// Öppna automatiskt om formuläret är förifyllt via editId (server-side)
+		// Auto-open modal when page was loaded via ?editId=X (not after save with ?showId=X)
 		document.addEventListener('DOMContentLoaded', function () {
-			if (@(Model.NewBlogg.Id) > 0) {
+			if (new URLSearchParams(location.search).has('editId')) {
 				document.getElementById('blogEditorModalLabel').textContent = 'Redigera blogg';
 				bootstrap.Modal.getOrCreateInstance(
 					document.getElementById('blogEditorModal')).show();

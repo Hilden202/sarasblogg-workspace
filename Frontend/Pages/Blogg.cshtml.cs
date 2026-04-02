@@ -159,7 +159,7 @@ namespace SarasBlogg.Pages
             if (uploadErrors.Count > 0)
                 TempData["UploadErrors"] = string.Join("\n", uploadErrors);
 
-            return RedirectToPage();
+            return RedirectToPage(new { showId = NewBlogg.Id });
         }
 
         // Endast superadmin
