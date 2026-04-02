@@ -265,10 +265,12 @@ namespace SarasBloggAPI
                     "em", "span", "a", "img"
                 });
                 s.AllowedAttributes.UnionWith(new[]
-                    { "href", "title", "src", "alt", "width", "height", "loading", "decoding", "rel", "class" });
+                    { "href", "title", "src", "alt", "width", "height", "loading", "decoding", "rel", "class", "style" });
                 s.AllowedSchemes.UnionWith(new[] { "https", "mailto" });
                 s.AllowedClasses.Clear();
                 s.AllowedClasses.UnionWith(new[] { "soft-box", "sara-quote", "image-collage" });
+                s.AllowedCssProperties.Clear();
+                s.AllowedCssProperties.UnionWith(new[] { "font-family", "font-size", "color", "background-color" });
                 s.PostProcessNode += (_, args) =>
                 {
                     if (args.Node is IElement element &&

@@ -19,12 +19,19 @@ function initTinyMCE(selector, options = {}) {
         // 📚 Typsnitt
         font_family_formats:
             "Cormorant Garamond=Cormorant Garamond,serif;" +
+            "Roboto=Roboto,Arial,sans-serif;" +
+            "Lato=Lato,Arial,sans-serif;" +
+            "Merriweather=Merriweather,Georgia,serif;" +
+            "Montserrat=Montserrat,Arial,sans-serif;" +
             "Arial=arial,helvetica,sans-serif;" +
             "Georgia=georgia,serif;" +
             "Times New Roman='Times New Roman',times,serif;" +
             "Verdana=verdana,geneva,sans-serif;" +
             "Courier New='Courier New',courier,monospace;" +
             "Lucida Handwriting='Lucida Handwriting',cursive;",
+
+        // 🌐 Ladda Google Fonts inuti TinyMCE-editorn
+        content_css: "https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Lato:wght@400;700&family=Merriweather:wght@400;700&family=Montserrat:wght@400;700&display=swap",
 
         // 🔠 Storlekar
         font_size_formats:
