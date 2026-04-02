@@ -96,7 +96,6 @@ namespace SarasBlogg.Pages
 
             if (!ModelState.IsValid)
             {
-                IsSuperAdmin = true;
                 EditorAccessToken = await _bloggApi.GetEditorAccessTokenAsync();
                 await OnGetCoreAsync(0, 0, false);
                 return Page();
@@ -119,7 +118,6 @@ namespace SarasBlogg.Pages
                 if (savedBlogg == null)
                 {
                     ModelState.AddModelError(string.Empty, "Kunde inte spara blogg.");
-                    IsSuperAdmin = true;
                     EditorAccessToken = await _bloggApi.GetEditorAccessTokenAsync();
                     await OnGetCoreAsync(0, 0, false);
                     return Page();
