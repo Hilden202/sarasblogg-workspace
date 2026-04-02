@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -17,59 +16,34 @@ namespace SarasBlogg.Pages.Admin
         private readonly BloggAPIManager _bloggApi;
         private readonly BloggImageAPIManager _imageApi;
         private readonly CommentAPIManager _commentApi;
-        private readonly IAccessTokenStore _tokenStore;
 
         // Cache-tjänst (publik listcache)
         private readonly BloggService _bloggService;
-
-        // Svensk tidszon för tolkning av datum i formuläret
-        private static readonly TimeZoneInfo TzSe = TimeZoneInfo.FindSystemTimeZoneById("Europe/Stockholm");
 
         public IndexModel(
             BloggAPIManager bloggApi,
             BloggImageAPIManager imageApi,
             CommentAPIManager commentApi,
-            BloggService bloggService,
-            IAccessTokenStore tokenStore)
+            BloggService bloggService)
         {
             _bloggApi = bloggApi;
             _imageApi = imageApi;
             _commentApi = commentApi;
             _bloggService = bloggService;
-            _tokenStore = tokenStore;
-
-            NewBlogg = new Models.Blogg();
         }
 
-        public string? EditorAccessToken { get; private set; }
-
         public List<BloggWithImage> BloggsWithImage { get; set; } = new();
-        public BloggWithImage? EditedBloggWithImages { get; set; }
-
-        [BindProperty]
-        public Models.Blogg NewBlogg { get; set; }
-
-        [BindProperty]
-        public IFormFile[]? BloggImages { get; set; } = Array.Empty<IFormFile>();
 
         public bool IsAdmin { get; set; }
         public bool IsSuperAdmin { get; set; }
         public bool IsSuperUser { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(int? hiddenId, int? archiveId, int? editId)
+        public async Task<IActionResult> OnGetAsync(int? hiddenId, int? archiveId)
         {
             // roles
             IsAdmin = User.IsInRole("admin");
             IsSuperAdmin = User.IsInRole("superadmin");
             IsSuperUser = User.IsInRole("superuser");
-
-            // Default date for the form (SE)
-            NewBlogg ??= new Models.Blogg();
-            if (NewBlogg.Id == 0 && NewBlogg.LaunchDate == default)
-            {
-                var todaySe = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TzSe).Date;
-                NewBlogg.LaunchDate = DateTime.SpecifyKind(todaySe, DateTimeKind.Unspecified);
-            }
 
             // ---- Toggle HIDDEN (admin + superadmin) ----
             if ((IsAdmin || IsSuperAdmin) && hiddenId is int hid and > 0)
@@ -90,167 +64,7 @@ namespace SarasBlogg.Pages.Admin
             // load lists
             await LoadBloggsWithImagesAsync();
 
-            if (IsSuperAdmin)
-            {
-                EditorAccessToken = await _bloggApi.GetEditorAccessTokenAsync();
-            }
-
-            // open edit form (superadmin)
-            if (IsSuperAdmin && editId.HasValue && editId.Value != 0)
-            {
-                var row = BloggsWithImage.FirstOrDefault(x => x.Blogg.Id == editId.Value);
-                if (row != null)
-                {
-                    EditedBloggWithImages = new BloggWithImage { Blogg = row.Blogg, Images = row.Images };
-                    NewBlogg = new Models.Blogg
-                    {
-                        Id = row.Blogg.Id,
-                        Title = row.Blogg.Title,
-                        Content = row.Blogg.Content,
-                        Author = row.Blogg.Author,
-                        LaunchDate = row.Blogg.LaunchDate,
-                        UserId = row.Blogg.UserId
-                    };
-
-                    if (NewBlogg.LaunchDate.Kind == DateTimeKind.Utc)
-                    {
-                        var se = TimeZoneInfo.ConvertTimeFromUtc(NewBlogg.LaunchDate, TzSe).Date;
-                        NewBlogg.LaunchDate = DateTime.SpecifyKind(se, DateTimeKind.Unspecified);
-                    }
-                    else
-                    {
-                        NewBlogg.LaunchDate = DateTime.SpecifyKind(NewBlogg.LaunchDate.Date, DateTimeKind.Unspecified);
-                    }
-                }
-            }
-
             return Page();
-        }
-
-        // Skapa/ändra blogg: endast superadmin
-        public async Task<IActionResult> OnPostAsync()
-        {
-            IsSuperAdmin = User.IsInRole("superadmin");
-            if (!IsSuperAdmin) return Forbid();
-
-            if (!ModelState.IsValid)
-            {
-                await LoadBloggsWithImagesAsync();
-                return Page();
-            }
-            
-            IsSuperAdmin = User.IsInRole("superadmin");
-            if (!IsSuperAdmin) return Forbid();
-
-            var uploadErrors = new List<string>();
-            var currentBlogg = await _bloggApi.GetBloggAsync(NewBlogg.Id);
-
-            // Sätt användar-id
-            NewBlogg.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            // Tolkning av <input type="date">: svensk kalenderdag -> UTC midnatt
-            var localDate = DateTime.SpecifyKind(NewBlogg.LaunchDate.Date, DateTimeKind.Unspecified);
-            var utcDate = TimeZoneInfo.ConvertTimeToUtc(localDate, TzSe);
-            NewBlogg.LaunchDate = utcDate;
-
-            if (NewBlogg.Id == 0)
-            {
-                NewBlogg.Title = string.IsNullOrWhiteSpace(NewBlogg.Title)
-                    ? null
-                    : NewBlogg.Title;
-
-                var savedBlogg = await _bloggApi.SaveBloggAsync(NewBlogg);
-                if (savedBlogg == null)
-                {
-                    ModelState.AddModelError(string.Empty, "Kunde inte spara blogg.");
-                    await LoadBloggsWithImagesAsync();
-                    return Page();
-                }
-
-                // Sätt Id från API:t
-                NewBlogg.Id = savedBlogg.Id;
-            }
-            else
-            {
-                if (currentBlogg == null)
-                    return NotFound();
-
-                currentBlogg.Title = string.IsNullOrWhiteSpace(NewBlogg.Title)
-                    ? null
-                    : NewBlogg.Title;
-
-                currentBlogg.Content = NewBlogg.Content;
-                currentBlogg.Author = NewBlogg.Author;
-                currentBlogg.LaunchDate = NewBlogg.LaunchDate;
-                currentBlogg.UserId = NewBlogg.UserId;
-
-                await _bloggApi.UpdateBloggAsync(currentBlogg);
-            }
-
-            // Bilduppladdning
-            if (BloggImages is { Length: > 0 })
-            {
-                foreach (var f in BloggImages.Where(f => f != null && f.Length > 0))
-                {
-                    try
-                    {
-                        await _imageApi.UploadImageAsync(f, NewBlogg.Id);
-                        await Task.Delay(200);
-                    }
-                    catch (Exception ex)
-                    {
-                        uploadErrors.Add($"Kunde inte ladda upp {f.FileName}: {ex.Message}");
-                    }
-                }
-            }
-
-            _bloggService.InvalidateBlogListCache();
-
-            if (uploadErrors.Count > 0)
-                TempData["UploadErrors"] = string.Join("\n", uploadErrors);
-
-            return RedirectToPage();
-        }
-
-        // Endast superadmin
-        public async Task<IActionResult> OnPostSetFirstImageAsync(int imageId, int bloggId)
-        {
-            if (!User.IsInRole("superadmin")) return Forbid();
-            var images = await _imageApi.GetImagesByBloggIdAsync(bloggId);
-            var imageToSet = images.FirstOrDefault(i => i.Id == imageId);
-
-            if (imageToSet != null)
-            {
-                images.Remove(imageToSet);
-                images.Insert(0, imageToSet);
-
-                await _imageApi.UpdateImageOrderAsync(bloggId, images);
-                _bloggService.InvalidateBlogListCache();
-            }
-
-            return RedirectToPage(new { editId = bloggId });
-        }
-
-        // Endast superadmin
-        public async Task<IActionResult> OnPostDeleteImageAsync(int imageId, int bloggId)
-        {
-            if (!User.IsInRole("superadmin")) return Forbid();
-            await _imageApi.DeleteImageAsync(imageId);
-            _bloggService.InvalidateBlogListCache();
-
-            await LoadBloggsWithImagesAsync();
-
-            var blogg = BloggsWithImage.FirstOrDefault(b => b.Blogg.Id == bloggId);
-            if (blogg != null)
-            {
-                EditedBloggWithImages = new BloggWithImage
-                {
-                    Blogg = blogg.Blogg,
-                    Images = blogg.Images
-                };
-            }
-
-            return RedirectToPage(new { editId = bloggId });
         }
 
         [ValidateAntiForgeryToken]
