@@ -49,12 +49,15 @@
 								 onerror="this.onerror=null; this.src='/img/blogg/default.png';"
 								 alt="Bild för @blogg.Title" />
 						</div>
-						@if (!string.IsNullOrWhiteSpace(blogg.Title))
+						@{
+							var autoTitle = BloggTextHelper.IsTitleFromContent(blogg.Title, blogg.Content);
+						}
+						@if (!string.IsNullOrWhiteSpace(blogg.Title) && !autoTitle)
 						{
 							<h5 class="card-title blogg-title">@blogg.Title</h5>
 						}
 						<div class="card-text blogg-content prose preview-clamp">
-							@Html.Raw(BloggTextHelper.RemoveLeadingDuplicateContent(blogg.Title, blogg.Content))
+							@Html.Raw(autoTitle ? blogg.Content : BloggTextHelper.RemoveLeadingDuplicateContent(blogg.Title, blogg.Content))
 						</div>
 						<p class="text-faded">
 							<small class="text-faded">
@@ -182,7 +185,10 @@
 					&larr; Till listan
 				</a>
 
-				<h3 class="card-title blogg-title">@Model.Blogg.Title</h3>
+				@if (!BloggTextHelper.IsTitleFromContent(Model.Blogg.Title, Model.Blogg.Content))
+				{
+					<h3 class="card-title blogg-title">@Model.Blogg.Title</h3>
+				}
                                 <div class="card-text blogg-content prose">@Html.Raw(Model.Blogg.Content)</div>
 				<p class="text-faded">
 					<strong>Författare:</strong> @Model.Blogg.Author<br />
