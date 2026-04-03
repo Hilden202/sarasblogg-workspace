@@ -270,7 +270,7 @@ namespace SarasBloggAPI
                 s.AllowedClasses.Clear();
                 s.AllowedClasses.UnionWith(new[] { "soft-box", "sara-quote", "image-collage" });
                 s.AllowedCssProperties.Clear();
-                s.AllowedCssProperties.UnionWith(new[] { "font-family", "font-size", "color", "background-color" });
+                s.AllowedCssProperties.UnionWith(new[] { "font-family", "font-size", "color", "background-color", "text-align" });
                 s.PostProcessNode += (_, args) =>
                 {
                     if (args.Node is IElement element &&
