@@ -16,21 +16,6 @@ function initTinyMCE(selector, options = {}) {
         block_formats: "Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3",
         convert_urls: false,
 
-        // 🔠 Allow inline styles on any element
-        valid_styles: { '*': 'text-align,display,color,background-color,font-family,font-size,font-weight,font-style,text-decoration' },
-        extended_valid_elements: 'span[style|class]',
-
-        forced_root_block: 'p',
-        remove_trailing_brs: false,
-
-        // 📐 Block-level alignment formats
-        formats: {
-            alignleft:    { selector: 'p,h1,h2,h3,h4,h5,h6,div,li,td,th', styles: { 'text-align': 'left' } },
-            aligncenter:  { selector: 'p,h1,h2,h3,h4,h5,h6,div,li,td,th', styles: { 'text-align': 'center' } },
-            alignright:   { selector: 'p,h1,h2,h3,h4,h5,h6,div,li,td,th', styles: { 'text-align': 'right' } },
-            alignjustify: { selector: 'p,h1,h2,h3,h4,h5,h6,div,li,td,th', styles: { 'text-align': 'justify' } }
-        },
-
         // 📚 Typsnitt
         font_family_formats:
             "Cormorant Garamond=Cormorant Garamond,serif;" +
