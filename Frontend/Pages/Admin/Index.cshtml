@@ -10,6 +10,14 @@
 	{
 		<partial name="/Pages/Admin/_AdminNav.cshtml" />
 
+		<!-- SKAPA NYTT INLÄGG -->
+		@if (Model.IsSuperAdmin)
+		{
+			<div class="mb-3">
+				<button type="button" class="btn btn-primary" onclick="openEditor(0)">Skapa nytt inlägg</button>
+			</div>
+		}
+
 		<!-- LISTA PUBLICERADE BLOGGAR -->
 		<h2>Lista Publicerade Bloggar</h2>
 		@if (Model.BloggsWithImage != null && Model.BloggsWithImage.Any(b => !b.Blogg.Hidden))
