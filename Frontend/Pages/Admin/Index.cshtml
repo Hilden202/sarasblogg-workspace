@@ -1,4 +1,5 @@
 ﻿@page
+@using System.Text.Json
 @model SarasBlogg.Pages.Admin.IndexModel
 @{
 	var todaySE = DateTime.UtcNow.ToSwedishTime().Date;
@@ -55,7 +56,7 @@
 										@* Ändra: endast superadmin *@
 										@if (Model.IsSuperAdmin)
 										{
-											<button type="button" onclick="window.location.href='/Blogg?editId=@item.Blogg.Id'" class="btn btn-outline-primary ms-1">Ändra</button>
+											<button type="button" onclick="openEditor(@item.Blogg.Id)" class="btn btn-outline-primary ms-1">Ändra</button>
 										}
 									</div>
 								</td>
@@ -85,7 +86,7 @@
 
 										@if (Model.IsSuperAdmin)
 										{
-											<button type="button" onclick="window.location.href='/Blogg?editId=@item.Blogg.Id'" class="btn btn-outline-primary w-100">Ändra</button>
+											<button type="button" onclick="openEditor(@item.Blogg.Id)" class="btn btn-outline-primary w-100">Ändra</button>
 										}
 									</div>
 								</td>
@@ -203,7 +204,7 @@
 											@* Ändra: endast superadmin *@
 											@if (Model.IsSuperAdmin)
 											{
-												<button type="button" onclick="window.location.href='/Blogg?editId=@item.Blogg.Id'" class="btn btn-outline-primary">Ändra</button>
+												<button type="button" onclick="openEditor(@item.Blogg.Id)" class="btn btn-outline-primary">Ändra</button>
 											}
 										</div>
 									</td>
@@ -235,7 +236,7 @@
 
 											@if (Model.IsSuperAdmin)
 											{
-												<button type="button" onclick="window.location.href='/Blogg?editId=@item.Blogg.Id'" class="btn btn-outline-primary w-100">Ändra</button>
+												<button type="button" onclick="openEditor(@item.Blogg.Id)" class="btn btn-outline-primary w-100">Ändra</button>
 											}
 										</div>
 									</td>
@@ -303,3 +304,36 @@
 				<p class="text-danger">Du måste vara inloggad för att komma åt denna sida.</p>
 			}
 		</div>
+
+@if (Model.IsSuperAdmin)
+{
+	@await Html.PartialAsync("_BloggEditorModal", new SarasBlogg.ViewModels.BloggEditorModalModel {
+		EditorAccessToken     = Model.EditorAccessToken,
+		EditedBloggWithImages = null,
+		NewBlogg              = new SarasBlogg.Models.Blogg()
+	})
+
+	<script>
+		const bloggListData = @Html.Raw(JsonSerializer.Serialize(
+			(Model.BloggsWithImage ?? new List<BloggWithImage>()).Select(b => new {
+				id         = b.Blogg.Id,
+				title      = b.Blogg.Title,
+				content    = b.Blogg.Content,
+				author     = b.Blogg.Author,
+				launchDate = b.Blogg.LaunchDate.ToSwedishTime().ToString("yyyy-MM-dd"),
+				userId     = b.Blogg.UserId
+			}),
+			new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.Default }
+		));
+		const currentBloggData = null;
+	</script>
+}
+
+@section Scripts {
+	@if (Model.IsSuperAdmin)
+	{
+		<script src="~/lib/tinymce/tinymce.min.js"></script>
+		<script src="~/js/blogg-editor.js"></script>
+		<script src="~/js/tinymce-config.admin.v3.js"></script>
+	}
+}

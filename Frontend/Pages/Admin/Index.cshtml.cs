@@ -37,6 +37,7 @@ namespace SarasBlogg.Pages.Admin
         public bool IsAdmin { get; set; }
         public bool IsSuperAdmin { get; set; }
         public bool IsSuperUser { get; set; }
+        public string? EditorAccessToken { get; private set; }
 
         public async Task<IActionResult> OnGetAsync(int? hiddenId, int? archiveId)
         {
@@ -63,6 +64,9 @@ namespace SarasBlogg.Pages.Admin
 
             // load lists
             await LoadBloggsWithImagesAsync();
+
+            if (IsSuperAdmin)
+                EditorAccessToken = await _bloggApi.GetEditorAccessTokenAsync();
 
             return Page();
         }
