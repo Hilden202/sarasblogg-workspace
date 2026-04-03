@@ -168,4 +168,13 @@ window.addEventListener("load", () => {
             height: 400 // lägre höjd i modalen
         });
     }
+
+    // 🔄 Synka TinyMCE-innehåll till textarea innan formulär skickas
+    document.querySelectorAll("form").forEach(form => {
+        form.addEventListener("submit", () => {
+            if (window.tinymce) {
+                tinymce.triggerSave();
+            }
+        });
+    });
 });
