@@ -23,22 +23,41 @@ namespace SarasBlogg.Helpers
         }
 
         /// <summary>
+        /// Normalizes a plain-text string for comparison: lowercase, collapse whitespace.
+        /// </summary>
+        private static string Normalize(string text)
+            => Regex.Replace(text.ToLowerInvariant(), @"\s+", " ").Trim();
+
+        /// <summary>
         /// Returns true when <paramref name="title"/> was most likely auto-generated
-        /// from the beginning of <paramref name="htmlContent"/> (i.e. the plain-text
-        /// content starts with the title text).  Use this to decide whether to render
-        /// the title element at all — when true, the first paragraph already acts as
-        /// the visible heading so a separate title element would be redundant.
+        /// from the beginning of <paramref name="htmlContent"/>.  Both strings are
+        /// stripped of HTML, entity-decoded, lowercased, and whitespace-normalized
+        /// before comparison.  The title may end with a truncation ellipsis (…), in
+        /// which case the leading <c>N</c> characters of the content are compared
+        /// against the title (without the ellipsis), so minor formatting differences
+        /// and mid-word truncations are handled correctly.
         /// </summary>
         public static bool IsTitleFromContent(string? title, string? htmlContent)
         {
             if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(htmlContent))
                 return false;
 
-            var titleText = title.TrimEnd('…').Trim();
-            if (titleText.Length < 10) return false;
+            // Strip the trailing ellipsis that GenerateFallbackTitle appends when truncating.
+            var titleNorm = Normalize(StripHtml(title).TrimEnd('…'));
+            if (titleNorm.Length < 5) return false;
 
-            var plain = StripHtml(htmlContent);
-            return plain.StartsWith(titleText, StringComparison.OrdinalIgnoreCase);
+            var contentNorm = Normalize(StripHtml(htmlContent));
+
+            // If content starts with the title verbatim (non-truncated titles).
+            if (contentNorm.StartsWith(titleNorm, StringComparison.Ordinal))
+                return true;
+
+            // Truncated titles: compare the first titleNorm.Length characters of content.
+            if (contentNorm.Length >= titleNorm.Length &&
+                contentNorm[..titleNorm.Length].Equals(titleNorm, StringComparison.Ordinal))
+                return true;
+
+            return false;
         }
 
         /// <summary>
