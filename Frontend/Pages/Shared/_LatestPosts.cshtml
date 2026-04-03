@@ -1,6 +1,7 @@
 ﻿@using System
 @using System.Linq          <!-- behövs för Where/OrderBy -->
 @using SarasBlogg.Extensions
+@using SarasBlogg.Helpers
 @model IEnumerable<SarasBlogg.Models.Blogg>
 
 @{
@@ -38,7 +39,7 @@
                 <h4 class="card-title">@post.Title</h4>
             }
             <div class="card-content prose preview-clamp">
-                @Html.Raw(post.Content)
+                @Html.Raw(BloggTextHelper.RemoveLeadingDuplicateContent(post.Title, post.Content))
             </div>
             <div class="card-footer">
                 <a asp-page="/Blogg" asp-route-showId="@post.Id" class="btn btn-primary btn-sm">Läs mer…</a>

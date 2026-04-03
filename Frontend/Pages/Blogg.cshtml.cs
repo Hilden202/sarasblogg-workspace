@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SarasBlogg.Services;
 using SarasBlogg.DAL;
+using SarasBlogg.Helpers;
 using SarasBlogg.Models;
 using SarasBlogg.Pages.Shared;
 
@@ -111,7 +112,9 @@ namespace SarasBlogg.Pages
 
             if (NewBlogg.Id == 0)
             {
-                NewBlogg.Title = string.IsNullOrWhiteSpace(NewBlogg.Title) ? null : NewBlogg.Title;
+                NewBlogg.Title = string.IsNullOrWhiteSpace(NewBlogg.Title)
+                    ? BloggTextHelper.GenerateFallbackTitle(NewBlogg.Content)
+                    : NewBlogg.Title;
 
                 var savedBlogg = await _bloggApi.SaveBloggAsync(NewBlogg);
                 if (savedBlogg == null)
@@ -129,7 +132,9 @@ namespace SarasBlogg.Pages
                 if (currentBlogg == null)
                     return NotFound();
 
-                currentBlogg.Title = string.IsNullOrWhiteSpace(NewBlogg.Title) ? null : NewBlogg.Title;
+                currentBlogg.Title = string.IsNullOrWhiteSpace(NewBlogg.Title)
+                    ? BloggTextHelper.GenerateFallbackTitle(NewBlogg.Content)
+                    : NewBlogg.Title;
                 currentBlogg.Content = NewBlogg.Content;
                 currentBlogg.Author = NewBlogg.Author;
                 currentBlogg.LaunchDate = NewBlogg.LaunchDate;
