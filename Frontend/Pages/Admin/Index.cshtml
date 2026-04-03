@@ -56,7 +56,7 @@
 										@* Ändra: endast superadmin *@
 										@if (Model.IsSuperAdmin)
 										{
-											<button type="button" onclick="openEditor(@item.Blogg.Id)" class="btn btn-outline-primary ms-1">Ändra</button>
+											<button type="button" onclick="window.location.href='/Admin?editId=@item.Blogg.Id'" class="btn btn-outline-primary ms-1">Ändra</button>
 										}
 									</div>
 								</td>
@@ -86,7 +86,7 @@
 
 										@if (Model.IsSuperAdmin)
 										{
-											<button type="button" onclick="openEditor(@item.Blogg.Id)" class="btn btn-outline-primary w-100">Ändra</button>
+											<button type="button" onclick="window.location.href='/Admin?editId=@item.Blogg.Id'" class="btn btn-outline-primary w-100">Ändra</button>
 										}
 									</div>
 								</td>
@@ -204,7 +204,7 @@
 											@* Ändra: endast superadmin *@
 											@if (Model.IsSuperAdmin)
 											{
-												<button type="button" onclick="openEditor(@item.Blogg.Id)" class="btn btn-outline-primary">Ändra</button>
+												<button type="button" onclick="window.location.href='/Admin?editId=@item.Blogg.Id'" class="btn btn-outline-primary">Ändra</button>
 											}
 										</div>
 									</td>
@@ -236,7 +236,7 @@
 
 											@if (Model.IsSuperAdmin)
 											{
-												<button type="button" onclick="openEditor(@item.Blogg.Id)" class="btn btn-outline-primary w-100">Ändra</button>
+												<button type="button" onclick="window.location.href='/Admin?editId=@item.Blogg.Id'" class="btn btn-outline-primary w-100">Ändra</button>
 											}
 										</div>
 									</td>
@@ -309,8 +309,8 @@
 {
 	@await Html.PartialAsync("_BloggEditorModal", new SarasBlogg.ViewModels.BloggEditorModalModel {
 		EditorAccessToken     = Model.EditorAccessToken,
-		EditedBloggWithImages = null,
-		NewBlogg              = new SarasBlogg.Models.Blogg()
+		EditedBloggWithImages = Model.EditedBloggWithImages,
+		NewBlogg              = Model.NewBlogg
 	})
 
 	<script>
@@ -326,6 +326,15 @@
 			new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.Default }
 		));
 		const currentBloggData = null;
+
+		// Auto-open modal when page was loaded via ?editId=X
+		document.addEventListener('DOMContentLoaded', function () {
+			if (new URLSearchParams(location.search).has('editId')) {
+				document.getElementById('blogEditorModalLabel').textContent = 'Redigera blogg';
+				bootstrap.Modal.getOrCreateInstance(
+					document.getElementById('blogEditorModal')).show();
+			}
+		});
 	</script>
 }
 

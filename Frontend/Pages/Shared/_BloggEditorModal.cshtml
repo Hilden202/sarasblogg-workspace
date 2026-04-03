@@ -10,7 +10,7 @@
 			</div>
 			<div class="modal-body">
 				<form id="blogForm" method="post"
-					  asp-page="/Blogg" asp-page-handler="SaveBlogg" enctype="multipart/form-data"
+					  asp-page-handler="SaveBlogg" enctype="multipart/form-data"
 					  novalidate data-editor-token="@Model.EditorAccessToken">
 
 					<div class="text-danger mb-2">
@@ -75,7 +75,7 @@
 											<input type="hidden" name="bloggId" value="@Model.EditedBloggWithImages.Blogg.Id" />
 
 											<button type="submit"
-													asp-page="/Blogg" asp-page-handler="DeleteImage"
+													asp-page-handler="DeleteImage"
 													asp-route-imageId="@img.Id"
 													asp-route-bloggId="@Model.EditedBloggWithImages.Blogg.Id"
 													formnovalidate class="btn btn-sm btn-danger p-1" data-busy-text="Tar bort…"
@@ -91,7 +91,7 @@
 										else
 										{
 											<button type="submit"
-													asp-page="/Blogg" asp-page-handler="SetFirstImage"
+													asp-page-handler="SetFirstImage"
 													asp-route-imageId="@img.Id"
 													asp-route-bloggId="@Model.EditedBloggWithImages.Blogg.Id"
 													formnovalidate class="btn btn-sm btn-outline-primary" data-busy-text="Uppdaterar…">
