@@ -30,7 +30,7 @@
 				{
 					<li>
 						<a class="dropdown-item" href="#"
-						   onclick="event.preventDefault(); openEditor(@Model.ViewModel.Blogg.Id)">
+						   onclick="event.preventDefault(); window.location.href='/Blogg?editId=@Model.ViewModel.Blogg.Id'">
 							Ändra detta inlägg
 						</a>
 					</li>
