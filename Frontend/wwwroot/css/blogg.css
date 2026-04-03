@@ -303,7 +303,7 @@
     font-size: 1rem;
     line-height: 1.5;
     color: #7e6655; /* samma bruna som menyn */
-    text-align: unset; /* låt inline-stilar från TinyMCE gälla */
+    text-align: left; /* alltid vänsterställd */
 }
 
 /* Neutralisera länkfärg och hover för hela bloggkortet */
