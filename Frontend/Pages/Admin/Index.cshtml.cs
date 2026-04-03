@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using SarasBlogg.DAL;
 using SarasBlogg.DTOs;
+using SarasBlogg.Helpers;
 using SarasBlogg.Models;
 using SarasBlogg.Extensions; // ToSwedishTime (används i listan)
 using SarasBlogg.Services;   // BloggService för cache-invalidering
@@ -142,7 +143,9 @@ namespace SarasBlogg.Pages.Admin
 
             if (NewBlogg.Id == 0)
             {
-                NewBlogg.Title = string.IsNullOrWhiteSpace(NewBlogg.Title) ? null : NewBlogg.Title;
+                NewBlogg.Title = string.IsNullOrWhiteSpace(NewBlogg.Title)
+                    ? BloggTextHelper.GenerateFallbackTitle(NewBlogg.Content)
+                    : NewBlogg.Title;
 
                 var savedBlogg = await _bloggApi.SaveBloggAsync(NewBlogg);
                 if (savedBlogg == null)
@@ -160,7 +163,9 @@ namespace SarasBlogg.Pages.Admin
                 if (currentBlogg == null)
                     return NotFound();
 
-                currentBlogg.Title     = string.IsNullOrWhiteSpace(NewBlogg.Title) ? null : NewBlogg.Title;
+                currentBlogg.Title     = string.IsNullOrWhiteSpace(NewBlogg.Title)
+                    ? BloggTextHelper.GenerateFallbackTitle(NewBlogg.Content)
+                    : NewBlogg.Title;
                 currentBlogg.Content   = NewBlogg.Content;
                 currentBlogg.Author    = NewBlogg.Author;
                 currentBlogg.LaunchDate = NewBlogg.LaunchDate;

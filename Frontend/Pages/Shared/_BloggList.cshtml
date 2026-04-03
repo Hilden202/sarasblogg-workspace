@@ -1,4 +1,5 @@
 ﻿@using SarasBlogg.Extensions
+@using SarasBlogg.Helpers
 @using SarasBlogg.Models
 @using SarasBlogg.DTOs
 @model SarasBlogg.ViewModels.BloggViewModel
@@ -53,7 +54,7 @@
 							<h5 class="card-title blogg-title">@blogg.Title</h5>
 						}
 						<div class="card-text blogg-content prose preview-clamp">
-							@Html.Raw(blogg.Content)
+							@Html.Raw(BloggTextHelper.RemoveLeadingDuplicateContent(blogg.Title, blogg.Content))
 						</div>
 						<p class="text-faded">
 							<small class="text-faded">
