@@ -22,7 +22,6 @@
 							<th class="text-center align-middle border d-table-cell d-md-none" colspan="1">Knappar</th>
 							<th class="text-center align-middle border">Id</th>
 							<th class="text-center align-middle border">Titel</th>
-							<th class="text-center align-middle border d-none d-md-table-cell">Innehåll</th>
 							<th class="text-center align-middle border d-none d-md-table-cell">Författare</th>
 							<th class="text-center align-middle border d-none d-md-table-cell">Lanserings Datum</th>
 							<th class="text-center align-middle border d-none d-md-table-cell">Bild</th>
@@ -92,7 +91,7 @@
 								</td>
 								<td class="text-center align-middle border">@item.Blogg.Id</td>
 								<td class="text-lg-start align-middle border title-cell">
-									@item.Blogg.Title
+									<span title="@item.Blogg.Title">@(item.Blogg.Title != null && item.Blogg.Title.Length > 16 ? item.Blogg.Title[..16] + "..." : item.Blogg.Title)</span>
 									<div class="d-md-none small text-muted mt-1">
 										Förf: @item.Blogg.Author •
 										@{
@@ -115,8 +114,6 @@
 										</div>
 									}
 								</td>
-								<td class="text-lg-start align-middle border d-none d-md-table-cell">
-									@Html.Raw(item.Blogg.Content?.LimitLength(100, true))</td>
 									<td class="text-center align-middle border d-none d-md-table-cell">@item.Blogg.Author</td>
 									<td class="text-center align-middle border d-none d-md-table-cell">
 										@{
@@ -161,7 +158,6 @@
 								<th class="text-center align-middle border d-table-cell d-md-none" colspan="1">Knappar</th>
 								<th class="text-center align-middle border">Id</th>
 								<th class="text-center align-middle border">Titel</th>
-								<th class="text-center align-middle border d-none d-md-table-cell">Innehåll</th>
 								<th class="text-center align-middle border d-none d-md-table-cell">Författare</th>
 								<th class="text-center align-middle border d-none d-md-table-cell">Lanserings Datum</th>
 								<th class="text-center align-middle border d-none d-md-table-cell">Bild</th>
@@ -242,7 +238,7 @@
 									</td>
 									<td class="text-center align-middle border">@item.Blogg.Id</td>
 									<td class="text-lg-start align-middle border title-cell">
-										@item.Blogg.Title
+										<span title="@item.Blogg.Title">@(item.Blogg.Title != null && item.Blogg.Title.Length > 16 ? item.Blogg.Title[..16] + "..." : item.Blogg.Title)</span>
 										<div class="d-md-none small text-muted mt-1">
 											Förf: @item.Blogg.Author •
 											@{
@@ -266,8 +262,6 @@
 											</div>
 										}
 									</td>
-									<td class="text-lg-start align-middle border d-none d-md-table-cell">
-										@Html.Raw(item.Blogg.Content?.LimitLength(100, true))</td>
 										<td class="text-center align-middle border d-none d-md-table-cell">@item.Blogg.Author</td>
 										<td class="text-center align-middle border d-none d-md-table-cell">
 											@{
