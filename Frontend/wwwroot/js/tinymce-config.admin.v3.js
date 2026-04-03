@@ -91,6 +91,19 @@ function initTinyMCE(selector, options = {}) {
           ul, ol { padding-left: 1.5rem; }
         `,
 
+        // 📐 Tvinga inline-stilar för justering (text-align) istället för CSS-klasser
+        formats: {
+            alignleft:    { block: 'p', styles: { 'text-align': 'left' } },
+            aligncenter:  { block: 'p', styles: { 'text-align': 'center' } },
+            alignright:   { block: 'p', styles: { 'text-align': 'right' } },
+            alignjustify: { block: 'p', styles: { 'text-align': 'justify' } }
+        },
+
+        // ✅ Tillåt text-align i sparad HTML
+        valid_styles: {
+            '*': 'text-align,font-family,font-size,color,background-color,font-weight,font-style,text-decoration'
+        },
+
         ...options
     };
 
