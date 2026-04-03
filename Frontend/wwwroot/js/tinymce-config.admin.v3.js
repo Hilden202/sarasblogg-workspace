@@ -119,11 +119,6 @@ window.addEventListener("load", () => {
         const apiBase = (document.documentElement.dataset.apiBaseUrl || "").replace(/\/+$/, "");
         const editorToken = formAdmin?.dataset?.editorToken?.trim();
 
-        // 🔍 DEBUG – VIKTIG
-        console.log("🧪 Editor token exists:", !!editorToken);
-        console.log("🧪 Editor token length:", editorToken?.length);
-        console.log("🧪 Editor token preview:", editorToken ? editorToken.slice(0, 25) : "❌ MISSING");
-
         console.log("✅ Initierar TinyMCE för Admin...");
 
         initTinyMCE("#ContentEditor", {
