@@ -16,6 +16,29 @@ function initTinyMCE(selector, options = {}) {
         block_formats: "Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3",
         convert_urls: false,
 
+        // 🔠 Allow inline text-align styles on any element
+        valid_styles: { '*': 'text-align,display,color,background-color,font-family,font-size,font-weight,font-style,text-decoration' },
+
+        // 📐 Inline alignment formats (wrap selection in a span instead of aligning the whole block)
+        formats: {
+            alignleft:    [
+                { selector: 'figure,p,h1,h2,h3,h4,h5,h6,td,th,tr,div,ul,ol,li', styles: { 'text-align': 'left' }, inherit: false, preview: false },
+                { inline: 'span', styles: { 'text-align': 'left', 'display': 'inline-block' }, selector: 'span' }
+            ],
+            aligncenter:  [
+                { selector: 'figure,p,h1,h2,h3,h4,h5,h6,td,th,tr,div,ul,ol,li', styles: { 'text-align': 'center' }, inherit: false, preview: false },
+                { inline: 'span', styles: { 'text-align': 'center', 'display': 'inline-block' }, selector: 'span' }
+            ],
+            alignright:   [
+                { selector: 'figure,p,h1,h2,h3,h4,h5,h6,td,th,tr,div,ul,ol,li', styles: { 'text-align': 'right' }, inherit: false, preview: false },
+                { inline: 'span', styles: { 'text-align': 'right', 'display': 'inline-block' }, selector: 'span' }
+            ],
+            alignjustify: [
+                { selector: 'figure,p,h1,h2,h3,h4,h5,h6,td,th,tr,div,ul,ol,li', styles: { 'text-align': 'justify' }, inherit: false, preview: false },
+                { inline: 'span', styles: { 'text-align': 'justify', 'display': 'inline-block' }, selector: 'span' }
+            ]
+        },
+
         // 📚 Typsnitt
         font_family_formats:
             "Cormorant Garamond=Cormorant Garamond,serif;" +
