@@ -18,24 +18,26 @@ function initTinyMCE(selector, options = {}) {
 
         // 🔠 Allow inline text-align styles on any element
         valid_styles: { '*': 'text-align,display,color,background-color,font-family,font-size,font-weight,font-style,text-decoration' },
+        extended_valid_elements: 'span[style|class]',
+        style_formats_merge: true,
 
         // 📐 Inline alignment formats (wrap selection in a span instead of aligning the whole block)
         formats: {
-            alignleft:    [
-                { selector: 'figure,p,h1,h2,h3,h4,h5,h6,td,th,tr,div,ul,ol,li', styles: { 'text-align': 'left' }, inherit: false, preview: false },
-                { inline: 'span', styles: { 'text-align': 'left', 'display': 'inline-block' }, selector: 'span' }
+            alignleft: [
+                { selector: 'p,h1,h2,h3,h4,h5,h6,div,li,td,th', styles: { 'text-align': 'left' } },
+                { inline: 'span', styles: { 'text-align': 'left', 'display': 'inline-block' } }
             ],
-            aligncenter:  [
-                { selector: 'figure,p,h1,h2,h3,h4,h5,h6,td,th,tr,div,ul,ol,li', styles: { 'text-align': 'center' }, inherit: false, preview: false },
-                { inline: 'span', styles: { 'text-align': 'center', 'display': 'inline-block' }, selector: 'span' }
+            aligncenter: [
+                { selector: 'p,h1,h2,h3,h4,h5,h6,div,li,td,th', styles: { 'text-align': 'center' } },
+                { inline: 'span', styles: { 'text-align': 'center', 'display': 'inline-block' } }
             ],
-            alignright:   [
-                { selector: 'figure,p,h1,h2,h3,h4,h5,h6,td,th,tr,div,ul,ol,li', styles: { 'text-align': 'right' }, inherit: false, preview: false },
-                { inline: 'span', styles: { 'text-align': 'right', 'display': 'inline-block' }, selector: 'span' }
+            alignright: [
+                { selector: 'p,h1,h2,h3,h4,h5,h6,div,li,td,th', styles: { 'text-align': 'right' } },
+                { inline: 'span', styles: { 'text-align': 'right', 'display': 'inline-block' } }
             ],
             alignjustify: [
-                { selector: 'figure,p,h1,h2,h3,h4,h5,h6,td,th,tr,div,ul,ol,li', styles: { 'text-align': 'justify' }, inherit: false, preview: false },
-                { inline: 'span', styles: { 'text-align': 'justify', 'display': 'inline-block' }, selector: 'span' }
+                { selector: 'p,h1,h2,h3,h4,h5,h6,div,li,td,th', styles: { 'text-align': 'justify' } },
+                { inline: 'span', styles: { 'text-align': 'justify', 'display': 'inline-block' } }
             ]
         },
 
@@ -86,6 +88,12 @@ function initTinyMCE(selector, options = {}) {
 
         // ✨ Setup – lägger till Highlight-menyn
         setup: (editor) => {
+            // 🔄 Normalize existing block-level alignment so inline alignment can take over
+            editor.on('BeforeSetContent', function (e) {
+                if (!e.content) return;
+                e.content = e.content.replace(/text-align:\s*(left|center|right|justify);?/gi, '');
+            });
+
             editor.ui.registry.addMenuButton('highlight', {
                 text: 'Highlight',
                 icon: 'highlight-bg-color',
