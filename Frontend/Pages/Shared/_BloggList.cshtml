@@ -56,8 +56,8 @@
 						{
 							<h5 class="card-title blogg-title">@blogg.Title</h5>
 						}
-						<div class="card-text blogg-content prose preview-clamp">
-							@Html.Raw(autoTitle ? blogg.Content : BloggTextHelper.RemoveLeadingDuplicateContent(blogg.Title, blogg.Content))
+						<div class="card-text blogg-content">
+							@BloggTextHelper.GetPlainTextPreview(blogg.Content)
 						</div>
 						<p class="text-faded">
 							<small class="text-faded">

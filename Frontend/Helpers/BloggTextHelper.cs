@@ -13,6 +13,15 @@ namespace SarasBlogg.Helpers
             return Regex.Replace(text, @"\s+", " ").Trim();
         }
 
+        public static string GetPlainTextPreview(string? content, int maxLength = 150)
+        {
+            var plain = StripHtml(content);
+            if (string.IsNullOrWhiteSpace(plain)) return "";
+            return plain.Length > maxLength
+                ? plain[..maxLength].TrimEnd() + "…"
+                : plain;
+        }
+
         public static string GenerateFallbackTitle(string? content, int maxLength = 60)
         {
             var plain = StripHtml(content);

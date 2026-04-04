@@ -41,8 +41,8 @@
             {
                 <h4 class="card-title">@post.Title</h4>
             }
-            <div class="card-content prose preview-clamp">
-                @Html.Raw(autoTitle ? post.Content : BloggTextHelper.RemoveLeadingDuplicateContent(post.Title, post.Content))
+            <div class="card-content">
+                @BloggTextHelper.GetPlainTextPreview(post.Content)
             </div>
             <div class="card-footer">
                 <a asp-page="/Blogg" asp-route-showId="@post.Id" class="btn btn-primary btn-sm">Läs mer…</a>
