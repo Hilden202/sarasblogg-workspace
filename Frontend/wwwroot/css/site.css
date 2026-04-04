@@ -1295,3 +1295,8 @@ footer .footer-inner a:hover {
     margin: 0;
     display: inline; /* ← gör att <p> inte bryter layouten */
 }
+
+.cards-container .card-content p:not(:last-child)::after {
+    content: "\A";
+    white-space: pre;
+}

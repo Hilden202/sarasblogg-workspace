@@ -552,3 +552,8 @@ a.blogg-link:visited {
     display: inline;
     margin: 0;
 }
+
+.blogg-content.preview-clamp p:not(:last-child)::after {
+    content: "\A";
+    white-space: pre;
+}
