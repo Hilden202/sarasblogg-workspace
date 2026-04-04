@@ -1292,6 +1292,6 @@ footer .footer-inner a:hover {
 
 /* 🔥 KRITISK FIX */
 .cards-container .card-content p {
-    margin: 0;
-    display: inline; /* ← gör att <p> inte bryter layouten */
+    display: block;
+    margin-bottom: 0.75rem;
 }
