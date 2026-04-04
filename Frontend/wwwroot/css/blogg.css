@@ -547,10 +547,11 @@ a.blogg-link:visited {
     word-break: break-word;
 }
 
-/* 🔥 viktig */
+/* 🔥 viktig: behåll stycken som block i preview */
 .blogg-content.preview-clamp p {
-    display: inline;
-    margin: 0;
+    display: block;
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
 }
 
 .blog-preview-fix {
