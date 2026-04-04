@@ -1288,15 +1288,18 @@ footer .footer-inner a:hover {
 
     white-space: normal;      /* 🔥 viktigt */
     word-break: break-word;
+    line-height: 1.4;
 }
 
 /* 🔥 KRITISK FIX */
 .cards-container .card-content p {
-    margin: 0;
-    display: inline; /* ← gör att <p> inte bryter layouten */
+    margin-bottom: 0.45rem;
 }
 
-.cards-container .card-content p:not(:last-child)::after {
-    content: "\A";
-    white-space: pre;
+.cards-container .card-content p:last-child {
+    margin-bottom: 0;
+}
+
+.cards-container .card-content br {
+    display: none;
 }

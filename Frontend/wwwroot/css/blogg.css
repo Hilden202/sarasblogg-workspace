@@ -545,15 +545,18 @@ a.blogg-link:visited {
 
     white-space: normal;
     word-break: break-word;
+    line-height: 1.4;
 }
 
 /* 🔥 viktig */
 .blogg-content.preview-clamp p {
-    display: inline;
-    margin: 0;
+    margin-bottom: 0.45rem;
 }
 
-.blogg-content.preview-clamp p:not(:last-child)::after {
-    content: "\A";
-    white-space: pre;
+.blogg-content.preview-clamp p:last-child {
+    margin-bottom: 0;
+}
+
+.blogg-content.preview-clamp br {
+    display: none;
 }
