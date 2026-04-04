@@ -552,3 +552,7 @@ a.blogg-link:visited {
     display: inline;
     margin: 0;
 }
+
+.blog-preview-fix {
+    white-space: pre-line;
+}
