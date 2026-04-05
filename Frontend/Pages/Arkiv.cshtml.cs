@@ -15,5 +15,8 @@ namespace SarasBlogg.Pages
 
         public Task<IActionResult> OnPostAsync(int deleteCommentId)
             => OnPostCoreAsync(deleteCommentId);
+
+        public Task<IActionResult> OnPostCommentAsync()
+            => OnPostCoreAsync(0);
     }
 }

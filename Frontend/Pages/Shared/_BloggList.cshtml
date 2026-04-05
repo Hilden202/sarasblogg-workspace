@@ -411,7 +411,7 @@
 						<hr />
 
 						<!-- Formulär: inloggade slipper namnfält -->
-						<form method="post" id="comment-form">
+						<form method="post" asp-page-handler="Comment" id="comment-form">
 							@Html.AntiForgeryToken()
 							<input type="hidden" asp-for="Comment.BloggId" value="@Model.Blogg.Id" />
 
