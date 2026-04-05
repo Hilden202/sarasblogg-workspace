@@ -431,10 +431,11 @@ namespace SarasBlogg.DAL
             return body;
         }
         
-        public async Task RefreshSessionAsync(CancellationToken ct = default)
+        public async Task<AccessTokenDto?> RefreshSessionAsync(CancellationToken ct = default)
         {
             using var res = await _http.PostAsync("api/auth/refresh-session", null, ct);
             res.EnsureSuccessStatusCode();
+            return await ReadJsonIfAnyAsync<AccessTokenDto>(res, ct);
         }
         
         private async Task<T?> ReadJsonIfAnyAsync<T>(HttpResponseMessage res, CancellationToken ct)

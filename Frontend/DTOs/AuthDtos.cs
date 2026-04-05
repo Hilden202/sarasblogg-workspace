@@ -62,5 +62,6 @@
     public sealed class AccessTokenDto
     {
         public string AccessToken { get; set; } = "";
+        public DateTime AccessTokenExpiresUtc { get; set; }
     }
 }
