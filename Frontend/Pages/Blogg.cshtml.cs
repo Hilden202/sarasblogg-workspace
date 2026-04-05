@@ -88,6 +88,21 @@ namespace SarasBlogg.Pages
         public Task<IActionResult> OnPostAsync(int deleteCommentId)
             => OnPostCoreAsync(deleteCommentId);
 
+        public Task<IActionResult> OnPostCommentAsync()
+        {
+            foreach (var key in ModelState.Keys
+                         .Where(k => k.StartsWith("NewBlogg.", StringComparison.OrdinalIgnoreCase) ||
+                                     string.Equals(k, "Author", StringComparison.OrdinalIgnoreCase) ||
+                                     string.Equals(k, "Content", StringComparison.OrdinalIgnoreCase) ||
+                                     k.StartsWith("BloggImages", StringComparison.OrdinalIgnoreCase))
+                         .ToList())
+            {
+                ModelState.Remove(key);
+            }
+
+            return OnPostCoreAsync(0);
+        }
+
         // Skapa/ändra blogg: endast superadmin
         public async Task<IActionResult> OnPostSaveBloggAsync()
         {

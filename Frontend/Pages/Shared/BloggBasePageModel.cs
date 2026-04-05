@@ -27,6 +27,9 @@ namespace SarasBlogg.Pages.Shared
         [BindProperty]
         public BloggViewModel ViewModel { get; set; } = new();
 
+        [BindProperty]
+        public Models.Comment Comment { get; set; } = new();
+
         // Likes för aktuell post
         public int LikeCount { get; private set; }
         public bool IsLiked { get; private set; }
@@ -144,6 +147,8 @@ namespace SarasBlogg.Pages.Shared
                 await _bloggService.UpdateViewCountAsync(showId);
 
             ViewModel = await _bloggService.GetBloggViewModelAsync(_isArchive, showId);
+            ViewModel.Comment ??= new Models.Comment();
+            Comment = ViewModel.Comment;
 
             await HydrateRoleLookupsForCurrentPostAsync(ViewModel);
 
@@ -165,6 +170,8 @@ namespace SarasBlogg.Pages.Shared
 
         public async Task<IActionResult> OnPostCoreAsync(int deleteCommentId)
         {
+            var postedComment = Comment ?? new Models.Comment();
+
             // 1) Delete (admin eller ägare via namn/e-post)
             if (deleteCommentId != 0)
             {
@@ -200,9 +207,9 @@ namespace SarasBlogg.Pages.Shared
             }
 
             // 2) Inloggad? Tvinga namn+ev. e-post
-            if (IsAuth && ViewModel?.Comment != null)
+            if (IsAuth)
             {
-                ViewModel.Comment.Name = CurrentUserName;
+                postedComment.Name = CurrentUserName;
 
                 var email = CurrentUserEmail;
                 if (string.IsNullOrWhiteSpace(email) && !string.IsNullOrWhiteSpace(CurrentUserName))
@@ -210,7 +217,7 @@ namespace SarasBlogg.Pages.Shared
                     var (apiEmail, _) = await GetApiUserByNameAsync(CurrentUserName);
                     email = apiEmail ?? "";
                 }
-                ViewModel.Comment.Email = email;
+                postedComment.Email = email;
 
                 // rensa ModelState så overrides går igenom
                 ModelState.Remove("ViewModel.Comment.Name");
@@ -220,28 +227,30 @@ namespace SarasBlogg.Pages.Shared
             }
 
             // 3) UTC-tid för nya kommentarer
-            if (ViewModel?.Comment != null && ViewModel.Comment.Id == null)
-                ViewModel.Comment.CreatedAt = DateTime.UtcNow;
+            if (postedComment.Id == null)
+                postedComment.CreatedAt = DateTime.UtcNow;
 
             // 3b) Anonymt namn: normalisera bara (valfritt)
-            if (!IsAuth && ViewModel?.Comment != null && ViewModel.Comment.Id == null)
+            if (!IsAuth && postedComment.Id == null)
             {
-                var proposed = (ViewModel.Comment.Name ?? "").Trim();
+                var proposed = (postedComment.Name ?? "").Trim();
                 if (string.IsNullOrWhiteSpace(proposed)) proposed = "Gäst";
-                ViewModel.Comment.Name = proposed;
+                postedComment.Name = proposed;
                 ModelState.Remove("ViewModel.Comment.Name");
                 ModelState.Remove("Comment.Name");
             }
 
             // 4) Validera + spara
-            if (ModelState.IsValid && ViewModel?.Comment?.Id == null)
+            if (ModelState.IsValid && postedComment.Id == null)
             {
-                string errorMessage = await _bloggService.SaveCommentAsync(ViewModel.Comment);
+                string errorMessage = await _bloggService.SaveCommentAsync(postedComment);
                 if (!string.IsNullOrWhiteSpace(errorMessage))
                 {
                     ModelState.AddModelError("Comment.Content", errorMessage);
 
-                    ViewModel = await _bloggService.GetBloggViewModelAsync(_isArchive, ViewModel.Comment?.BloggId ?? 0);
+                    ViewModel = await _bloggService.GetBloggViewModelAsync(_isArchive, postedComment.BloggId);
+                    ViewModel.Comment = postedComment;
+                    Comment = postedComment;
 
                     await HydrateRoleLookupsForCurrentPostAsync(ViewModel);
 
@@ -250,9 +259,19 @@ namespace SarasBlogg.Pages.Shared
                 }
             }
 
+            if (!ModelState.IsValid)
+            {
+                ViewModel = await _bloggService.GetBloggViewModelAsync(_isArchive, postedComment.BloggId);
+                ViewModel.Comment = postedComment;
+                Comment = postedComment;
+                await HydrateRoleLookupsForCurrentPostAsync(ViewModel);
+                ViewData["OpenComments"] = true;
+                return Page();
+            }
+
             // 5) Tillbaka till samma inlägg
             return RedirectToPage(pageName: null, pageHandler: null,
-                routeValues: new { showId = ViewModel?.Comment?.BloggId, openComments = true }, fragment: "comments");
+                routeValues: new { showId = postedComment.BloggId, openComments = true }, fragment: "comments");
 
             // 🔄 Toggle Like
 
