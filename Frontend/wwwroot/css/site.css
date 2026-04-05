@@ -137,12 +137,6 @@ header {
     position: relative;
 }
 
-.right-img {
-    height: 350px;
-    width: auto;
-    display: block;
-}
-
 .left-side {
     grid-column: 2; /* mitten */
     justify-self: center; /* centrera horisontellt */
@@ -151,27 +145,15 @@ header {
     align-items: center; /* centrera innehållet (bilden) */
 }
 
-.right-side {
-    grid-column: 3; /* höger */
-    justify-self: end; /* tryck ut till högerkant */
-    display: flex;
-    align-items: flex-start;
-}
-
 @media (max-width: 768px) {
     .header-container {
         display: grid;
         grid-template-columns: 1fr;
     }
 
-    .left-side,
-    .right-side {
+    .left-side {
         grid-column: 1;
         justify-self: center;
-    }
-
-    .right-side {
-        margin-top: 1rem;
     }
 }
 
@@ -192,6 +174,43 @@ header {
     justify-content: flex-start; /* ändrat från center */
     margin-top: 3rem;
     align-items: stretch;
+}
+
+.spotify-section {
+    display: flex;
+    justify-content: center;
+    margin-top: 0.5rem;
+    margin-bottom: 1.75rem;
+}
+
+.spotify-box {
+    padding: 0.8rem;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.45);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    backdrop-filter: blur(3px);
+}
+
+.spotify-section__frame {
+    display: block;
+    width: min(320px, calc(100vw - 2rem));
+    max-width: 100%;
+}
+
+@media (max-width: 768px) {
+    .spotify-section {
+        margin-top: 0.25rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .spotify-box {
+        padding: 0.55rem;
+        border-radius: 14px;
+    }
+
+    .spotify-section__frame {
+        width: min(320px, calc(100vw - 1.5rem));
+    }
 }
 
     /* Force left alignment for latest-post cards (beats any inherited .text-center) */
@@ -251,12 +270,6 @@ header {
 .card-content {
     min-height: 3em;
     white-space: pre-wrap;
-}
-
-.right-side {
-    display: flex;
-    justify-content: center;
-    width: 100%;
 }
 
 .contact-card {
@@ -331,10 +344,6 @@ header {
     .header-text {
         font-size: 2rem;
         text-align: center;
-    }
-
-    .right-img {
-        height: 250px;
     }
 
     .content-container {
