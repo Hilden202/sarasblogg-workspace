@@ -26,7 +26,9 @@
 	{
 		<li class="nav-item">
 			<a class="menutext-sm nav-link theme-dependent"
-			   asp-area="Identity" asp-page="/Account/Login">Logga in</a>
+			   asp-area="Identity"
+			   asp-page="/Account/Login"
+			   asp-route-returnUrl="@($"{Context.Request.Path}{Context.Request.QueryString}")">Logga in</a>
 		</li>
 
 		@* 

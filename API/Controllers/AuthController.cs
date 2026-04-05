@@ -688,7 +688,9 @@ public class AuthController : ControllerBase
     [AllowAnonymous]
     [ApiExplorerSettings(IgnoreApi = true)]
     [HttpGet("external/google/start")]
-    public async Task<IActionResult> GoogleStart([FromQuery] string? returnUrl = null)
+    public async Task<IActionResult> GoogleStart(
+        [FromQuery] string? returnUrl = null,
+        [FromQuery] string? localReturnUrl = null)
     {
         if (string.IsNullOrWhiteSpace(returnUrl))
             return BadRequest("Missing returnUrl.");
@@ -710,6 +712,8 @@ public class AuthController : ControllerBase
 
         // 🔥 DETTA ÄR DET VIKTIGA
         props.Items["returnUrl"] = returnUrl;
+        if (!string.IsNullOrWhiteSpace(localReturnUrl))
+            props.Items["localReturnUrl"] = localReturnUrl;
 
         return Challenge(props, GoogleDefaults.AuthenticationScheme);
     }
@@ -732,10 +736,12 @@ public class AuthController : ControllerBase
             return BadRequest("External login info missing.");
 
         string? returnUrl = null;
+        string? localReturnUrl = null;
 
         if (info.AuthenticationProperties?.Items != null)
         {
             info.AuthenticationProperties.Items.TryGetValue("returnUrl", out returnUrl);
+            info.AuthenticationProperties.Items.TryGetValue("localReturnUrl", out localReturnUrl);
         }
 
         if (string.IsNullOrWhiteSpace(returnUrl))
@@ -833,9 +839,13 @@ public class AuthController : ControllerBase
             return Forbid();
         }
 
-        return Redirect(
-            $"{returnUrl.TrimEnd('/')}/Identity/Account/ExternalLoginCallback?code={loginCode}"
-        );
+        var frontendCallbackUrl =
+            $"{returnUrl.TrimEnd('/')}/Identity/Account/ExternalLoginCallback?code={loginCode}";
+
+        if (!string.IsNullOrWhiteSpace(localReturnUrl))
+            frontendCallbackUrl += $"&returnUrl={Uri.EscapeDataString(localReturnUrl)}";
+
+        return Redirect(frontendCallbackUrl);
     }
 
     // ---------- EXTERNAL LOGIN: EXCHANGE CODE ----------

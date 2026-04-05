@@ -19,6 +19,8 @@ namespace SarasBlogg.Areas.Identity.Pages.Account
         [BindProperty]
         public InputModel Input { get; set; } = new();
 
+        public string? ReturnUrl { get; private set; }
+
         public class InputModel
         {
             [Required]
@@ -27,21 +29,24 @@ namespace SarasBlogg.Areas.Identity.Pages.Account
             public string UserName { get; set; } = "";
         }
 
-        public async Task<IActionResult> OnGetAsync()
+        public async Task<IActionResult> OnGetAsync(string? returnUrl = null)
         {
+            ReturnUrl = NormalizeLocalReturnUrl(returnUrl);
             var me = await _userApi.GetMeAsync();
 
             if (me == null)
-                return RedirectToPage("/Account/Login");
+                return RedirectToPage("/Account/Login", new { returnUrl = ReturnUrl });
 
             if (!me.RequiresUsernameSetup)
-                return RedirectToPage("/Account/Manage/Index");
+                return RedirectToReturnUrlOrDefault(ReturnUrl, "/Identity/Account/Manage/Index");
 
             return Page();
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostAsync(string? returnUrl = null)
         {
+            ReturnUrl = NormalizeLocalReturnUrl(returnUrl);
+
             if (!ModelState.IsValid)
                 return Page();
 
@@ -60,8 +65,24 @@ namespace SarasBlogg.Areas.Identity.Pages.Account
             // 2️⃣ 🔥 KRITISK DEL: synka om frontend-sessionen (cookie + claims)
             await _userApi.RefreshSessionAsync();
 
-            // 3️⃣ Klart → tillbaka till profilen
-            return RedirectToPage("/Account/Manage/Index");
+            // 3️⃣ Klart → tillbaka dit användaren kom ifrån om möjligt
+            return RedirectToReturnUrlOrDefault(ReturnUrl, "/Identity/Account/Manage/Index");
+        }
+
+        private IActionResult RedirectToReturnUrlOrDefault(string? returnUrl, string fallbackPath)
+        {
+            var safeReturnUrl = NormalizeLocalReturnUrl(returnUrl);
+            return !string.IsNullOrWhiteSpace(safeReturnUrl)
+                ? LocalRedirect(safeReturnUrl)
+                : Redirect(fallbackPath);
+        }
+
+        private string? NormalizeLocalReturnUrl(string? returnUrl)
+        {
+            if (string.IsNullOrWhiteSpace(returnUrl))
+                return null;
+
+            return Url.IsLocalUrl(returnUrl) ? returnUrl : null;
         }
     }
 }

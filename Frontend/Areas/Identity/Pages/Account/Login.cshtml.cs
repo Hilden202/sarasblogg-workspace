@@ -23,7 +23,24 @@ namespace SarasBlogg.Areas.Identity.Pages.Account
         public string ApiBaseUrl { get; private set; } = "";
         
         public string CurrentOrigin =>
-            $"{Request.Scheme}://{Request.Host}";
+            $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+
+        public string ExternalLoginUrl
+        {
+            get
+            {
+                var googleStartUrl =
+                    $"{ApiBaseUrl.TrimEnd('/')}/api/auth/external/google/start?returnUrl={Uri.EscapeDataString(CurrentOrigin)}";
+
+                var localReturnUrl = NormalizeLocalReturnUrl(ReturnUrl);
+                if (!string.IsNullOrWhiteSpace(localReturnUrl))
+                {
+                    googleStartUrl += $"&localReturnUrl={Uri.EscapeDataString(localReturnUrl)}";
+                }
+
+                return googleStartUrl;
+            }
+        }
 
         public LoginModel(
             UserAPIManager userApi,
@@ -44,7 +61,7 @@ namespace SarasBlogg.Areas.Identity.Pages.Account
         [BindProperty]
         public InputModel Input { get; set; } = new(); // låt vara
         
-        public IActionResult OnPost(string? returnUrl = null)
+        public IActionResult OnPost(string returnUrl = null)
         {
             return RedirectToPage();
         }
@@ -74,9 +91,17 @@ namespace SarasBlogg.Areas.Identity.Pages.Account
             if (!string.IsNullOrEmpty(ErrorMessage))
                 ModelState.AddModelError(string.Empty, ErrorMessage);
 
-            ReturnUrl ??= returnUrl ??= Url.Content("~/");
+            ReturnUrl = NormalizeLocalReturnUrl(returnUrl) ?? Url.Content("~/");
 
             // Ingen lokal Identity längre – inget att göra här
+        }
+
+        private string NormalizeLocalReturnUrl(string returnUrl)
+        {
+            if (string.IsNullOrWhiteSpace(returnUrl))
+                return null;
+
+            return Url.IsLocalUrl(returnUrl) ? returnUrl : null;
         }
 
         // LOCAL LOGIN DISABLED - Google only mode

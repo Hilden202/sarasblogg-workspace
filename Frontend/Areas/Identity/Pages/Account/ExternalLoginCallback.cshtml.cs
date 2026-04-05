@@ -26,7 +26,7 @@ public class ExternalLoginCallbackModel : PageModel
         _config = config;
     }
 
-    public async Task<IActionResult> OnGet([FromQuery] string code)
+    public async Task<IActionResult> OnGet([FromQuery] string code, [FromQuery] string? returnUrl = null)
     {
         if (string.IsNullOrWhiteSpace(code))
             return Redirect("/Identity/Account/Login?error=external");
@@ -103,11 +103,27 @@ public class ExternalLoginCallbackModel : PageModel
 
         var me = await meResponse.Content.ReadFromJsonAsync<MeResponse>();
         if (me?.RequiresUsernameSetup == true)
-            return RedirectToPage("/Account/SetUsername");
+            return RedirectToPage("/Account/SetUsername", new { returnUrl = NormalizeLocalReturnUrl(returnUrl) });
 
         // 🚀 7. Klar
-        
-        return Redirect("/Identity/Account/Manage/Index");
+
+        return RedirectToReturnUrlOrDefault(returnUrl, "/Identity/Account/Manage/Index");
+    }
+
+    private IActionResult RedirectToReturnUrlOrDefault(string? returnUrl, string fallbackPath)
+    {
+        var safeReturnUrl = NormalizeLocalReturnUrl(returnUrl);
+        return !string.IsNullOrWhiteSpace(safeReturnUrl)
+            ? LocalRedirect(safeReturnUrl)
+            : Redirect(fallbackPath);
+    }
+
+    private string? NormalizeLocalReturnUrl(string? returnUrl)
+    {
+        if (string.IsNullOrWhiteSpace(returnUrl))
+            return null;
+
+        return Url.IsLocalUrl(returnUrl) ? returnUrl : null;
     }
 
     // DTO som matchar API:ts exchange-response

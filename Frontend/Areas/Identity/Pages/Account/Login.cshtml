@@ -57,7 +57,7 @@
                 <hr class="my-4" />
 
                 <a class="btn btn-danger w-100 py-2"
-                   href="@($"{Model.ApiBaseUrl}/api/auth/external/google/start?returnUrl={Model.CurrentOrigin}")">
+                   href="@Model.ExternalLoginUrl">
                     <i class="bi bi-google me-2"></i>
                     Fortsätt med Google
                 </a>
@@ -103,7 +103,6 @@
     @* </script> *@
     @*  LOCAL LOGIN DISABLED - Google only mode  *@
 }
-
 
 
 
