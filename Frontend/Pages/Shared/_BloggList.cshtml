@@ -218,7 +218,12 @@
 					</form>
 					@if (User.Identity?.IsAuthenticated != true)
 					{
-						<small class="text-muted">Logga in för att gilla</small>
+						<small>
+							<a class="text-muted text-decoration-none"
+							   asp-area="Identity"
+							   asp-page="/Account/Login"
+							   asp-route-returnUrl="@($"{Context.Request.Path}{Context.Request.QueryString}")">Logga in för att gilla</a>
+						</small>
 					}
 				</div>
 
