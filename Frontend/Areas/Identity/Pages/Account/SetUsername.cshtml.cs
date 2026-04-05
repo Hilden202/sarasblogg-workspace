@@ -1,8 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using SarasBlogg.DAL;
+using SarasBlogg.DTOs;
 
 namespace SarasBlogg.Areas.Identity.Pages.Account
 {
@@ -63,10 +68,47 @@ namespace SarasBlogg.Areas.Identity.Pages.Account
             }
 
             // 2️⃣ 🔥 KRITISK DEL: synka om frontend-sessionen (cookie + claims)
-            await _userApi.RefreshSessionAsync();
+            var refreshedSession = await _userApi.RefreshSessionAsync();
+            if (refreshedSession is not null)
+            {
+                await ApplyRefreshedSessionAsync(refreshedSession);
+            }
 
             // 3️⃣ Klart → tillbaka dit användaren kom ifrån om möjligt
             return RedirectToReturnUrlOrDefault(ReturnUrl, "/Identity/Account/Manage/Index");
+        }
+
+        private async Task ApplyRefreshedSessionAsync(AccessTokenDto session)
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwt = handler.ReadJwtToken(session.AccessToken);
+
+            var identity = new ClaimsIdentity(
+                jwt.Claims,
+                CookieAuthenticationDefaults.AuthenticationScheme);
+
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                principal,
+                new AuthenticationProperties
+                {
+                    IsPersistent = true,
+                    ExpiresUtc = session.AccessTokenExpiresUtc
+                });
+
+            Response.Cookies.Append(
+                "api_access_token",
+                session.AccessToken,
+                new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Lax,
+                    Path = "/",
+                    Expires = session.AccessTokenExpiresUtc
+                });
         }
 
         private IActionResult RedirectToReturnUrlOrDefault(string? returnUrl, string fallbackPath)

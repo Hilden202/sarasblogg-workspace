@@ -680,7 +680,9 @@ public class AuthController : ControllerBase
 
         return Ok(new AccessTokenDto
         {
-            AccessToken = token
+            AccessToken = token,
+            AccessTokenExpiresUtc = DateTime.UtcNow.AddMinutes(
+                int.Parse(_cfg["Jwt:AccessTokenMinutes"] ?? "60"))
         });
     }
 
@@ -877,7 +879,7 @@ public class AuthController : ControllerBase
     // ---------- REFRESH SESSION ----------
     [Authorize]
     [HttpPost("refresh-session")]
-    public async Task<IActionResult> RefreshSession()
+    public async Task<ActionResult<AccessTokenDto>> RefreshSession()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId))
@@ -890,6 +892,14 @@ public class AuthController : ControllerBase
         // 🔥 BYGG OM COOKIE + CLAIMS
         await _signInManager.SignInAsync(user, isPersistent: true);
 
-        return Ok();
+        var accessToken = await _tokenService.CreateAccessTokenAsync(user);
+        var accessTokenExpiresUtc = DateTime.UtcNow.AddMinutes(
+            int.Parse(_cfg["Jwt:AccessTokenMinutes"] ?? "60"));
+
+        return Ok(new AccessTokenDto
+        {
+            AccessToken = accessToken,
+            AccessTokenExpiresUtc = accessTokenExpiresUtc
+        });
     }
 }
