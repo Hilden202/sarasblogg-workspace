@@ -16,11 +16,14 @@
 </div>
 
 <div class="spotify-section">
-    <div class="spotify-box" aria-label="Spotify-spelare">
+    <div class="spotify-box"
+         data-spotify-carousel
+         data-spotify-embeds="https://open.spotify.com/embed/album/4qQjC0R00dOaZm2bxfPnTn?utm_source=generator|https://open.spotify.com/embed/album/3rsAvZCJIOiBzrSshIg7qr?utm_source=generator|https://open.spotify.com/embed/album/0nmtLZ1GkySVEaKjey0zY4?utm_source=generator|https://open.spotify.com/embed/album/50PdYSstjgW7qoP7aOzsDs?utm_source=generator"
+         aria-label="Spotify-spelare">
         <iframe
             class="spotify-section__frame"
             style="border-radius:12px"
-            src="https://open.spotify.com/embed/album/50PdYSstjgW7qoP7aOzsDs?utm_source=generator"
+            src="https://open.spotify.com/embed/album/4qQjC0R00dOaZm2bxfPnTn?utm_source=generator"
             width="320"
             height="80"
             frameborder="0"
@@ -28,6 +31,16 @@
             allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
             loading="lazy">
         </iframe>
+        <div class="spotify-section__controls" aria-label="Byt låt">
+            <button type="button" class="spotify-section__nav" data-spotify-prev aria-label="Föregående låt">‹</button>
+            <div class="spotify-section__dots" aria-hidden="true">
+                <button type="button" class="spotify-section__dot is-active" data-spotify-dot data-index="0" aria-label="Visa låt 1"></button>
+                <button type="button" class="spotify-section__dot" data-spotify-dot data-index="1" aria-label="Visa låt 2"></button>
+                <button type="button" class="spotify-section__dot" data-spotify-dot data-index="2" aria-label="Visa låt 3"></button>
+                <button type="button" class="spotify-section__dot" data-spotify-dot data-index="3" aria-label="Visa låt 4"></button>
+            </div>
+            <button type="button" class="spotify-section__nav" data-spotify-next aria-label="Nästa låt">›</button>
+        </div>
     </div>
 </div>
 
