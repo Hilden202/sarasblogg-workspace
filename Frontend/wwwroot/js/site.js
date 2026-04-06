@@ -60,6 +60,55 @@ document.querySelectorAll('.carousel').forEach(el => {
     el.addEventListener('slid.bs.carousel', () => syncThumbsFor(el));
 });
 
+// --- Enkel Spotify-bladdrare på startsidan ---
+document.addEventListener('DOMContentLoaded', () => {
+    const root = document.querySelector('[data-spotify-carousel]');
+    if (!root) return;
+
+    const frame = root.querySelector('.spotify-section__frame');
+    const prevBtn = root.querySelector('[data-spotify-prev]');
+    const nextBtn = root.querySelector('[data-spotify-next]');
+    const dots = Array.from(root.querySelectorAll('[data-spotify-dot]'));
+    const embeds = (root.dataset.spotifyEmbeds || '')
+        .split('|')
+        .map(x => x.trim())
+        .filter(Boolean);
+
+    if (!frame || !prevBtn || !nextBtn || embeds.length === 0) return;
+
+    let index = 0;
+
+    function render() {
+        frame.src = embeds[index];
+        dots.forEach((dot, dotIndex) => {
+            const active = dotIndex === index;
+            dot.classList.toggle('is-active', active);
+            dot.setAttribute('aria-current', active ? 'true' : 'false');
+        });
+    }
+
+    prevBtn.addEventListener('click', () => {
+        index = (index - 1 + embeds.length) % embeds.length;
+        render();
+    });
+
+    nextBtn.addEventListener('click', () => {
+        index = (index + 1) % embeds.length;
+        render();
+    });
+
+    dots.forEach((dot) => {
+        dot.addEventListener('click', () => {
+            const nextIndex = Number(dot.dataset.index);
+            if (Number.isNaN(nextIndex)) return;
+            index = nextIndex;
+            render();
+        });
+    });
+
+    render();
+});
+
 
 // LISTVY: endast visning (ingen gilla här)
 (function () {
