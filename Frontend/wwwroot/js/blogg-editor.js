@@ -23,6 +23,7 @@ function setEditorContent(content) {
 
 function openEditor(blogId) {
     var modalEl    = document.getElementById('blogEditorModal');
+    if (!modalEl) return;
     var form       = modalEl.querySelector('#blogForm');
     var titleEl    = modalEl.querySelector('#blogEditorModalLabel');
     var imgSection = modalEl.querySelector('#editImagesSection');
