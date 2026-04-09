@@ -7,8 +7,8 @@ function initTinyMCE(selector, options = {}) {
         license_key: 'gpl',
         height: 550,
         plugins:
-            "lists link image table code advlist autolink charmap print preview anchor " +
-            "searchreplace visualblocks fullscreen insertdatetime media paste wordcount textcolor",
+            "lists link image table code advlist autolink charmap preview anchor " +
+            "searchreplace visualblocks fullscreen insertdatetime media wordcount",
         toolbar:
             "undo redo | fontfamily fontsize | forecolor backcolor | highlight | " +
             "bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | " +
