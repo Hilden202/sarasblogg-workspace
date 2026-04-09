@@ -112,11 +112,11 @@ namespace SarasBlogg.Pages
             // Remove Comment and ViewModel keys that are not part of the blog editor form.
             // BloggBasePageModel binds Comment (with Required fields) which would otherwise
             // make ModelState invalid when submitting the blog editor form.
-            foreach (var key in ModelState.Keys
+            var keysToRemove = ModelState.Keys.ToList();
+            foreach (var key in keysToRemove
                          .Where(k => k.StartsWith("Comment.", StringComparison.OrdinalIgnoreCase) ||
                                      string.Equals(k, "Comment", StringComparison.OrdinalIgnoreCase) ||
-                                     k.StartsWith("ViewModel.", StringComparison.OrdinalIgnoreCase))
-                         .ToList())
+                                     k.StartsWith("ViewModel.", StringComparison.OrdinalIgnoreCase)))
             {
                 ModelState.Remove(key);
             }
