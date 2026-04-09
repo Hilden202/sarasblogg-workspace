@@ -1,4 +1,10 @@
-﻿.admin-btn-group {
+﻿/* TinyMCE: säkerställ att popups/dropdowns (färgväljare, menyer) visas ovanför
+   Bootstrap-modaler (backdrop z-index 1050, modal z-index 1055) */
+.tox-tinymce-aux {
+    z-index: 9999 !important; /* måste vara högre än Bootstrap modal (1055) */
+}
+
+.admin-btn-group {
     display: flex;
     flex-wrap: nowrap;
     justify-content: center;

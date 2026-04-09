@@ -111,72 +111,6 @@ function initTinyMCE(selector, options = {}) {
 }
 
 window.addEventListener("load", () => {
-    const formAdmin = document.getElementById("blogForm");
-    const formAbout = document.getElementById("aboutMeForm");
-
-    // 🧭 Admin editor (med bilduppladdning)
-    if (formAdmin && document.querySelector("#ContentEditor")) {
-        const apiBase = (document.documentElement.dataset.apiBaseUrl || "").replace(/\/+$/, "");
-        const editorToken = formAdmin?.dataset?.editorToken?.trim();
-
-        console.log("✅ Initierar TinyMCE för Admin...");
-
-        initTinyMCE("#ContentEditor", {
-
-            plugins: "lists link image table code",
-            toolbar:
-                "undo redo | fontfamily fontsize | forecolor backcolor | highlight | bold italic underline strikethrough | " +
-                "alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | blockquote | link image code removeformat",
-            images_upload_handler: async (blobInfo) => {
-                const form = document.getElementById("blogForm");
-                const apiBase = (document.documentElement.dataset.apiBaseUrl || "").replace(/\/+$/, "");
-                const editorToken = form?.dataset?.editorToken?.trim();
-                const bloggId = form.querySelector("input[name='NewBlogg.Id']")?.value || 0;
-
-                const uploadUrl = `${apiBase}/api/editor/upload-image?bloggId=${bloggId}`;
-                const formData = new FormData();
-                formData.append("file", blobInfo.blob(), blobInfo.filename());
-
-                const isLocal =
-                    location.hostname === "localhost" ||
-                    location.hostname === "127.0.0.1";
-
-                const fetchOptions = {
-                    method: "POST",
-                    body: formData
-                };
-
-                if (isLocal) {
-                    // 🔧 Lokal dev: cookie-auth
-                    fetchOptions.credentials = "include";
-                } else {
-                    // 🔐 Prod: Bearer token
-                    fetchOptions.headers = {
-                        "Authorization": `Bearer ${editorToken}`
-                    };
-                }
-
-                const response = await fetch(uploadUrl, fetchOptions);
-
-                if (!response.ok) {
-                    const err = await response.text();
-                    throw new Error(`Uppladdning misslyckades (${response.status}): ${err}`);
-                }
-
-                const json = await response.json();
-                return json.location;
-            },
-        });
-    }
-
-    // 🌸 About Me editor (utan bilduppladdning)
-    if (formAbout && document.querySelector("#AboutMeEditor")) {
-        console.log("✅ Initierar TinyMCE för About Me...");
-        initTinyMCE("#AboutMeEditor", {
-            height: 400 // lägre höjd i modalen
-        });
-    }
-
     // 🔄 Synka TinyMCE-innehåll till textarea innan formulär skickas
     document.querySelectorAll("form").forEach(form => {
         form.addEventListener("submit", () => {
@@ -185,4 +119,83 @@ window.addEventListener("load", () => {
             }
         });
     });
+
+    // 🧭 Admin blog editor modal – initiera TinyMCE när modalen öppnas
+    const blogModalEl = document.getElementById("blogEditorModal");
+    if (blogModalEl && document.querySelector("#ContentEditor")) {
+        blogModalEl.addEventListener("shown.bs.modal", () => {
+            if (tinymce.get("ContentEditor")) return; // redan initierad
+
+            console.log("✅ Initierar TinyMCE för Admin (modal shown)...");
+
+            initTinyMCE("#ContentEditor", {
+                plugins: "lists link image table code",
+                toolbar:
+                    "undo redo | fontfamily fontsize | forecolor backcolor | highlight | bold italic underline strikethrough | " +
+                    "alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | blockquote | link image code removeformat",
+                images_upload_handler: async (blobInfo) => {
+                    const form = document.getElementById("blogForm");
+                    const apiBase = (document.documentElement.dataset.apiBaseUrl || "").replace(/\/+$/, "");
+                    const editorToken = form?.dataset?.editorToken?.trim();
+                    const bloggId = form.querySelector("input[name='NewBlogg.Id']")?.value || 0;
+
+                    const uploadUrl = `${apiBase}/api/editor/upload-image?bloggId=${bloggId}`;
+                    const formData = new FormData();
+                    formData.append("file", blobInfo.blob(), blobInfo.filename());
+
+                    const isLocal =
+                        location.hostname === "localhost" ||
+                        location.hostname === "127.0.0.1";
+
+                    const fetchOptions = {
+                        method: "POST",
+                        body: formData
+                    };
+
+                    if (isLocal) {
+                        // 🔧 Lokal dev: cookie-auth
+                        fetchOptions.credentials = "include";
+                    } else {
+                        // 🔐 Prod: Bearer token
+                        fetchOptions.headers = {
+                            "Authorization": `Bearer ${editorToken}`
+                        };
+                    }
+
+                    const response = await fetch(uploadUrl, fetchOptions);
+
+                    if (!response.ok) {
+                        const err = await response.text();
+                        throw new Error(`Uppladdning misslyckades (${response.status}): ${err}`);
+                    }
+
+                    const json = await response.json();
+                    return json.location;
+                },
+            });
+        });
+
+        blogModalEl.addEventListener("hidden.bs.modal", () => {
+            const editor = tinymce.get("ContentEditor");
+            if (editor) editor.remove();
+        });
+    }
+
+    // 🌸 About Me editor modal – initiera TinyMCE när modalen öppnas
+    const aboutModalEl = document.getElementById("aboutMeFormModal");
+    if (aboutModalEl && document.querySelector("#AboutMeEditor")) {
+        aboutModalEl.addEventListener("shown.bs.modal", () => {
+            if (tinymce.get("AboutMeEditor")) return; // redan initierad
+
+            console.log("✅ Initierar TinyMCE för About Me (modal shown)...");
+            initTinyMCE("#AboutMeEditor", {
+                height: 400 // lägre höjd i modalen
+            });
+        });
+
+        aboutModalEl.addEventListener("hidden.bs.modal", () => {
+            const editor = tinymce.get("AboutMeEditor");
+            if (editor) editor.remove();
+        });
+    }
 });
