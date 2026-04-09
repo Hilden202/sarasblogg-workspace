@@ -13,6 +13,9 @@ function initTinyMCE(selector, options = {}) {
             "undo redo | fontfamily fontsize | forecolor backcolor | highlight | " +
             "bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | " +
             "bullist numlist outdent indent | blockquote | link image code removeformat",
+        // 📱 Tvinga alltid fullständig desktop-toolbar – förhindra mobilläge
+        toolbar_mode: 'wrap',
+        mobile: { toolbar_mode: 'wrap' },
         block_formats: "Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3",
         convert_urls: false,
 
