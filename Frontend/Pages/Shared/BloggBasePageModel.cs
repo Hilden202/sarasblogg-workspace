@@ -27,7 +27,6 @@ namespace SarasBlogg.Pages.Shared
         [BindProperty]
         public BloggViewModel ViewModel { get; set; } = new();
 
-        [BindProperty]
         public Models.Comment Comment { get; set; } = new();
 
         // Likes för aktuell post
@@ -170,6 +169,11 @@ namespace SarasBlogg.Pages.Shared
 
         public async Task<IActionResult> OnPostCoreAsync(int deleteCommentId)
         {
+            // Bind and validate Comment here rather than via [BindProperty] on the class,
+            // so that handlers like OnPostSaveBloggAsync that don't submit Comment fields
+            // are not affected by its [Required] validation errors.
+            await TryUpdateModelAsync(Comment, "Comment");
+
             var postedComment = Comment ?? new Models.Comment();
 
             // 1) Delete (admin eller ägare via namn/e-post)
