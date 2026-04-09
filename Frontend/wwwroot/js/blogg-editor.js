@@ -23,9 +23,9 @@ function setEditorContent(content) {
 
 function openEditor(blogId) {
     var modalEl    = document.getElementById('blogEditorModal');
-    var form       = document.getElementById('blogForm');
-    var titleEl    = document.getElementById('blogEditorModalLabel');
-    var imgSection = document.getElementById('editImagesSection');
+    var form       = modalEl.querySelector('#blogForm');
+    var titleEl    = modalEl.querySelector('#blogEditorModalLabel');
+    var imgSection = modalEl.querySelector('#editImagesSection');
 
     if (blogId) {
         var current = (typeof currentBloggData !== 'undefined' && currentBloggData && currentBloggData.id === blogId)
