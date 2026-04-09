@@ -109,6 +109,18 @@ namespace SarasBlogg.Pages
             IsSuperAdmin = User.IsInRole("superadmin");
             if (!IsSuperAdmin) return Forbid();
 
+            // Remove Comment and ViewModel keys that are not part of the blog editor form.
+            // BloggBasePageModel binds Comment (with Required fields) which would otherwise
+            // make ModelState invalid when submitting the blog editor form.
+            foreach (var key in ModelState.Keys
+                         .Where(k => k.StartsWith("Comment.", StringComparison.OrdinalIgnoreCase) ||
+                                     string.Equals(k, "Comment", StringComparison.OrdinalIgnoreCase) ||
+                                     k.StartsWith("ViewModel.", StringComparison.OrdinalIgnoreCase))
+                         .ToList())
+            {
+                ModelState.Remove(key);
+            }
+
             if (!ModelState.IsValid)
             {
                 EditorAccessToken = await _bloggApi.GetEditorAccessTokenAsync();
