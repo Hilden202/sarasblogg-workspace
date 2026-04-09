@@ -137,7 +137,7 @@ window.addEventListener("load", () => {
                     "undo redo | fontfamily fontsize | forecolor backcolor | highlight | bold italic underline strikethrough | " +
                     "alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | blockquote | link image code removeformat",
                 images_upload_handler: async (blobInfo) => {
-                    const form = document.getElementById("blogForm");
+                    const form = blogModalEl.querySelector('#blogForm');
                     const apiBase = (document.documentElement.dataset.apiBaseUrl || "").replace(/\/+$/, "");
                     const editorToken = form?.dataset?.editorToken?.trim();
                     const bloggId = form.querySelector("input[name='NewBlogg.Id']")?.value || 0;
