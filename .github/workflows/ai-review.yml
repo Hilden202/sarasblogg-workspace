@@ -36,24 +36,28 @@ jobs:
             exit 0
           fi
 
-          DIFF=$(head -c 6000 diff.txt | jq -Rs .)
+          DIFF=$(head -c 6000 diff.txt)
+
+          BODY=$(jq -n \
+            --arg diff "$DIFF" \
+            '{
+              model: "gpt-4o-mini",
+              messages: [
+                {
+                  role: "system",
+                  content: "Project context:\n- Monorepo with frontend + API\n- Frontend only talks to API (no DB access)\n- Backend owns data and identity\n- Focus on maintainability and correctness\n\nReview rules:\n- Look for bugs and crash risks\n- Check API contract assumptions\n- Identify missing validation\n- Point out inconsistent patterns\n- Prioritize correctness over style\n- Suggest improvements only when they provide real value\n- Do not comment on minor styling unless it affects functionality\n- Ignore workflow and configuration files unless they affect runtime behavior\n\nOnly comment on actual issues. If no issues are found, say so clearly.\n\nFormat your response in clean Markdown:\n- Use headings (##)\n- Use bullet points\n- Be concise and structured\n\nAlways structure findings under these sections:\n### 🔥 Critical\n### ⚠️ Warnings\n### 💡 Suggestions\n\nIf a section has no items, include it and write \"None.\""
+                },
+                {
+                  role: "user",
+                  content: $diff
+                }
+              ]
+            }')
 
           curl https://api.openai.com/v1/chat/completions \
             -H "Authorization: Bearer $OPENAI_API_KEY" \
             -H "Content-Type: application/json" \
-            -d "{
-              \"model\": \"gpt-4o-mini\",
-              \"messages\": [
-                {
-                  \"role\": \"system\",
-                  \"content\": \"Project context:\n- Monorepo with frontend + API\n- Frontend only talks to API (no DB access)\n- Backend owns data and identity\n- Focus on maintainability and correctness\n\nReview rules:\n- Look for bugs and crash risks\n- Check API contract assumptions\n- Identify missing validation\n- Point out inconsistent patterns\n- Prioritize correctness over style\n- Suggest improvements only when they provide real value\n- Do not comment on minor styling unless it affects functionality\n- Ignore workflow and configuration files unless they affect runtime behavior\n\nOnly comment on actual issues. If no issues are found, say so clearly.\n\nFormat your response in clean Markdown:\n- Use headings (##)\n- Use bullet points\n- Be concise and structured\n\nAlways structure findings under these sections:\n### 🔥 Critical\n### ⚠️ Warnings\n### 💡 Suggestions\n\nIf a section has no items, include it and write \"None.\""
-                },
-                {
-                  \"role\": \"user\",
-                  \"content\": $DIFF
-                }
-              ]
-            }" > response.json
+            -d "$BODY" > response.json
 
       - name: Post AI review as PR comment
         env:
