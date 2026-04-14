@@ -19,3 +19,22 @@ jobs:
 
       - name: Print diff (for debug)
         run: cat diff.txt
+
+      - name: Send diff to AI (prototype)
+        run: |
+          curl https://api.openai.com/v1/chat/completions \
+            -H "Authorization: Bearer ${{ secrets.OPENAI_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "model": "gpt-4o-mini",
+              "messages": [
+                {
+                  "role": "system",
+                  "content": "You are a strict code reviewer. Point out bugs, bad patterns and risks."
+                },
+                {
+                  "role": "user",
+                  "content": "'"$(cat diff.txt | head -c 6000)"'"
+                }
+              ]
+            }'
