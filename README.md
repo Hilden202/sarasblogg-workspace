@@ -113,3 +113,4 @@ Frontend fungerar endast när API är igång (by design).
 - Monorepo etablerat
 - API-tester på plats (integration)
 - Gamla repos finns kvar under övergången (rollback möjligt)
+- AI review workflow (experimental)
