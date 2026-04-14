@@ -65,12 +65,16 @@ jobs:
         run: |
           REVIEW=$(jq -r '.choices[0].message.content' response.json)
 
-          if [[ "$REVIEW" == *"No issues found"* ]]; then
+          if [[ "$REVIEW" == "NO_ISSUES" ]] || [[ -z "$REVIEW" ]]; then
             echo "No issues found, updating comment with clean state."
-            REVIEW="## 🔥 Critical\nNone.\n\n## ⚠️ Warnings\nNone.\n\n## 💡 Suggestions\nNone.\n\n✅ No issues found in latest changes."
+            REVIEW="## 🤖 AI Review\n\n<!-- ai-review -->\n\n✅ Inga problem hittades i senaste ändringarna."
           fi
 
-          FORMATTED=$'## 🤖 AI Review\n\n<!-- ai-review -->\n\n'"$REVIEW"
+          if [[ "$REVIEW" == "NO_ISSUES" ]] || [[ "$REVIEW" == *"Inga problem hittades"* ]]; then
+            FORMATTED="$REVIEW"
+          else
+            FORMATTED=$'## 🤖 AI Review\n\n<!-- ai-review -->\n\n'"$REVIEW"
+          fi
 
           COMMENTS=$(curl -s \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
