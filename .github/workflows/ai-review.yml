@@ -60,16 +60,39 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           REVIEW=$(jq -r '.choices[0].message.content' response.json)
+
           if [[ "$REVIEW" == *"No issues found"* ]]; then
             echo "No issues found, skipping PR comment."
             exit 0
           fi
 
-          FORMATTED=$'## 🤖 AI Review\n\n'"$REVIEW"
-          BODY=$(jq -n --arg text "$FORMATTED" '{ body: $text }')
+          FORMATTED=$'## 🤖 AI Review\n\n<!-- ai-review -->\n\n'"$REVIEW"
 
-          curl -X POST \
+          COMMENTS=$(curl -s \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments \
-            -d "$BODY"
+            https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments)
+
+          COMMENT_ID=$(echo "$COMMENTS" | jq -r '.[] | select(.body | contains("<!-- ai-review -->")) | .id' | head -n 1)
+
+          if [ "$COMMENT_ID" != "" ] && [ "$COMMENT_ID" != "null" ]; then
+            echo "Updating existing AI review comment..."
+
+            BODY=$(jq -n --arg text "$FORMATTED" '{ body: $text }')
+
+            curl -X PATCH \
+              -H "Authorization: Bearer $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              https://api.github.com/repos/${{ github.repository }}/issues/comments/$COMMENT_ID \
+              -d "$BODY"
+          else
+            echo "Creating new AI review comment..."
+
+            BODY=$(jq -n --arg text "$FORMATTED" '{ body: $text }')
+
+            curl -X POST \
+              -H "Authorization: Bearer $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments \
+              -d "$BODY"
+          fi
