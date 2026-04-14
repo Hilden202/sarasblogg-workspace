@@ -21,20 +21,24 @@ jobs:
         run: cat diff.txt
 
       - name: Send diff to AI (prototype)
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
+          DIFF=$(head -c 6000 diff.txt | jq -Rs .)
+      
           curl https://api.openai.com/v1/chat/completions \
-            -H "Authorization: Bearer ${{ secrets.OPENAI_API_KEY }}" \
+            -H "Authorization: Bearer $OPENAI_API_KEY" \
             -H "Content-Type: application/json" \
-            -d '{
-              "model": "gpt-4o-mini",
-              "messages": [
+            -d "{
+              \"model\": \"gpt-4o-mini\",
+              \"messages\": [
                 {
-                  "role": "system",
-                  "content": "You are a strict code reviewer. Point out bugs, bad patterns and risks."
+                  \"role\": \"system\",
+                  \"content\": \"You are a strict code reviewer. Point out bugs, bad patterns and risks.\"
                 },
                 {
-                  "role": "user",
-                  "content": "'"$(cat diff.txt | head -c 6000)"'"
+                  \"role\": \"user\",
+                  \"content\": $DIFF
                 }
               ]
-            }'
+            }"
