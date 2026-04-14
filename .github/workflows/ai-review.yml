@@ -67,7 +67,7 @@ jobs:
 
           if [[ "$REVIEW" == "NO_ISSUES" ]] || [[ -z "$REVIEW" ]]; then
             echo "No issues found, updating comment with clean state."
-            REVIEW="## 🤖 AI Review\n\n<!-- ai-review -->\n\n✅ Inga problem hittades i senaste ändringarna."
+            REVIEW=$'## 🤖 AI Review\n\n<!-- ai-review -->\n\n✅ Inga problem hittades i senaste ändringarna.'
           fi
 
           if [[ "$REVIEW" == "NO_ISSUES" ]] || [[ "$REVIEW" == *"Inga problem hittades"* ]]; then
