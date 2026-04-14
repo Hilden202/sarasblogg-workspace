@@ -65,7 +65,7 @@ jobs:
             exit 0
           fi
 
-          FORMATTED="## 🤖 AI Review\n\n$REVIEW"
+          FORMATTED=$'## 🤖 AI Review\n\n'"$REVIEW"
           BODY=$(jq -n --arg text "$FORMATTED" '{ body: $text }')
 
           curl -X POST \
