@@ -24,10 +24,18 @@ jobs:
       - name: Print diff (for debug)
         run: cat diff.txt
 
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
       - name: Send diff to AI (prototype)
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
+          if [ ! -s diff.txt ]; then
+            echo "No diff found, skipping AI review."
+            exit 0
+          fi
+
           DIFF=$(head -c 6000 diff.txt | jq -Rs .)
 
           curl https://api.openai.com/v1/chat/completions \
