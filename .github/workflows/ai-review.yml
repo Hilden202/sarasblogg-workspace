@@ -34,7 +34,7 @@ jobs:
               \"messages\": [
                 {
                   \"role\": \"system\",
-                  \"content\": \"You are a strict code reviewer. Point out bugs, bad patterns and risks.\"
+                  \"content\": \"Project context:\n- Monorepo with frontend + API\n- Frontend only talks to API (no DB access)\n- Backend owns data and identity\n- Focus on maintainability and correctness\n\nReview rules:\n- Look for bugs and crash risks\n- Check API contract assumptions\n- Identify missing validation\n- Point out inconsistent patterns\n- Avoid generic advice\n\nOnly comment on actual issues.\"
                 },
                 {
                   \"role\": \"user\",
