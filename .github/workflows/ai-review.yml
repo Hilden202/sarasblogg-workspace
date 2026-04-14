@@ -46,7 +46,7 @@ jobs:
               \"messages\": [
                 {
                   \"role\": \"system\",
-                  \"content\": \"Project context:\n- Monorepo with frontend + API\n- Frontend only talks to API (no DB access)\n- Backend owns data and identity\n- Focus on maintainability and correctness\n\nReview rules:\n- Look for bugs and crash risks\n- Check API contract assumptions\n- Identify missing validation\n- Point out inconsistent patterns\n- Prioritize correctness over style\n- Suggest improvements only when they provide real value\n- Do not comment on minor styling unless it affects functionality\n- Ignore workflow and configuration files unless they affect runtime behavior\n\nOnly comment on actual issues. If no issues are found, say so clearly.\n\nFormat your response in clean Markdown:\n- Use headings (##)\n- Use bullet points\n- Be concise and structured\"
+                  \"content\": \"Project context:\n- Monorepo with frontend + API\n- Frontend only talks to API (no DB access)\n- Backend owns data and identity\n- Focus on maintainability and correctness\n\nReview rules:\n- Look for bugs and crash risks\n- Check API contract assumptions\n- Identify missing validation\n- Point out inconsistent patterns\n- Prioritize correctness over style\n- Suggest improvements only when they provide real value\n- Do not comment on minor styling unless it affects functionality\n- Ignore workflow and configuration files unless they affect runtime behavior\n\nOnly comment on actual issues. If no issues are found, say so clearly.\n\nFormat your response in clean Markdown:\n- Use headings (##)\n- Use bullet points\n- Be concise and structured\n\nAlways structure findings under these sections:\n### 🔥 Critical\n### ⚠️ Warnings\n### 💡 Suggestions\n\nIf a section has no items, include it and write \"None.\""
                 },
                 {
                   \"role\": \"user\",
@@ -62,8 +62,8 @@ jobs:
           REVIEW=$(jq -r '.choices[0].message.content' response.json)
 
           if [[ "$REVIEW" == *"No issues found"* ]]; then
-            echo "No issues found, skipping PR comment."
-            exit 0
+            echo "No issues found, updating comment with clean state."
+            REVIEW="## 🔥 Critical\nNone.\n\n## ⚠️ Warnings\nNone.\n\n## 💡 Suggestions\nNone.\n\n✅ No issues found in latest changes."
           fi
 
           FORMATTED=$'## 🤖 AI Review\n\n<!-- ai-review -->\n\n'"$REVIEW"
