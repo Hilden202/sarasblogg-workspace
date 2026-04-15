@@ -19,7 +19,10 @@ jobs:
       - name: Get PR diff
         run: |
           git fetch origin ${{ github.base_ref }}
-          git diff origin/${{ github.base_ref }} > diff.txt
+          git diff origin/${{ github.base_ref }}...HEAD \
+            -- . \
+            ':(exclude)*.md' \
+            ':(exclude)*.yml' > diff.txt
 
       - name: Print diff (for debug)
         run: cat diff.txt
@@ -37,8 +40,8 @@ jobs:
             exit 0
           fi
 
-          DIFF=$(head -c 6000 diff.txt | jq -Rs .)
-          FILE_CONTENT=$(cat .github/workflows/ai-review.yml | head -c 6000 | jq -Rs .)
+          DIFF=$(head -n 300 diff.txt | jq -Rs .)
+          FILE_CONTENT=$(head -n 300 .github/workflows/ai-review.yml | jq -Rs .)
 
           BODY=$(jq -n \
             --arg diff "$DIFF" \
