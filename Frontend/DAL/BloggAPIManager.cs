@@ -22,7 +22,11 @@ namespace SarasBlogg.DAL
         public async Task<List<Blogg>> GetAllBloggsAsync()
         {
             var resp = await _httpClient.GetAsync("api/Blogg");
-            if (!resp.IsSuccessStatusCode) return new List<Blogg>();
+            if (!resp.IsSuccessStatusCode)
+            {
+                var body = await resp.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"GET all bloggs failed: {(int)resp.StatusCode} {resp.ReasonPhrase}. Body: {body}");
+            }
 
             var json = await resp.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<List<Blogg>>(json, _jsonOpts) ?? new List<Blogg>();
@@ -31,7 +35,11 @@ namespace SarasBlogg.DAL
         public async Task<Blogg?> GetBloggAsync(int id)
         {
             var resp = await _httpClient.GetAsync($"api/Blogg/{id}");
-            if (!resp.IsSuccessStatusCode) return null;
+            if (!resp.IsSuccessStatusCode)
+            {
+                var body = await resp.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"GET blogg {id} failed: {(int)resp.StatusCode} {resp.ReasonPhrase}. Body: {body}");
+            }
 
             var json = await resp.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<Blogg>(json, _jsonOpts);
@@ -41,7 +49,12 @@ namespace SarasBlogg.DAL
         {
             var content = new StringContent(JsonSerializer.Serialize(blogg, _jsonOpts), Encoding.UTF8, "application/json");
             var resp = await _httpClient.PostAsync("api/Blogg", content);
-            if (!resp.IsSuccessStatusCode) return null;
+
+            if (!resp.IsSuccessStatusCode)
+            {
+                var body = await resp.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"POST blogg failed: {(int)resp.StatusCode} {resp.ReasonPhrase}. Body: {body}");
+            }
 
             var json = await resp.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<Blogg>(json, _jsonOpts);
@@ -50,7 +63,13 @@ namespace SarasBlogg.DAL
         public async Task UpdateBloggAsync(Blogg blogg)
         {
             var content = new StringContent(JsonSerializer.Serialize(blogg, _jsonOpts), Encoding.UTF8, "application/json");
-            await _httpClient.PutAsync($"api/Blogg/{blogg.Id}", content);
+            var resp = await _httpClient.PutAsync($"api/Blogg/{blogg.Id}", content);
+
+            if (!resp.IsSuccessStatusCode)
+            {
+                var body = await resp.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"PUT blogg {blogg.Id} failed: {(int)resp.StatusCode} {resp.ReasonPhrase}. Body: {body}");
+            }
         }
 
         public async Task<bool> ToggleHiddenAsync(int id)
@@ -78,7 +97,13 @@ namespace SarasBlogg.DAL
 
         public async Task DeleteBloggAsync(int id)
         {
-            await _httpClient.DeleteAsync($"api/Blogg/{id}");
+            var resp = await _httpClient.DeleteAsync($"api/Blogg/{id}");
+
+            if (!resp.IsSuccessStatusCode)
+            {
+                var body = await resp.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"DELETE blogg {id} failed: {(int)resp.StatusCode} {resp.ReasonPhrase}. Body: {body}");
+            }
         }
 
         public async Task<string?> GetEditorAccessTokenAsync()
