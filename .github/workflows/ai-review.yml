@@ -47,7 +47,8 @@ jobs:
           OPENAI_MODEL: gpt-4o-mini
         run: |
           if [ ! -s diff.txt ]; then
-            echo "No diff found, skipping AI review."
+            echo "No diff found, creating empty AI response."
+            echo '{"choices":[{"message":{"content":"NO_ISSUES"}}]}' > response.json
             exit 0
           fi
 
