@@ -36,20 +36,22 @@ jobs:
             exit 0
           fi
 
-          DIFF=$(head -c 6000 diff.txt)
+          DIFF=$(head -c 6000 diff.txt | jq -Rs .)
+          FILE_CONTENT=$(cat .github/workflows/ai-review.yml | head -c 6000 | jq -Rs .)
 
           BODY=$(jq -n \
             --arg diff "$DIFF" \
+            --arg file "$FILE_CONTENT" \
             '{
               model: "gpt-4o-mini",
               messages: [
                 {
                   role: "system",
-                  content: "Project context:\n- Monorepo with frontend + API\n- Frontend only talks to API (no DB access)\n- Backend owns data and identity\n- Focus on maintainability and correctness\n\nReview rules:\n- Look for bugs and crash risks\n- Check API contract assumptions\n- Identify missing validation\n- Point out inconsistent patterns\n- Prioritize correctness over style\n- Suggest improvements only when they provide real value\n- Do not comment on minor styling unless it affects functionality\n- Ignore workflow and configuration files unless they affect runtime behavior\n\nOnly comment on actual issues. If no issues are found, say so clearly.\n\nFormat your response in clean Markdown:\n- Use headings (##)\n- Use bullet points\n- Be concise and structured\n\nGroup findings into:\n- 🔥 Critical (must fix before merge)\n- ⚠️ Warnings (should be reviewed)\n- 💡 Suggestions (nice improvements)\n\nOnly include sections that contain real issues.\nIf a section has no findings, DO NOT include that section at all.\nDo not output empty sections or placeholder text like \"None.\" or \"Inga problem hittades\" inside sections.\n\nAdditional rules:\n- Keep the review concise and to the point (prefer short bullet points).\n- Avoid long explanations unless absolutely necessary.\n- Write the entire review in Swedish.\nIf there are absolutely no issues (no critical, no warnings, no suggestions), respond ONLY with:\nNO_ISSUES\nIf ANY warning or suggestion exists, DO NOT return NO_ISSUES."
+                  content: "Project context:\n- Monorepo with frontend + API\n- Frontend only talks to API (no DB access)\n- Backend owns data and identity\n- Focus on maintainability and correctness\n\nReview rules:\n- Look for bugs and crash risks\n- Check API contract assumptions\n- Identify missing validation\n- Point out inconsistent patterns\n- Prioritize correctness over style\n- Suggest improvements only when they provide real value\n- Do not comment on minor styling unless it affects functionality\n- Ignore workflow and configuration files unless they affect runtime behavior\n\nYou will receive:\n- DIFF: what changed\n- FULL FILE: the current file after changes\n\nUse BOTH to reason about correctness.\n\nOnly comment on actual issues. If no issues are found, say so clearly.\n\nFormat your response in clean Markdown:\n- Use headings (##)\n- Use bullet points\n- Be concise and structured\n\nGroup findings into:\n- 🔥 Critical (must fix before merge)\n- ⚠️ Warnings (should be reviewed)\n- 💡 Suggestions (nice improvements)\n\nOnly include sections that contain real issues.\nIf a section has no findings, DO NOT include that section at all.\nDo not output empty sections or placeholder text like \"None.\" or \"Inga problem hittades\" inside sections.\n\nAdditional rules:\n- Keep the review concise and to the point (prefer short bullet points).\n- Avoid long explanations unless absolutely necessary.\n- Write the entire review in Swedish.\nIf there are absolutely no issues (no critical, no warnings, no suggestions), respond ONLY with:\nNO_ISSUES\nIf ANY warning or suggestion exists, DO NOT return NO_ISSUES."
                 },
                 {
                   role: "user",
-                  content: $diff
+                  content: ("DIFF:\n" + $diff + "\n\nFULL FILE:\n" + $file)
                 }
               ]
             }')
