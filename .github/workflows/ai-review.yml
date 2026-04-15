@@ -15,14 +15,25 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Get PR diff
         run: |
-          git fetch origin ${{ github.base_ref }}
-          git diff origin/${{ github.base_ref }}...HEAD \
-            -- . \
-            ':(exclude)*.md' \
-            ':(exclude)*.yml' > diff.txt
+          git fetch origin ${{ github.base_ref }} --depth=1
+
+          if git merge-base --is-ancestor origin/${{ github.base_ref }} HEAD 2>/dev/null || git merge-base HEAD origin/${{ github.base_ref }} >/dev/null 2>&1; then
+            git diff origin/${{ github.base_ref }}...HEAD \
+              -- . \
+              ':(exclude)*.md' \
+              ':(exclude)*.yml' > diff.txt
+          else
+            echo "No merge base found, falling back to two-dot diff."
+            git diff origin/${{ github.base_ref }} HEAD \
+              -- . \
+              ':(exclude)*.md' \
+              ':(exclude)*.yml' > diff.txt
+          fi
 
       - name: Print diff (for debug)
         run: cat diff.txt
