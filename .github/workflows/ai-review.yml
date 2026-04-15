@@ -30,6 +30,7 @@ jobs:
       - name: Send diff to AI (prototype)
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: gpt-4o-mini
         run: |
           if [ ! -s diff.txt ]; then
             echo "No diff found, skipping AI review."
@@ -42,8 +43,9 @@ jobs:
           BODY=$(jq -n \
             --arg diff "$DIFF" \
             --arg file "$FILE_CONTENT" \
+            --arg model "$OPENAI_MODEL" \
             '{
-              model: "gpt-4o-mini",
+              model: $model,
               messages: [
                 {
                   role: "system",
@@ -56,10 +58,17 @@ jobs:
               ]
             }')
 
-          curl https://api.openai.com/v1/chat/completions \
+          HTTP_STATUS=$(curl -s -o response.json -w "%{http_code}" \
+            https://api.openai.com/v1/chat/completions \
             -H "Authorization: Bearer $OPENAI_API_KEY" \
             -H "Content-Type: application/json" \
-            -d "$BODY" > response.json
+            -d "$BODY")
+
+          if [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "OpenAI request failed with status $HTTP_STATUS"
+            cat response.json
+            exit 1
+          fi
 
       - name: Post AI review as PR comment
         env:
