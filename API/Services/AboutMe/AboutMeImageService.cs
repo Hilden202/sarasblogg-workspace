@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using SarasBloggAPI.DAL;
-using SarasBloggAPI.Models;
+﻿using SarasBloggAPI.DAL;
 using SarasBloggAPI.Services.Media;
 using AboutMeModel = SarasBloggAPI.Models.AboutMe;
 

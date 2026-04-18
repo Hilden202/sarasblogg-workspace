@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SarasBloggAPI.DAL;
-using SarasBloggAPI.Models;
 using SarasBloggAPI.Services.AboutMe;
 using SarasBloggAPI.DTOs.AboutMe;
 using Microsoft.AspNetCore.Authorization;

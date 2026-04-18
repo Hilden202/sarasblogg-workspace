@@ -8,21 +8,14 @@ using SarasBloggAPI.Services.Comment;
 using SarasBloggAPI.Services.Media;
 using SarasBloggAPI.DAL;
 using Microsoft.AspNetCore.Identity;
-using Npgsql.EntityFrameworkCore.PostgreSQL;
 using Microsoft.AspNetCore.HttpOverrides;
 using Npgsql;
-using System.Net.Sockets;
-using Microsoft.Extensions.DependencyInjection;
-using HealthChecks.NpgSql;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using System.IO;
 using System.Security.Claims;
 using AngleSharp.Dom;
 using Ganss.Xss;
-using Microsoft.AspNetCore.Authentication.Google;
-using Microsoft.AspNetCore.Authentication;
 
 
 namespace SarasBloggAPI
