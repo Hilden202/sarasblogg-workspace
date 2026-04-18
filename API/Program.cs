@@ -1,7 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection;
 using SarasBloggAPI.Data;
-using SarasBloggAPI.Services;
+using SarasBloggAPI.Services.AboutMe;
+using SarasBloggAPI.Services.Auth;
+using SarasBloggAPI.Services.Blogg;
+using SarasBloggAPI.Services.Comment;
+using SarasBloggAPI.Services.Media;
 using SarasBloggAPI.DAL;
 using Microsoft.AspNetCore.Identity;
 using Npgsql.EntityFrameworkCore.PostgreSQL;

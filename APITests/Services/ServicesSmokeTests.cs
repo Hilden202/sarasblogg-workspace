@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SarasBloggAPI;
-using SarasBloggAPI.Services;
+using SarasBloggAPI.Services.Auth;
 using APITests.Infrastructure;
 using Xunit;
 

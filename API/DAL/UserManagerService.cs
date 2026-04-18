@@ -2,7 +2,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SarasBloggAPI.Data;
-using SarasBloggAPI.DTOs;
+using SarasBloggAPI.DTOs.Auth;
+using SarasBloggAPI.DTOs.User;
 
 namespace SarasBloggAPI.DAL
 {
