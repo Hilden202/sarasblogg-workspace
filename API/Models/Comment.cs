@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.Formatters;
-using Swashbuckle.AspNetCore.SwaggerGen;
-
-namespace SarasBloggAPI.Models
+﻿namespace SarasBloggAPI.Models
 {
     public class Comment
     {

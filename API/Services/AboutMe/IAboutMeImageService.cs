@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using System.Threading.Tasks;
-
-namespace SarasBloggAPI.Services.AboutMe
+﻿namespace SarasBloggAPI.Services.AboutMe
 {
     public interface IAboutMeImageService
     {

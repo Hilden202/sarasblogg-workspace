@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SarasBloggAPI.Models
+﻿namespace SarasBloggAPI.Models
 {
     public class BloggLike
     {

@@ -4,7 +4,6 @@ using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using SarasBloggAPI.Data;
-using System.Globalization;
 
 namespace SarasBloggAPI.Services.Auth;
 

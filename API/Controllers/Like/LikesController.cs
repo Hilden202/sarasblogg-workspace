@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using SarasBloggAPI.Data;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using SarasBloggAPI.DTOs.Like;

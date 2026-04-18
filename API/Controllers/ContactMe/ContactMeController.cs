@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SarasBloggAPI.DAL;
-using SarasBloggAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using ContactMeModel = SarasBloggAPI.Models.ContactMe;
 

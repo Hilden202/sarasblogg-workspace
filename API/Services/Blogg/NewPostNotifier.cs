@@ -1,10 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using SarasBloggAPI.Data;
-using SarasBloggAPI.Models;
 using SarasBloggAPI.Services.Auth;
 
 namespace SarasBloggAPI.Services.Blogg

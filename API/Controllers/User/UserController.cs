@@ -6,13 +6,6 @@ using SarasBloggAPI.DTOs.Auth;
 using SarasBloggAPI.DTOs.User;
 using Microsoft.AspNetCore.Identity;
 using SarasBloggAPI.Data;
-using System.Text;
-using System.Text.Json;
-using Microsoft.AspNetCore.Http.HttpResults;
-using SarasBloggAPI.Models;
-using System.Data;
-using System.Xml.Linq;
-using System.Reflection.Metadata;
 using Microsoft.EntityFrameworkCore;
 
 namespace SarasBloggAPI.Controllers.User

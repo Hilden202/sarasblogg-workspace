@@ -1,7 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
-
-namespace SarasBloggAPI.Services.Auth
+﻿namespace SarasBloggAPI.Services.Auth
 {
     public interface IEmailSender
     {
