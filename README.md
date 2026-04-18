@@ -13,13 +13,23 @@ Detta repo samlar hela **SarasBlogg-ekosystemet** i ett gemensamt workspace (mon
 
 ```text
 sarasblogg-workspace/
-├── Frontend/                 # Razor Pages frontend (SarasBlogg)
-├── API/                      # Backend API (Identity, DB, media-hantering)
+├── Frontend/                 # Razor Pages frontend (nuvarande produktion)
+├── Client/                   # SvelteKit-klient (ny frontend, under utveckling)
+├── API/                      # Backend API (Identity, DB, affärslogik)
 ├── APITests/                 # Integrationstester för API
 ├── SarasBlogg-Workspace.sln  # Gemensam solution
 ├── sync-media.ps1            # Lokalt DEV-verktyg för mediasynk
 └── README.md                 # Detta dokument
 ```
+
+## ⚠️ Frontend-status
+
+Projektet är i en övergång till en mer frontend-agnostisk arkitektur.
+
+- `Frontend/` (Razor Pages) är nuvarande produktion
+- `Client/` (SvelteKit) är nästa generations frontend
+
+Båda klienterna använder samma API och kan köras parallellt.
 
 ## 🎯 Arkitekturprinciper
 ### Frontend (SarasBlogg Razor Pages)
