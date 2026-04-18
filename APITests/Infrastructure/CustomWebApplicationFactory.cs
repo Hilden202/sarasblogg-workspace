@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using SarasBloggAPI.Data;
-using SarasBloggAPI.Services;
+using SarasBloggAPI.Services.Media;
 using APITests.TestHelpers;
 using Testcontainers.PostgreSql;
 

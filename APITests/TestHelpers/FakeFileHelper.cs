@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
-using SarasBloggAPI.Services;
+using SarasBloggAPI.Services.Media;
 
 namespace APITests.TestHelpers;
 

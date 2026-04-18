@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using SarasBloggAPI.Data;
 using SarasBloggAPI.Models;
-using SarasBloggAPI.Services;
+using SarasBloggAPI.Services.Media;
 
 namespace SarasBloggAPI.DAL
 {
