@@ -55,7 +55,7 @@ namespace SarasBloggAPI
             // Fallback if no CORS origins configured
             if (allowedOrigins.Length == 0)
             {
-                Console.WriteLine("⚠️ Using fallback CORS origins");
+                Console.WriteLine("⚠️ Using fallback CORS origins (no Cors:AllowedOrigins configured)");
 
                 allowedOrigins = new[]
                 {
