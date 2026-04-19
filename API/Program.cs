@@ -16,6 +16,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Security.Claims;
 using AngleSharp.Dom;
 using Ganss.Xss;
+using Microsoft.AspNetCore.RateLimiting;
+using SarasBloggAPI.Services.Tarot;
 
 
 namespace SarasBloggAPI
@@ -207,6 +209,29 @@ namespace SarasBloggAPI
             // Används för kortlivade auth-flöden (t.ex. external login codes → tokens)
             // Ersätter osäkra/långa querystrings och försvinner automatiskt vid restart
             builder.Services.AddMemoryCache();
+            
+            builder.Services.AddRateLimiter(options =>
+            {
+                options.OnRejected = async (context, token) =>
+                {
+                    context.HttpContext.Response.StatusCode = 429;
+                    context.HttpContext.Response.ContentType = "application/json";
+
+                    await context.HttpContext.Response.WriteAsync("""
+{
+  "error": "too_many_requests",
+  "message": "Please wait before trying again."
+}
+""", token);
+                };
+
+                options.AddFixedWindowLimiter("tarot", config =>
+                {
+                    config.PermitLimit = 10;
+                    config.Window = TimeSpan.FromMinutes(1);
+                    config.QueueLimit = 0;
+                });
+            });
 
             // FILE HELPER: Local för Development, GitHub för Test/Prod
             if (builder.Environment.IsDevelopment())
@@ -224,6 +249,9 @@ namespace SarasBloggAPI
             builder.Services.AddScoped<ForbiddenWordManager>();
             builder.Services.AddScoped<AboutMeManager>();
             builder.Services.AddScoped<IAboutMeImageService, AboutMeImageService>();
+            
+            builder.Services.AddScoped<TarotService>();
+            
             builder.Services.AddScoped<ContactMeManager>();
             builder.Services.AddScoped<UserManagerService>();
             builder.Services.AddScoped<NewPostNotifier>();
@@ -406,6 +434,8 @@ namespace SarasBloggAPI
             }
 
             app.UseCors("SarasPolicy");
+            
+            app.UseRateLimiter();
 
             app.UseAuthentication();
 
