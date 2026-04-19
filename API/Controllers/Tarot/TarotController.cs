@@ -22,6 +22,15 @@ public class TarotController : ControllerBase
     {
         var result = await _tarotService.InterpretAsync(request);
 
+        if (string.IsNullOrWhiteSpace(result))
+        {
+            return StatusCode(500, new
+            {
+                error = "interpretation_failed",
+                message = "Could not generate interpretation."
+            });
+        }
+
         return Ok(new TarotInterpretResponse
         {
             Interpretation = result
