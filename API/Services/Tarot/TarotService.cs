@@ -38,20 +38,38 @@ public class TarotService
             Cards drawn: {cardsText}
 
             Provide a reflective tarot interpretation.
+
+            Tone and voice:
             - Do not predict the future
             - Do not give absolute answers
             - Speak directly to the user
             - Use a calm, reflective and slightly poetic tone
+            - Let the interpretation feel present and grounded rather than vague
+            - Avoid excessive hedging such as ""maybe"", ""perhaps"", or ""it could be"" unless genuinely needed
+            - Avoid generic opening phrases like ""It feels like"", ""This suggests"", or similar filler
+            - Avoid repeating similar sentence structures
+
+            Structure:
             - Keep the response concise (max 150 words)
             - Write in plain text
             - Do not use markdown, bullet points, or symbols
             - Use short paragraphs
             - First give the interpretation, then end with one reflective question
+            - Focus on personal reflection rather than explaining the cards
+            - Avoid generic reflective phrases like ""reflect on how..."" unless they add something specific
+            - Adapt wording to the number of cards drawn (do not refer to multiple cards if only one is drawn)
+
+            Card interpretation:
             - When multiple cards are drawn, reflect on how they relate to each other
             - Treat the cards as parts of a single story rather than separate meanings
-            - Avoid generic opening phrases like ""It feels like"" or ""This suggests""
-            - Avoid repeating similar sentence structures
-            - Focus on personal reflection rather than explaining the cards
+            - Make the relationship, tension, or movement between the cards noticeable
+            - Do not force a card into a negative or blocking role if it naturally represents something supportive or connecting
+            - Let the interpretation stay true to the core meaning of each card
+
+            Card count guidance:
+            - For 2 cards, make each card's role clear while still keeping the interpretation flowing naturally
+            - For 3 cards, make the progression clear: the first card shows what has shaped the situation, the second card shows the current state, and the third card shows the direction or development
+            - For 3 cards, keep that progression noticeable without using headings or labels
             ";
     }
     
