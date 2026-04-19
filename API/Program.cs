@@ -52,6 +52,18 @@ namespace SarasBloggAPI
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
 
+            // Fallback if no CORS origins configured
+            if (allowedOrigins.Length == 0)
+            {
+                Console.WriteLine("⚠️ Using fallback CORS origins");
+
+                allowedOrigins = new[]
+                {
+                    "http://localhost:5173",
+                    "https://tarot.hildenmedia.se"
+                };
+            }
+
             // Logga för felsökning
             Console.WriteLine("CORS origins => " +
                               (allowedOrigins.Length == 0 ? "<EMPTY>" : string.Join(", ", allowedOrigins)));
@@ -62,8 +74,7 @@ namespace SarasBloggAPI
                 {
                     p.WithOrigins(allowedOrigins)
                         .AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .AllowCredentials();
+                        .AllowAnyMethod();
                 });
             });
 
@@ -434,12 +445,11 @@ namespace SarasBloggAPI
             }
 
             app.UseCors("SarasPolicy");
-            
-            app.UseRateLimiter();
 
             app.UseAuthentication();
-
             app.UseAuthorization();
+
+            app.UseRateLimiter();
 
             // 🔹 Vänta in DB & ev. kör migreringar (kan stängas av via env)
             if (!bool.TryParse(Environment.GetEnvironmentVariable("DISABLE_MIGRATIONS"), out var disableMigrations) ||
