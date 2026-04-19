@@ -20,20 +20,48 @@ public class TarotController : ControllerBase
     [HttpPost("interpret")]
     public async Task<ActionResult<TarotInterpretResponse>> Interpret([FromBody] TarotInterpretRequest request)
     {
-        var result = await _tarotService.InterpretAsync(request);
-
-        if (string.IsNullOrWhiteSpace(result))
+        try
         {
-            return StatusCode(500, new
+            if (request == null || request.Cards == null || !request.Cards.Any())
             {
-                error = "interpretation_failed",
-                message = "Could not generate interpretation."
+                return BadRequest(new
+                {
+                    error = "invalid_request",
+                    message = "No cards provided."
+                });
+            }
+
+            Console.WriteLine($"[Tarot] Interpret called - Cards: {request.Cards.Count}, Lang: {request.Language}");
+
+            var result = await _tarotService.InterpretAsync(request);
+
+            if (string.IsNullOrWhiteSpace(result))
+            {
+                Console.WriteLine("[Tarot] Interpretation returned empty");
+
+                return StatusCode(500, new
+                {
+                    error = "interpretation_failed",
+                    message = "Could not generate interpretation."
+                });
+            }
+
+            Console.WriteLine("[Tarot] Interpretation success");
+
+            return Ok(new TarotInterpretResponse
+            {
+                Interpretation = result
             });
         }
-
-        return Ok(new TarotInterpretResponse
+        catch (Exception ex)
         {
-            Interpretation = result
-        });
+            Console.WriteLine($"[Tarot] ERROR: {ex.Message}");
+
+            return StatusCode(500, new
+            {
+                error = "server_error",
+                message = "Something went wrong while generating interpretation."
+            });
+        }
     }
 }
