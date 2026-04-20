@@ -458,8 +458,8 @@ namespace SarasBloggAPI
             app.UseRateLimiter();
 
             // 🔹 Vänta in DB & ev. kör migreringar (kan stängas av via env)
-            if (!bool.TryParse(Environment.GetEnvironmentVariable("DISABLE_MIGRATIONS"), out var disableMigrations) ||
-                !disableMigrations)
+            if ((!bool.TryParse(Environment.GetEnvironmentVariable("DISABLE_MIGRATIONS"), out var disableMigrations) ||
+                 !disableMigrations) && !app.Environment.IsEnvironment("Test"))
             {
                 using (var scope = app.Services.CreateScope())
                 {
