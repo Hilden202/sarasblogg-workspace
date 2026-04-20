@@ -170,7 +170,13 @@ namespace SarasBloggAPI
                 ?? builder.Configuration.GetConnectionString("MyConnection")
                 ?? npgsqlCs; // sista fallback = API:ts egen DB-conn
 
-            if (!string.IsNullOrWhiteSpace(dpConn))
+            if (builder.Environment.IsEnvironment("Test"))
+            {
+                // In tests: do NOT persist keys to DB (avoids missing table / migrations in CI)
+                builder.Services.AddDataProtection()
+                    .SetApplicationName("SarasBloggSharedKeys");
+            }
+            else if (!string.IsNullOrWhiteSpace(dpConn))
             {
                 builder.Services.AddDbContext<DataProtectionKeysContext>(opt => opt.UseNpgsql(dpConn));
                 builder.Services.AddDataProtection()
