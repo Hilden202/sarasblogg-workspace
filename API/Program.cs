@@ -458,6 +458,7 @@ namespace SarasBloggAPI
                 using (var scope = app.Services.CreateScope())
                 {
                     var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+                    var dpDb = scope.ServiceProvider.GetRequiredService<DataProtectionKeysContext>();
                     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
                     var maxAttempts = 8;
@@ -471,6 +472,7 @@ namespace SarasBloggAPI
                             await db.Database.ExecuteSqlRawAsync("SELECT 1");
                             await db.Database.CloseConnectionAsync();
 
+                            await dpDb.Database.MigrateAsync();
                             await db.Database.MigrateAsync();
                             logger.LogInformation("Database connection OK, migrations applied.");
                             break;
