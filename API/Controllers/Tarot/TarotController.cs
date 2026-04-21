@@ -31,7 +31,7 @@ public class TarotController : ControllerBase
                 });
             }
 
-            Console.WriteLine($"[Tarot] Interpret called - Cards: {request.Cards.Count}, Lang: {request.Language}");
+            Console.WriteLine($"[Tarot] Interpret called - Cards: {request.Cards.Count}, Lang: {request.Language}, Mode: {request.Mode ?? "soft"}");
 
             var result = await _tarotService.InterpretAsync(request);
 
