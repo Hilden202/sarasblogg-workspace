@@ -9,4 +9,5 @@ public class TarotInterpretRequest
     [MaxLength(3, ErrorMessage = "Maximum 3 cards allowed.")]
     public List<string> Cards { get; set; } = new();
     public string Language { get; set; } = "en";
+    public string? Mode { get; set; } = "soft";
 }

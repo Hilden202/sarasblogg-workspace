@@ -53,6 +53,17 @@ public class TarotService
             - Keep the message focused and to the point
             - Do not present the future as fixed or guaranteed
             - Avoid absolute or deterministic claims
+            - Avoid phrasing things as advice from the card (do not say ""this card suggests"" or ""it encourages"")
+            - State the situation directly instead of describing it indirectly
+            - Prefer statements over guidance (less ""consider"", more ""this is"")
+            - If there is hesitation or avoidance, point it out clearly
+            - Speak as if you are pointing out something the user already knows but avoids
+            - Do not comfort the user unnecessarily
+            - If there is avoidance, hesitation, or self-deception, highlight it clearly but without judgment
+            - Use a slightly confronting tone, but remain grounded and calm
+            - Do not explain the cards, speak only about the situation
+            - Never name or refer to the cards explicitly
+            - Do not describe symbolic meanings, only describe the situation as if it is directly observed
 
             Structure:
             - Keep the response concise (max 120 words)
@@ -93,6 +104,8 @@ public class TarotService
             - Avoid excessive hedging such as ""maybe"", ""perhaps"", or ""it could be"" unless genuinely needed
             - Avoid generic opening phrases like ""It feels like"", ""This suggests"", or similar filler
             - Avoid repeating similar sentence structures
+            - Use natural, direct language instead of formal or abstract phrasing
+            - Prefer simple and concrete wording over complex descriptions
 
             Structure:
             - Keep the response concise (max 150 words)
