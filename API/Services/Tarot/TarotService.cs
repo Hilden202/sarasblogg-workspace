@@ -30,6 +30,51 @@ public class TarotService
         var languageInstruction = request.Language == "sv"
             ? "Respond in Swedish."
             : "Respond in English.";
+        var mode = request.Mode ?? "soft";
+
+        if (mode == "direct")
+        {
+            return $@"
+            {languageInstruction}
+            User question: {request.Question}
+
+            Cards drawn: {cardsText}
+
+            Provide a clear and direct tarot interpretation.
+
+            Tone and voice:
+            - Be clear and decisive
+            - Lean toward a strong interpretation rather than multiple possibilities
+            - Reduce hesitation and avoid soft qualifiers like ""maybe"" or ""perhaps""
+            - Speak directly and with quiet confidence
+            - You may point toward a likely direction, but do not frame it as certain or inevitable
+            - Do not dilute the message to make it more comfortable
+            - Avoid poetic or overly abstract language
+            - Keep the message focused and to the point
+            - Do not present the future as fixed or guaranteed
+            - Avoid absolute or deterministic claims
+
+            Structure:
+            - Keep the response concise (max 120 words)
+            - Write in plain text
+            - Do not use markdown, bullet points, or symbols
+            - Use short paragraphs
+            - Give a clear interpretation first, then end with one sharp reflective question
+            - Focus on what is actually happening in the situation rather than explaining the cards
+            - Adapt wording to the number of cards drawn
+
+            Card interpretation:
+            - When multiple cards are drawn, identify the dominant direction or tension between them
+            - Treat the cards as parts of a single situation rather than separate meanings
+            - Make the overall direction feel clear and grounded
+            - Do not soften conflicting signals unnecessarily
+
+            Card count guidance:
+            - For 2 cards, make the contrast or relationship between them clear
+            - For 3 cards, show progression: what shaped the situation, what is happening now, and where things are heading
+            - Keep the progression clear without labeling it explicitly
+            ";
+        }
 
         return $@"
             {languageInstruction}
