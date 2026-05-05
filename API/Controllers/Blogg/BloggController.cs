@@ -3,6 +3,13 @@ using SarasBloggAPI.DAL;
 using Microsoft.AspNetCore.Authorization;
 using SarasBloggAPI.Services.Blogg;
 using Ganss.Xss;
+using Microsoft.EntityFrameworkCore;
+using SarasBloggAPI.Data;
+using SarasBloggAPI.DTOs.Blogg;
+using System.Globalization;
+using System.Net;
+using System.Text;
+using System.Text.RegularExpressions;
 using BloggModel = SarasBloggAPI.Models.Blogg;
 
 
@@ -15,12 +22,14 @@ namespace SarasBloggAPI.Controllers.Blogg
         private readonly BloggManager _BloggManager;
         private readonly NewPostNotifier _notifier;
         private readonly HtmlSanitizer _sanitizer;
+        private readonly MyDbContext _db;
 
-        public BloggController(BloggManager bloggManager, NewPostNotifier notifier, HtmlSanitizer sanitizer)
+        public BloggController(BloggManager bloggManager, NewPostNotifier notifier, HtmlSanitizer sanitizer, MyDbContext db)
         {
             _BloggManager = bloggManager;
             _notifier = notifier;
             _sanitizer = sanitizer;
+            _db = db;
         }
 
         // GET: api/blogg
@@ -30,6 +39,62 @@ namespace SarasBloggAPI.Controllers.Blogg
         {
             var bloggs = await _BloggManager.GetAllAsync();
             return Ok(bloggs);
+        }
+
+        // GET: api/blogg/public
+        [AllowAnonymous]
+        [HttpGet("public")]
+        public async Task<ActionResult<BlogPostListDto>> GetPublic([FromQuery] bool archive = false, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            page = Math.Max(1, page);
+            pageSize = Math.Clamp(pageSize, 1, 50);
+
+            var query = PublicBloggsQuery(DateTime.UtcNow, archive);
+            var totalItems = await query.CountAsync();
+            var bloggs = await query
+                .OrderByDescending(b => b.LaunchDate)
+                .ThenByDescending(b => b.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return Ok(new BlogPostListDto
+            {
+                Page = page,
+                PageSize = pageSize,
+                TotalItems = totalItems,
+                TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize),
+                Items = bloggs.Select(ToSummaryDto).ToList()
+            });
+        }
+
+        // GET: api/blogg/public/5 or api/blogg/public/5-title
+        [AllowAnonymous]
+        [HttpGet("public/{idOrSlug}")]
+        public async Task<ActionResult<BlogPostDetailDto>> GetPublicByIdOrSlug(string idOrSlug, [FromQuery] bool archive = false)
+        {
+            var query = PublicBloggsQuery(DateTime.UtcNow, archive);
+            BloggModel? blogg = null;
+
+            if (TryGetId(idOrSlug, out var id))
+            {
+                blogg = await query.FirstOrDefaultAsync(b => b.Id == id);
+            }
+            else
+            {
+                var requestedSlug = CreateTitleSlug(idOrSlug);
+                var candidates = await query
+                    .OrderByDescending(b => b.LaunchDate)
+                    .ThenByDescending(b => b.Id)
+                    .ToListAsync();
+
+                blogg = candidates.FirstOrDefault(b => CreateTitleSlug(b.Title) == requestedSlug);
+            }
+
+            if (blogg == null)
+                return NotFound();
+
+            return Ok(ToDetailDto(blogg));
         }
 
         // GET: api/blogg/5
@@ -105,6 +170,133 @@ namespace SarasBloggAPI.Controllers.Blogg
         {
             var result = await _BloggManager.DeleteAsync(id);
             return result ? NoContent() : NotFound();
+        }
+
+        private IQueryable<BloggModel> PublicBloggsQuery(DateTime nowUtc, bool archive)
+        {
+            return _db.Bloggs
+                .AsNoTracking()
+                .Include(b => b.Images)
+                .Where(b => !b.Hidden && b.LaunchDate <= nowUtc && b.IsArchived == archive);
+        }
+
+        private static BlogPostSummaryDto ToSummaryDto(BloggModel blogg)
+        {
+            return new BlogPostSummaryDto
+            {
+                Id = blogg.Id,
+                Slug = CreateSlug(blogg),
+                Title = blogg.Title ?? string.Empty,
+                Author = blogg.Author,
+                Excerpt = CreateExcerpt(blogg.Content),
+                PublishedAtUtc = blogg.LaunchDate,
+                IsArchived = blogg.IsArchived,
+                ViewCount = blogg.ViewCount,
+                CoverImage = GetCoverImage(blogg)
+            };
+        }
+
+        private static BlogPostDetailDto ToDetailDto(BloggModel blogg)
+        {
+            var images = GetOrderedImages(blogg).ToList();
+
+            return new BlogPostDetailDto
+            {
+                Id = blogg.Id,
+                Slug = CreateSlug(blogg),
+                Title = blogg.Title ?? string.Empty,
+                Content = blogg.Content,
+                Author = blogg.Author,
+                PublishedAtUtc = blogg.LaunchDate,
+                IsArchived = blogg.IsArchived,
+                ViewCount = blogg.ViewCount,
+                CoverImage = images.FirstOrDefault(),
+                Images = images
+            };
+        }
+
+        private static BloggImageDto? GetCoverImage(BloggModel blogg)
+        {
+            return GetOrderedImages(blogg).FirstOrDefault();
+        }
+
+        private static IEnumerable<BloggImageDto> GetOrderedImages(BloggModel blogg)
+        {
+            return (blogg.Images ?? Enumerable.Empty<SarasBloggAPI.Models.BloggImage>())
+                .OrderBy(i => i.Order)
+                .ThenBy(i => i.Id)
+                .Select(i => new BloggImageDto
+                {
+                    Id = i.Id,
+                    BloggId = i.BloggId,
+                    FilePath = i.FilePath,
+                    Order = i.Order
+                });
+        }
+
+        private static bool TryGetId(string idOrSlug, out int id)
+        {
+            if (int.TryParse(idOrSlug, NumberStyles.Integer, CultureInfo.InvariantCulture, out id))
+                return true;
+
+            var dashIndex = idOrSlug.IndexOf('-');
+            return dashIndex > 0
+                && int.TryParse(idOrSlug[..dashIndex], NumberStyles.Integer, CultureInfo.InvariantCulture, out id);
+        }
+
+        private static string CreateSlug(BloggModel blogg)
+        {
+            if (string.IsNullOrWhiteSpace(blogg.Title))
+                return blogg.Id.ToString(CultureInfo.InvariantCulture);
+
+            return $"{blogg.Id}-{CreateTitleSlug(blogg.Title)}";
+        }
+
+        private static string CreateTitleSlug(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return string.Empty;
+
+            var normalized = value.Normalize(NormalizationForm.FormD);
+            var builder = new StringBuilder(normalized.Length);
+            var previousWasDash = false;
+
+            foreach (var c in normalized)
+            {
+                if (CharUnicodeInfo.GetUnicodeCategory(c) == UnicodeCategory.NonSpacingMark)
+                    continue;
+
+                var lower = char.ToLowerInvariant(c);
+                if (char.IsLetterOrDigit(lower))
+                {
+                    builder.Append(lower);
+                    previousWasDash = false;
+                    continue;
+                }
+
+                if (!previousWasDash && builder.Length > 0)
+                {
+                    builder.Append('-');
+                    previousWasDash = true;
+                }
+            }
+
+            return builder.ToString().Trim('-');
+        }
+
+        private static string CreateExcerpt(string? html, int maxLength = 180)
+        {
+            if (string.IsNullOrWhiteSpace(html))
+                return string.Empty;
+
+            var text = Regex.Replace(html, "<.*?>", " ");
+            text = WebUtility.HtmlDecode(text);
+            text = Regex.Replace(text, "\\s+", " ").Trim();
+
+            if (text.Length <= maxLength)
+                return text;
+
+            return text[..maxLength].TrimEnd() + "...";
         }
     }
 }
