@@ -14,7 +14,7 @@ namespace SarasBloggAPI.Services.Comment
             _client = client;
         }
 
-        public async Task<bool> IsContentSafeAsync(string content)
+        public virtual async Task<bool> IsContentSafeAsync(string content)
         {
             var url = $"https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key={_apiKey}";
 

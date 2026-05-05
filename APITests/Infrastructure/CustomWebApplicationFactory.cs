@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.DataProtection;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using SarasBloggAPI.Data;
+using SarasBloggAPI.Services.Comment;
 using SarasBloggAPI.Services.Media;
 using APITests.TestHelpers;
 using Testcontainers.PostgreSql;
@@ -82,6 +84,24 @@ protected override void ConfigureWebHost(IWebHostBuilder builder)
         services.AddSingleton<IFileHelper, FakeFileHelper>();
 
         // --------------------------------------------------
+        // Avoid external Perspective API calls in tests
+        // --------------------------------------------------
+        services.RemoveAll<ContentSafetyService>();
+        services.AddSingleton<ContentSafetyService, AlwaysSafeContentSafetyService>();
+
+        // --------------------------------------------------
+        // Deterministic authentication for integration tests
+        // --------------------------------------------------
+        services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = TestAuthHandler.SchemeName;
+                options.DefaultChallengeScheme = TestAuthHandler.SchemeName;
+            })
+            .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(
+                TestAuthHandler.SchemeName,
+                _ => { });
+
+        // --------------------------------------------------
         // Kör migrationer
         // --------------------------------------------------
         var sp = services.BuildServiceProvider();
@@ -102,5 +122,18 @@ protected override void ConfigureWebHost(IWebHostBuilder builder)
                 .GetAwaiter()
                 .GetResult();
         }
+    }
+}
+
+internal sealed class AlwaysSafeContentSafetyService : ContentSafetyService
+{
+    public AlwaysSafeContentSafetyService()
+        : base(new ConfigurationBuilder().Build(), new HttpClient())
+    {
+    }
+
+    public override Task<bool> IsContentSafeAsync(string content)
+    {
+        return Task.FromResult(true);
     }
 }

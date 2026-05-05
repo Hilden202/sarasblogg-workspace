@@ -10,5 +10,7 @@
 
         // nytt: rollinformation för färg
         public string? TopRole { get; set; }
+        public bool OwnedByCurrentUser { get; set; }
+        public bool CanDelete { get; set; }
     }
 }
