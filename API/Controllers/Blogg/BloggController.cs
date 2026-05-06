@@ -2,7 +2,6 @@
 using SarasBloggAPI.DAL;
 using Microsoft.AspNetCore.Authorization;
 using SarasBloggAPI.Services.Blogg;
-using Ganss.Xss;
 using Microsoft.EntityFrameworkCore;
 using SarasBloggAPI.Data;
 using SarasBloggAPI.DTOs.Blogg;
@@ -20,15 +19,13 @@ namespace SarasBloggAPI.Controllers.Blogg
     public class BloggController : ControllerBase
     {
         private readonly BloggManager _BloggManager;
-        private readonly NewPostNotifier _notifier;
-        private readonly HtmlSanitizer _sanitizer;
+        private readonly BlogPostService _blogPostService;
         private readonly MyDbContext _db;
 
-        public BloggController(BloggManager bloggManager, NewPostNotifier notifier, HtmlSanitizer sanitizer, MyDbContext db)
+        public BloggController(BloggManager bloggManager, BlogPostService blogPostService, MyDbContext db)
         {
             _BloggManager = bloggManager;
-            _notifier = notifier;
-            _sanitizer = sanitizer;
+            _blogPostService = blogPostService;
             _db = db;
         }
 
@@ -112,32 +109,23 @@ namespace SarasBloggAPI.Controllers.Blogg
         // POST: api/blogg
         [Authorize(Policy = "AdminOrSuperadmin")]
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] BloggModel blogg)
+        public async Task<IActionResult> Create([FromBody] BlogPostWriteRequest request)
         {
-
-                blogg.Content = _sanitizer.Sanitize(blogg.Content ?? string.Empty);
-
-                var created = await _BloggManager.CreateAsync(blogg);
-                // Skicka mejl om inlägget är publikt direkt
-                if (!created.Hidden && !created.IsArchived)
-                {
-                    await _notifier.NotifyAsync(created.Id);
-                }
-                return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
+            var created = await _blogPostService.CreateAsync(request, User);
+            return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
         }
 
         // PUT: api/blogg/5
         [Authorize(Policy = "AdminOrSuperadmin")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] BloggModel updatedBlogg)
+        public async Task<IActionResult> Update(int id, [FromBody] BlogPostWriteRequest request)
         {
-            if (id != updatedBlogg.Id)
+            var legacyId = request.GetLegacyId();
+            if (legacyId.HasValue && id != legacyId.Value)
                 return BadRequest();
 
-            updatedBlogg.Content = _sanitizer.Sanitize(updatedBlogg.Content ?? string.Empty);
-
-            var result = await _BloggManager.UpdateAsync(updatedBlogg);
-            return result ? NoContent() : NotFound();
+            var updated = await _blogPostService.UpdateAsync(id, request, User);
+            return updated != null ? NoContent() : NotFound();
         }
 
         [Authorize(Policy = "AdminOrSuperadmin")]

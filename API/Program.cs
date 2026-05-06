@@ -262,6 +262,7 @@ namespace SarasBloggAPI
 
             builder.Services.AddScoped<BloggManager>();
             builder.Services.AddScoped<BloggImageManager>();
+            builder.Services.AddScoped<BlogPostService>();
             builder.Services.AddScoped<CommentManager>();
             builder.Services.AddScoped<ForbiddenWordManager>();
             builder.Services.AddScoped<AboutMeManager>();
