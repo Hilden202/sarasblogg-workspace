@@ -88,7 +88,30 @@ public class CommentCreationTests : IClassFixture<CustomWebApplicationFactory<Pr
         var stored = await db.Comments.FindAsync(dto.Id);
         Assert.NotNull(stored);
         Assert.Equal(user.Id, stored!.UserId);
-        Assert.Equal(user.Email, stored.Email);
+        Assert.Null(stored.Email);
+    }
+
+    [Fact]
+    public async Task Post_Comment_RejectsLegacyWriteFields()
+    {
+        await ResetCommentDataAsync();
+        var bloggId = await SeedBloggAsync();
+
+        var response = await _client.PostAsJsonAsync("/api/comment", new
+        {
+            id = 123,
+            bloggId,
+            name = "Besökare",
+            email = "legacy@example.com",
+            content = "Legacy shaped comment",
+            createdAt = DateTime.UtcNow
+        });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+        Assert.Empty(db.Comments);
     }
 
     [Fact]

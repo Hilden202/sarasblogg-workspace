@@ -113,10 +113,13 @@ namespace SarasBloggAPI.Controllers.Blogg
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] BlogPostWriteRequest request)
         {
-            _logger.LogInformation(
-                "Create blog - Source={Source}",
-                request.GetLegacyId().HasValue ? "Legacy" : "DTO"
-            );
+            if (request == null)
+                return BadRequest("Blogginlägg saknas.");
+
+            if (string.IsNullOrWhiteSpace(request.Content))
+                return BadRequest("Blogginlägget saknar innehåll.");
+
+            _logger.LogInformation("Create blog - Source={Source}", "DTO");
             var created = await _blogPostService.CreateAsync(request, User);
             return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
         }
@@ -126,14 +129,17 @@ namespace SarasBloggAPI.Controllers.Blogg
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] BlogPostWriteRequest request)
         {
+            if (request == null)
+                return BadRequest("Blogginlägg saknas.");
+
+            if (string.IsNullOrWhiteSpace(request.Content))
+                return BadRequest("Blogginlägget saknar innehåll.");
+
             _logger.LogInformation(
                 "Update blog - RouteId={RouteId}, Source={Source}",
                 id,
-                request.GetLegacyId().HasValue ? "Legacy" : "DTO"
+                "DTO"
             );
-            var legacyId = request.GetLegacyId();
-            if (legacyId.HasValue && id != legacyId.Value)
-                return BadRequest();
 
             var updated = await _blogPostService.UpdateAsync(id, request, User);
             return updated != null ? NoContent() : NotFound();

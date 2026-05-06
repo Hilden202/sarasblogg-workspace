@@ -277,11 +277,12 @@ namespace SarasBloggAPI.Controllers.Comment
         {
             try
             {
+                await TryAuthenticateCurrentRequestAsync();
+
                 _logger.LogInformation(
                     "Create comment - Source={Source}",
                     User?.Identity?.IsAuthenticated == true ? "Authenticated" : "Anonymous"
                 );
-                await TryAuthenticateCurrentRequestAsync();
 
                 if (request == null)
                     return BadRequest("Kommentaren saknar innehåll.");
@@ -306,22 +307,16 @@ namespace SarasBloggAPI.Controllers.Comment
                     CreatedAt = DateTime.UtcNow
                 };
 
-                // Om inloggad: koppla e-post + *aktuellt* username
                 var myId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (!string.IsNullOrWhiteSpace(myId))
                 {
                     comment.UserId = myId;
+                    comment.Email = null;
 
                     var me = await _userManager.FindByIdAsync(myId);
-                    if (me != null)
-                    {
-                        comment.Email = me.Email;
-                        comment.Name = me.UserName ?? request.Name?.Trim() ?? string.Empty;
-                    }
-                    else
-                    {
-                        comment.Name = request.Name?.Trim() ?? string.Empty;
-                    }
+                    comment.Name = me?.UserName
+                        ?? User.Identity?.Name
+                        ?? string.Empty;
                 }
                 else
                 {

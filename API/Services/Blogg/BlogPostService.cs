@@ -88,21 +88,7 @@ namespace SarasBloggAPI.Services.Blogg
                 return TimeZoneInfo.ConvertTimeToUtc(local, SwedishZone);
             }
 
-            var legacyLaunchDate = request.GetLegacyLaunchDate();
-            if (legacyLaunchDate.HasValue)
-                return NormalizeLegacyUtc(legacyLaunchDate.Value);
-
             return DateTime.UtcNow;
-        }
-
-        private static DateTime NormalizeLegacyUtc(DateTime value)
-        {
-            return value.Kind switch
-            {
-                DateTimeKind.Utc => value,
-                DateTimeKind.Local => value.ToUniversalTime(),
-                _ => DateTime.SpecifyKind(value, DateTimeKind.Utc)
-            };
         }
 
         private static string ResolveTitle(string? title, string content)
