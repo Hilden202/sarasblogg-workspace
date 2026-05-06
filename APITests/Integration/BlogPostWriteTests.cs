@@ -121,7 +121,7 @@ public class BlogPostWriteTests : IClassFixture<CustomWebApplicationFactory<Prog
     }
 
     [Fact]
-    public async Task Post_Blogg_IgnoresLegacyOwnershipAndViewCountFields()
+    public async Task Post_Blogg_RejectsLegacyWriteFields()
     {
         await ResetBlogDataAsync();
         var client = CreateAdminClient(userId: "actual-owner", userName: "ActualOwner");
@@ -138,13 +138,11 @@ public class BlogPostWriteTests : IClassFixture<CustomWebApplicationFactory<Prog
             viewCount = 999
         });
 
-        var created = await response.Content.ReadFromJsonAsync<Blogg>();
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        Assert.NotNull(created);
-        Assert.Equal("actual-owner", created!.UserId);
-        Assert.Equal(0, created.ViewCount);
-        Assert.Equal(new DateTime(2026, 1, 15, 8, 30, 0), created.LaunchDate);
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+        Assert.Empty(db.Bloggs);
     }
 
     private HttpClient CreateAdminClient(string userId = "admin-user", string userName = "Admin")
