@@ -13,7 +13,6 @@ namespace SarasBlogg.Services
 
         private readonly BloggAPIManager _bloggApi;
         private readonly CommentAPIManager _commentApi;
-        private readonly ForbiddenWordAPIManager _forbiddenWordApi;
         private readonly BloggImageAPIManager _imageApi;
         private readonly IMemoryCache _cache;
         private readonly ILogger<BloggService> _logger;
@@ -22,14 +21,12 @@ namespace SarasBlogg.Services
             BloggAPIManager bloggApi,
             CommentAPIManager commentApi,
             IMemoryCache cache,
-            ForbiddenWordAPIManager forbiddenWordApi,
             BloggImageAPIManager imageApi,
             ILogger<BloggService> logger)
         {
             _bloggApi = bloggApi;
             _commentApi = commentApi;
             _cache = cache;
-            _forbiddenWordApi = forbiddenWordApi;
             _imageApi = imageApi;
             _logger = logger;
         }
@@ -212,21 +209,9 @@ namespace SarasBlogg.Services
             if (comment is null)
                 return "Ogiltig kommentar.";
 
-            // Normalisera fält så vi slipper NRE
             comment.Content ??= string.Empty;
-            comment.Name ??= string.Empty;
 
-            var forbidden = await _forbiddenWordApi.GetForbiddenPatternsAsync();
-
-            foreach (var p in forbidden)
-            {
-                if (comment.Content.ContainsForbiddenWord(p))
-                    return "Kommentaren innehåller otillåtet språk.";
-                if (comment.Name.ContainsForbiddenWord(p))
-                    return "Namnet innehåller otillåtet språk.";
-            }
-
-            return await _commentApi.SaveCommentAsync(comment);
+            return await _commentApi.SaveCommentAsync(comment) ?? string.Empty;
         }
 
 

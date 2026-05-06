@@ -11,7 +11,6 @@ namespace SarasBlogg.Models
 
         [JsonPropertyName("name")]
         [DisplayName("Namn*")]
-        [Required(ErrorMessage = "Du behöver ange ett namn")]
         public string? Name { get; set; }
 
         [JsonPropertyName("email")]

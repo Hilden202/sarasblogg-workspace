@@ -210,41 +210,18 @@ namespace SarasBlogg.Pages.Shared
                 }
             }
 
-            // 2) Inloggad? Tvinga namn+ev. e-post
-            if (IsAuth)
+            if (postedComment.Id == null)
             {
-                postedComment.Name = CurrentUserName;
+                if (IsAuth)
+                    postedComment.Name = null;
 
-                var email = CurrentUserEmail;
-                if (string.IsNullOrWhiteSpace(email) && !string.IsNullOrWhiteSpace(CurrentUserName))
-                {
-                    var (apiEmail, _) = await GetApiUserByNameAsync(CurrentUserName);
-                    email = apiEmail ?? "";
-                }
-                postedComment.Email = email;
-
-                // rensa ModelState så overrides går igenom
                 ModelState.Remove("ViewModel.Comment.Name");
                 ModelState.Remove("Comment.Name");
                 ModelState.Remove("ViewModel.Comment.Email");
                 ModelState.Remove("Comment.Email");
             }
 
-            // 3) UTC-tid för nya kommentarer
-            if (postedComment.Id == null)
-                postedComment.CreatedAt = DateTime.UtcNow;
-
-            // 3b) Anonymt namn: normalisera bara (valfritt)
-            if (!IsAuth && postedComment.Id == null)
-            {
-                var proposed = (postedComment.Name ?? "").Trim();
-                if (string.IsNullOrWhiteSpace(proposed)) proposed = "Gäst";
-                postedComment.Name = proposed;
-                ModelState.Remove("ViewModel.Comment.Name");
-                ModelState.Remove("Comment.Name");
-            }
-
-            // 4) Validera + spara
+            // 2) Validera + spara
             if (ModelState.IsValid && postedComment.Id == null)
             {
                 string errorMessage = await _bloggService.SaveCommentAsync(postedComment);
@@ -273,7 +250,7 @@ namespace SarasBlogg.Pages.Shared
                 return Page();
             }
 
-            // 5) Tillbaka till samma inlägg
+            // 3) Tillbaka till samma inlägg
             return RedirectToPage(pageName: null, pageHandler: null,
                 routeValues: new { showId = postedComment.BloggId, openComments = true }, fragment: "comments");
 
