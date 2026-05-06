@@ -8,6 +8,9 @@ namespace SarasBlogg.DAL
     public class BloggAPIManager
     {
         private readonly HttpClient _httpClient;
+        private static readonly TimeZoneInfo SwedishZone =
+            TimeZoneInfo.FindSystemTimeZoneById("Europe/Stockholm");
+
         private static readonly JsonSerializerOptions _jsonOpts = new()
         {
             PropertyNameCaseInsensitive = true,
@@ -39,7 +42,8 @@ namespace SarasBlogg.DAL
 
         public async Task<Blogg?> SaveBloggAsync(Blogg blogg)
         {
-            var content = new StringContent(JsonSerializer.Serialize(blogg, _jsonOpts), Encoding.UTF8, "application/json");
+            var payload = ToWriteRequest(blogg);
+            var content = new StringContent(JsonSerializer.Serialize(payload, _jsonOpts), Encoding.UTF8, "application/json");
             var resp = await _httpClient.PostAsync("api/Blogg", content);
             if (!resp.IsSuccessStatusCode) return null;
 
@@ -49,8 +53,37 @@ namespace SarasBlogg.DAL
 
         public async Task UpdateBloggAsync(Blogg blogg)
         {
-            var content = new StringContent(JsonSerializer.Serialize(blogg, _jsonOpts), Encoding.UTF8, "application/json");
+            var payload = ToWriteRequest(blogg);
+            var content = new StringContent(JsonSerializer.Serialize(payload, _jsonOpts), Encoding.UTF8, "application/json");
             await _httpClient.PutAsync($"api/Blogg/{blogg.Id}", content);
+        }
+
+        private static BlogPostWriteRequest ToWriteRequest(Blogg blogg)
+        {
+            return new BlogPostWriteRequest
+            {
+                Title = blogg.Title,
+                Content = blogg.Content ?? string.Empty,
+                Author = blogg.Author,
+                LaunchDateLocal = ToLaunchDateLocal(blogg.LaunchDate),
+                Hidden = blogg.Hidden,
+                IsArchived = blogg.IsArchived
+            };
+        }
+
+        private static DateTime? ToLaunchDateLocal(DateTime launchDate)
+        {
+            if (launchDate == default)
+                return null;
+
+            var local = launchDate.Kind switch
+            {
+                DateTimeKind.Utc => TimeZoneInfo.ConvertTimeFromUtc(launchDate, SwedishZone),
+                DateTimeKind.Local => TimeZoneInfo.ConvertTime(launchDate, SwedishZone),
+                _ => launchDate
+            };
+
+            return DateTime.SpecifyKind(local, DateTimeKind.Unspecified);
         }
 
         public async Task<bool> ToggleHiddenAsync(int id)

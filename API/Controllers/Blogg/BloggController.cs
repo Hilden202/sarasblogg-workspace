@@ -21,12 +21,14 @@ namespace SarasBloggAPI.Controllers.Blogg
         private readonly BloggManager _BloggManager;
         private readonly BlogPostService _blogPostService;
         private readonly MyDbContext _db;
+        private readonly ILogger<BloggController> _logger;
 
-        public BloggController(BloggManager bloggManager, BlogPostService blogPostService, MyDbContext db)
+        public BloggController(BloggManager bloggManager, BlogPostService blogPostService, MyDbContext db, ILogger<BloggController> logger)
         {
             _BloggManager = bloggManager;
             _blogPostService = blogPostService;
             _db = db;
+            _logger = logger;
         }
 
         // GET: api/blogg
@@ -111,6 +113,10 @@ namespace SarasBloggAPI.Controllers.Blogg
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] BlogPostWriteRequest request)
         {
+            _logger.LogInformation(
+                "Create blog - Source={Source}",
+                request.GetLegacyId().HasValue ? "Legacy" : "DTO"
+            );
             var created = await _blogPostService.CreateAsync(request, User);
             return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
         }
@@ -120,6 +126,11 @@ namespace SarasBloggAPI.Controllers.Blogg
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] BlogPostWriteRequest request)
         {
+            _logger.LogInformation(
+                "Update blog - RouteId={RouteId}, Source={Source}",
+                id,
+                request.GetLegacyId().HasValue ? "Legacy" : "DTO"
+            );
             var legacyId = request.GetLegacyId();
             if (legacyId.HasValue && id != legacyId.Value)
                 return BadRequest();

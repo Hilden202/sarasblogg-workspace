@@ -20,17 +20,20 @@ namespace SarasBloggAPI.Controllers.Comment
         private readonly ContentSafetyService _contentSafetyService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly MyDbContext _db;
+        private readonly ILogger<CommentController> _logger;
 
         public CommentController(
             CommentManager commentManager,
             ContentSafetyService contentSafetyService,
             UserManager<ApplicationUser> userManager,
-            MyDbContext db)
+            MyDbContext db,
+            ILogger<CommentController> logger)
         {
             _commentManager = commentManager;
             _contentSafetyService = contentSafetyService;
             _userManager = userManager;
             _db = db;
+            _logger = logger;
         }
 
         // ===== Helpers =====
@@ -274,6 +277,10 @@ namespace SarasBloggAPI.Controllers.Comment
         {
             try
             {
+                _logger.LogInformation(
+                    "Create comment - Source={Source}",
+                    User?.Identity?.IsAuthenticated == true ? "Authenticated" : "Anonymous"
+                );
                 await TryAuthenticateCurrentRequestAsync();
 
                 if (request == null)
@@ -359,6 +366,11 @@ namespace SarasBloggAPI.Controllers.Comment
         [HttpDelete("ById/{id:int}")]
         public async Task<IActionResult> DeleteComment(int id)
         {
+            _logger.LogInformation(
+                "Delete comment - Id={Id}, User={UserId}",
+                id,
+                User?.FindFirstValue(ClaimTypes.NameIdentifier)
+            );
             var existing = await _commentManager.GetCommentAsync(id);
             if (existing == null) return NotFound();
 
