@@ -1,5 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using SarasBlogg.DTOs;
 
 namespace SarasBlogg.DAL
 {
@@ -10,7 +12,8 @@ namespace SarasBlogg.DAL
         private static readonly JsonSerializerOptions _jsonOpts = new()
         {
             PropertyNameCaseInsensitive = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
         public CommentAPIManager(HttpClient httpClient)
@@ -85,7 +88,14 @@ namespace SarasBlogg.DAL
 
         public async Task<string?> SaveCommentAsync(Models.Comment comment)
         {
-            var content = new StringContent(JsonSerializer.Serialize(comment), Encoding.UTF8, "application/json");
+            var request = new CommentCreateRequest
+            {
+                BloggId = comment.BloggId,
+                Name = string.IsNullOrWhiteSpace(comment.Name) ? null : comment.Name.Trim(),
+                Content = comment.Content ?? string.Empty
+            };
+
+            var content = new StringContent(JsonSerializer.Serialize(request, _jsonOpts), Encoding.UTF8, "application/json");
             var resp = await _httpClient.PostAsync("api/Comment", content);
 
             if (resp.IsSuccessStatusCode) return null;
