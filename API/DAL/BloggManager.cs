@@ -23,7 +23,9 @@ namespace SarasBloggAPI.DAL
 
         public async Task<List<Blogg>> GetAllAsync()
         {
-            return await _context.Bloggs.OrderByDescending(b => b.LaunchDate)
+            return await _context.Bloggs
+                .AsNoTracking()
+                .OrderByDescending(b => b.LaunchDate)
                 .ThenByDescending(b => b.Id).ToListAsync();
         }
 

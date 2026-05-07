@@ -73,11 +73,14 @@ namespace SarasBloggAPI.Controllers.Blogg
         public async Task<ActionResult<BlogPostDetailDto>> GetPublicByIdOrSlug(string idOrSlug, [FromQuery] bool archive = false)
         {
             var query = PublicBloggsQuery(DateTime.UtcNow, archive);
-            BloggModel? blogg = null;
+            int? bloggId = null;
 
             if (TryGetId(idOrSlug, out var id))
             {
-                blogg = await query.FirstOrDefaultAsync(b => b.Id == id);
+                bloggId = await query
+                    .Where(b => b.Id == id)
+                    .Select(b => (int?)b.Id)
+                    .FirstOrDefaultAsync();
             }
             else
             {
@@ -87,9 +90,13 @@ namespace SarasBloggAPI.Controllers.Blogg
                     .ThenByDescending(b => b.Id)
                     .ToListAsync();
 
-                blogg = candidates.FirstOrDefault(b => CreateTitleSlug(b.Title) == requestedSlug);
+                bloggId = candidates.FirstOrDefault(b => CreateTitleSlug(b.Title) == requestedSlug)?.Id;
             }
 
+            if (!bloggId.HasValue)
+                return NotFound();
+
+            var blogg = await IncrementViewCountAndReloadAsync(bloggId.Value, archive, includeImages: true);
             if (blogg == null)
                 return NotFound();
 
@@ -101,7 +108,7 @@ namespace SarasBloggAPI.Controllers.Blogg
         [HttpGet("{id}")]
         public async Task<ActionResult<BloggModel>> Get(int id)
         {
-            var blogg = await _BloggManager.GetByIdAsync(id);
+            var blogg = await IncrementViewCountAndReloadAsync(id);
             if (blogg == null)
                 return NotFound();
 
@@ -183,6 +190,31 @@ namespace SarasBloggAPI.Controllers.Blogg
                 .AsNoTracking()
                 .Include(b => b.Images)
                 .Where(b => !b.Hidden && b.LaunchDate <= nowUtc && b.IsArchived == archive);
+        }
+
+        private async Task<BloggModel?> IncrementViewCountAndReloadAsync(int id, bool? archive = null, bool includeImages = false)
+        {
+            var nowUtc = DateTime.UtcNow;
+            IQueryable<BloggModel> query = _db.Bloggs;
+
+            if (includeImages)
+            {
+                query = query.Include(b => b.Images);
+            }
+
+            if (archive.HasValue)
+            {
+                query = query.Where(b => !b.Hidden && b.LaunchDate <= nowUtc && b.IsArchived == archive.Value);
+            }
+
+            var blogg = await query.FirstOrDefaultAsync(b => b.Id == id);
+
+            if (blogg == null)
+                return null;
+
+            blogg.ViewCount += 1;
+            await _db.SaveChangesAsync();
+            return blogg;
         }
 
         private static BlogPostSummaryDto ToSummaryDto(BloggModel blogg)
