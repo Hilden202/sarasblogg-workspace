@@ -93,10 +93,10 @@ namespace SarasBloggAPI.Controllers.Blogg
                 bloggId = candidates.FirstOrDefault(b => CreateTitleSlug(b.Title) == requestedSlug)?.Id;
             }
 
-            if (!bloggId.HasValue)
+            if (bloggId is not int resolvedBloggId)
                 return NotFound();
 
-            var blogg = await IncrementViewCountAndReloadAsync(bloggId.Value, archive, includeImages: true);
+            var blogg = await IncrementViewCountAndReloadAsync(resolvedBloggId);
             if (blogg == null)
                 return NotFound();
 
