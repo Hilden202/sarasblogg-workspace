@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 using SarasBloggAPI;
 using SarasBloggAPI.Data;
 using SarasBloggAPI.Models;
@@ -123,6 +124,103 @@ public class BloggTests
             method: "GET"
         );
     }
+
+    [Fact]
+    public async Task Get_BloggById_IncrementsViewCountAndReturnsUpdatedValue()
+    {
+        await ResetBlogDataAsync();
+
+        int bloggId;
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+
+            var blogg = new Blogg
+            {
+                Title = "View count test",
+                Content = "Integration test content",
+                Author = "IntegrationTest",
+                LaunchDate = DateTime.UtcNow,
+                IsArchived = false,
+                Hidden = false,
+                ViewCount = 7
+            };
+
+            db.Bloggs.Add(blogg);
+            await db.SaveChangesAsync();
+
+            bloggId = blogg.Id;
+        }
+
+        var endpoint = $"/api/blogg/{bloggId}";
+
+        var firstResponse = await _client.GetAsync(endpoint);
+        var first = await firstResponse.Content.ReadFromJsonAsync<Blogg>();
+
+        var secondResponse = await _client.GetAsync(endpoint);
+        var second = await secondResponse.Content.ReadFromJsonAsync<Blogg>();
+
+        Assert.Equal(HttpStatusCode.OK, firstResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, secondResponse.StatusCode);
+        Assert.NotNull(first);
+        Assert.NotNull(second);
+        Assert.Equal(8, first!.ViewCount);
+        Assert.Equal(9, second!.ViewCount);
+
+        using var verifyScope = _factory.Services.CreateScope();
+        var verifyDb = verifyScope.ServiceProvider.GetRequiredService<MyDbContext>();
+        var storedViewCount = await verifyDb.Bloggs
+            .AsNoTracking()
+            .Where(b => b.Id == bloggId)
+            .Select(b => b.ViewCount)
+            .SingleAsync();
+
+        Assert.Equal(9, storedViewCount);
+    }
+
+    [Fact]
+    public async Task Get_Bloggs_ReturnsUpdatedViewCountAfterDetailRead()
+    {
+        await ResetBlogDataAsync();
+
+        int bloggId;
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+
+            var blogg = new Blogg
+            {
+                Title = "List view count test",
+                Content = "Integration test content",
+                Author = "IntegrationTest",
+                LaunchDate = DateTime.UtcNow,
+                IsArchived = false,
+                Hidden = false,
+                ViewCount = 39
+            };
+
+            db.Bloggs.Add(blogg);
+            await db.SaveChangesAsync();
+
+            bloggId = blogg.Id;
+        }
+
+        var detailResponse = await _client.GetAsync($"/api/blogg/{bloggId}");
+        var detail = await detailResponse.Content.ReadFromJsonAsync<Blogg>();
+
+        var listResponse = await _client.GetAsync("/api/blogg");
+        var list = await listResponse.Content.ReadFromJsonAsync<List<Blogg>>();
+
+        Assert.Equal(HttpStatusCode.OK, detailResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, listResponse.StatusCode);
+        Assert.NotNull(detail);
+        Assert.NotNull(list);
+        Assert.Equal(40, detail!.ViewCount);
+        Assert.Equal(40, Assert.Single(list!, b => b.Id == bloggId).ViewCount);
+    }
+
     [Fact]
     public async Task Post_Blogg_Returns401_WhenAnonymous()
     {
@@ -156,6 +254,8 @@ public class BloggTests
     [Fact]
     public async Task Get_Bloggs_ReturnsEmptyList_WhenDatabaseIsEmpty()
     {
+        await ResetBlogDataAsync();
+
         // Arrange
         var endpoint = "/api/blogg";
         var expectedStatusCode = HttpStatusCode.OK;
@@ -178,5 +278,18 @@ public class BloggTests
             endpoint,
             method: "GET"
         );
+    }
+
+    private async Task ResetBlogDataAsync()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+
+        db.BloggLikes.RemoveRange(db.BloggLikes);
+        db.Comments.RemoveRange(db.Comments);
+        db.BloggImages.RemoveRange(db.BloggImages);
+        db.Bloggs.RemoveRange(db.Bloggs);
+
+        await db.SaveChangesAsync();
     }
 }

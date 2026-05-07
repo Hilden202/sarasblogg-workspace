@@ -108,9 +108,6 @@ namespace SarasBlogg.Pages.Shared
 
         public async Task OnGetCoreAsync(int showId, int id, bool openComments)
         {
-            if (showId != 0)
-                await _bloggService.UpdateViewCountAsync(showId);
-
             ViewModel = await _bloggService.GetBloggViewModelAsync(_isArchive, showId);
             ViewModel.Comment ??= new Models.Comment();
             Comment = ViewModel.Comment;

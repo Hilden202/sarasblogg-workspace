@@ -89,10 +89,21 @@ public class PublicBloggTests : IClassFixture<CustomWebApplicationFactory<Progra
         Assert.NotNull(detail);
         Assert.Equal("Latest public", detail!.Title);
         Assert.Equal("<p>Latest public content</p>", detail.Content);
+        Assert.Equal(1, detail.ViewCount);
         Assert.Equal("/uploads/blogg/latest-cover-first.jpg", detail.CoverImage?.FilePath);
         Assert.Equal(
             new[] { "/uploads/blogg/latest-cover-first.jpg", "/uploads/blogg/latest-cover-second.jpg" },
             detail.Images.Select(i => i.FilePath));
+
+        var secondDetail = await _client.GetFromJsonAsync<BlogPostDetailDto>($"/api/blogg/public/{slug}", JsonOptions);
+
+        Assert.NotNull(secondDetail);
+        Assert.Equal(2, secondDetail!.ViewCount);
+
+        var refreshedList = await _client.GetFromJsonAsync<BlogPostListDto>("/api/blogg/public?page=1&pageSize=10", JsonOptions);
+
+        Assert.NotNull(refreshedList);
+        Assert.Equal(2, Assert.Single(refreshedList!.Items, i => i.Title == "Latest public").ViewCount);
     }
 
     [Fact]

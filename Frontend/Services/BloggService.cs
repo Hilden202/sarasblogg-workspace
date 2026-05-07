@@ -2,37 +2,33 @@
 using SarasBlogg.Models;
 using SarasBlogg.Extensions;
 using SarasBlogg.DAL;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
 namespace SarasBlogg.Services
 {
     public class BloggService
     {
-        private const string CacheKeyAll = "blogg:list:all";
-
         private readonly BloggAPIManager _bloggApi;
         private readonly CommentAPIManager _commentApi;
         private readonly BloggImageAPIManager _imageApi;
-        private readonly IMemoryCache _cache;
         private readonly ILogger<BloggService> _logger;
 
         public BloggService(
             BloggAPIManager bloggApi,
             CommentAPIManager commentApi,
-            IMemoryCache cache,
             BloggImageAPIManager imageApi,
             ILogger<BloggService> logger)
         {
             _bloggApi = bloggApi;
             _commentApi = commentApi;
-            _cache = cache;
             _imageApi = imageApi;
             _logger = logger;
         }
 
-        /// <summary>Invalidera listcachen så att publika listor uppdateras direkt efter admin-ändringar.</summary>
-        public void InvalidateBlogListCache() => _cache.Remove(CacheKeyAll);
+        public void InvalidateBlogListCache()
+        {
+            // Blog lists are intentionally uncached so ViewCount stays in sync after detail reads.
+        }
 
         private static string MapTopRoleToCss(string? top) => top?.ToLower() switch
         {
@@ -53,7 +49,7 @@ namespace SarasBlogg.Services
             // Svensk "nu"-tid för filtrering/sortering
             var nowSe = DateTime.UtcNow.ToSwedishTime();
 
-            // Hämta alla (cache) och filtrera lokalt
+            // Hämta alla färskt från API:t och filtrera lokalt
             var all = await GetAllBloggsAsync(includeArchived: true);
 
             vm.Bloggs = all
@@ -72,16 +68,22 @@ namespace SarasBlogg.Services
 
             if (showId != 0)
             {
-                var blogg = vm.Bloggs.FirstOrDefault(b => b.Id == showId);
-                if (blogg == null)
+                var blogg = await _bloggApi.GetBloggAsync(showId);
+                if (blogg != null)
                 {
-                    blogg = await _bloggApi.GetBloggAsync(showId);
-                    if (blogg != null)
+                    if (blogg.Images == null) await AttachImagesAsync(blogg);
+
+                    var existingIndex = vm.Bloggs.FindIndex(b => b.Id == showId);
+                    if (existingIndex >= 0)
                     {
-                        if (blogg.Images == null) await AttachImagesAsync(blogg);
+                        vm.Bloggs[existingIndex] = blogg;
+                    }
+                    else
+                    {
                         vm.Bloggs.Add(blogg);
                     }
                 }
+
                 vm.Blogg = blogg;
             }
 
@@ -140,50 +142,14 @@ namespace SarasBlogg.Services
             return vm;
         }
 
-        /// <summary>
-        /// Hämtar alla bloggar (IMemoryCache ~45s), filtrerar & laddar bilder för det som returneras.
-        /// Sätt bypassCache=true för att forcera färsk hämtning (t.ex. direkt efter admin-ändring).
-        /// </summary>
-        public async Task<List<Blogg>> GetAllBloggsAsync(bool includeArchived = false, bool bypassCache = false)
+        public async Task<List<Blogg>> GetAllBloggsAsync(bool includeArchived = false)
         {
-            if (bypassCache)
-            {
-                try { return await FetchAndFilterAsync(includeArchived); }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Bypass misslyckades, faller tillbaka på cache.");
-                }
-            }
+            var all = await FetchAndFilterAsync(includeArchived);
 
-            if (!_cache.TryGetValue(CacheKeyAll, out List<Blogg>? all))
-            {
-                try
-                {
-                    all = await _bloggApi.GetAllBloggsAsync(); // rå-lista utan filter
-                    _cache.Set(CacheKeyAll, all, new MemoryCacheEntryOptions
-                    {
-                        AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(45)
-                    });
-                }
-                catch (HttpRequestException ex)
-                {
-                    _logger.LogWarning(ex, "API-fel – visar ev. cache.");
-                }
-                catch (TaskCanceledException ex)
-                {
-                    _logger.LogWarning(ex, "API-timeout – visar ev. cache.");
-                }
-            }
-
-            all ??= new List<Blogg>();
-
-            var filtered = FilterClientSide(all, includeArchived);
-
-            // Attach:a bilder endast för de som faktiskt visas
-            foreach (var b in filtered)
+            foreach (var b in all)
                 if (b.Images == null) await AttachImagesAsync(b);
 
-            return filtered;
+            return all;
         }
 
         private static List<Blogg> FilterClientSide(IEnumerable<Blogg> all, bool includeArchived)
@@ -200,8 +166,21 @@ namespace SarasBlogg.Services
 
         private async Task<List<Blogg>> FetchAndFilterAsync(bool includeArchived)
         {
-            var all = await _bloggApi.GetAllBloggsAsync();
-            return FilterClientSide(all ?? Enumerable.Empty<Blogg>(), includeArchived);
+            try
+            {
+                var all = await _bloggApi.GetAllBloggsAsync();
+                return FilterClientSide(all ?? Enumerable.Empty<Blogg>(), includeArchived);
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogWarning(ex, "API-fel vid hämtning av bloggar.");
+            }
+            catch (TaskCanceledException ex)
+            {
+                _logger.LogWarning(ex, "API-timeout vid hämtning av bloggar.");
+            }
+
+            return new List<Blogg>();
         }
 
         public async Task<string> SaveCommentAsync(Comment comment)
@@ -217,15 +196,5 @@ namespace SarasBlogg.Services
 
         public Task DeleteCommentAsync(int id) => _commentApi.DeleteCommentAsync(id);
         public Task<Comment?> GetCommentAsync(int id) => _commentApi.GetCommentAsync(id);
-
-        public async Task UpdateViewCountAsync(int bloggId)
-        {
-            var blogg = await _bloggApi.GetBloggAsync(bloggId);
-            if (blogg != null)
-            {
-                blogg.ViewCount++;
-                await _bloggApi.UpdateBloggAsync(blogg);
-            }
-        }
     }
 }
