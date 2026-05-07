@@ -159,8 +159,6 @@ namespace SarasBlogg.Pages
                 }
             }
 
-            _bloggService.InvalidateBlogListCache();
-
             if (uploadErrors.Count > 0)
                 TempData["UploadErrors"] = string.Join("\n", uploadErrors);
 
@@ -181,7 +179,6 @@ namespace SarasBlogg.Pages
                 images.Insert(0, imageToSet);
 
                 await _imageApi.UpdateImageOrderAsync(bloggId, images);
-                _bloggService.InvalidateBlogListCache();
             }
 
             return RedirectToPage(new { editId = bloggId });
@@ -192,7 +189,6 @@ namespace SarasBlogg.Pages
         {
             if (!User.IsInRole("superadmin")) return Forbid();
             await _imageApi.DeleteImageAsync(imageId);
-            _bloggService.InvalidateBlogListCache();
 
             return RedirectToPage(new { editId = bloggId });
         }

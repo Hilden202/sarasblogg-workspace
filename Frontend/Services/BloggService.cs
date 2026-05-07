@@ -25,11 +25,6 @@ namespace SarasBlogg.Services
             _logger = logger;
         }
 
-        public void InvalidateBlogListCache()
-        {
-            // Blog lists are intentionally uncached so ViewCount stays in sync after detail reads.
-        }
-
         private static string MapTopRoleToCss(string? top) => top?.ToLower() switch
         {
             "superadmin" => "role-superadmin",
