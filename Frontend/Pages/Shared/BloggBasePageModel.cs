@@ -105,40 +105,6 @@ namespace SarasBlogg.Pages.Shared
         }
 
         protected bool IsAuth => User?.Identity?.IsAuthenticated == true;
-        protected string CurrentUserName => IsAuth ? (User?.Identity?.Name ?? "") : "";
-        protected string CurrentUserEmail =>
-            IsAuth
-                ? (User.FindFirst(ClaimTypes.Email)?.Value
-                   ?? User.FindFirst("email")?.Value
-                   ?? "")
-                : "";
-
-        protected static bool HasAdminLikeRole(IEnumerable<string> roles) =>
-            roles.Any(r => string.Equals(r, "superadmin", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(r, "admin", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(r, "superuser", StringComparison.OrdinalIgnoreCase));
-
-        // PROD-fallback: hämta email/roller via API om cookies saknar claims
-        protected async Task<(string? Email, List<string> Roles)> GetApiUserByNameAsync(string userNameOrEmail)
-        {
-            try
-            {
-                var all = await _userApi.GetAllUsersAsync();
-                var u = all?.FirstOrDefault(x =>
-                    (!string.IsNullOrWhiteSpace(x.UserName) && !string.IsNullOrWhiteSpace(userNameOrEmail) &&
-                     string.Equals(x.UserName, userNameOrEmail, StringComparison.OrdinalIgnoreCase))
-                    ||
-                    (!string.IsNullOrWhiteSpace(x.Email) && !string.IsNullOrWhiteSpace(userNameOrEmail) &&
-                     string.Equals(x.Email, userNameOrEmail, StringComparison.OrdinalIgnoreCase))
-                );
-
-                return (u?.Email, (u?.Roles ?? Enumerable.Empty<string>()).ToList());
-            }
-            catch
-            {
-                return (null, new List<string>());
-            }
-        }
 
         public async Task OnGetCoreAsync(int showId, int id, bool openComments)
         {
@@ -176,38 +142,17 @@ namespace SarasBlogg.Pages.Shared
 
             var postedComment = Comment ?? new Models.Comment();
 
-            // 1) Delete (admin eller ägare via namn/e-post)
+            // 1) Delete. API owns authorization and ownership checks.
             if (deleteCommentId != 0)
             {
                 var existing = await _bloggService.GetCommentAsync(deleteCommentId);
+                await _bloggService.DeleteCommentAsync(deleteCommentId);
+
                 if (existing != null)
-                {
-                    var isAdmin = User.IsInRole("superadmin") || User.IsInRole("admin") || User.IsInRole("superuser");
-                    if (!isAdmin && IsAuth && !string.IsNullOrWhiteSpace(CurrentUserName))
-                    {
-                        var (_, roles) = await GetApiUserByNameAsync(CurrentUserName);
-                        if (HasAdminLikeRole(roles)) isAdmin = true;
-                    }
-
-                    var isOwner =
-                        (!string.IsNullOrWhiteSpace(existing.Name) && !string.IsNullOrWhiteSpace(CurrentUserName) &&
-                         string.Equals(existing.Name, CurrentUserName, StringComparison.OrdinalIgnoreCase))
-                        ||
-                        (!string.IsNullOrWhiteSpace(existing.Email) && !string.IsNullOrWhiteSpace(CurrentUserEmail) &&
-                         string.Equals(existing.Email, CurrentUserEmail, StringComparison.OrdinalIgnoreCase));
-
-                    if (!isAdmin && !isOwner)
-                    {
-                        TempData["Error"] = "Du får inte ta bort denna kommentar.";
-                        return RedirectToPage(pageName: null, pageHandler: null,
-                            routeValues: new { showId = existing.BloggId, openComments = true }, fragment: "comments");
-                    }
-
-                    await _bloggService.DeleteCommentAsync(deleteCommentId);
-                    TempData["Info"] = "Kommentar borttagen.";
                     return RedirectToPage(pageName: null, pageHandler: null,
                         routeValues: new { showId = existing.BloggId, openComments = true }, fragment: "comments");
-                }
+
+                return RedirectToPage(pageName: null, pageHandler: null, routeValues: null, fragment: "comments");
             }
 
             if (postedComment.Id == null)
