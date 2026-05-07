@@ -1,8 +1,6 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using SarasBlogg.Services;
 using SarasBlogg.DAL;
-using SarasBlogg.Helpers;
 using SarasBlogg.Models;
 using SarasBlogg.Pages.Shared;
 
@@ -119,18 +117,8 @@ namespace SarasBlogg.Pages
             var uploadErrors = new List<string>();
             var currentBlogg = await _bloggApi.GetBloggAsync(NewBlogg.Id);
 
-            NewBlogg.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            var localDate = DateTime.SpecifyKind(NewBlogg.LaunchDate.Date, DateTimeKind.Unspecified);
-            var utcDate = TimeZoneInfo.ConvertTimeToUtc(localDate, TzSe);
-            NewBlogg.LaunchDate = utcDate;
-
             if (NewBlogg.Id == 0)
             {
-                NewBlogg.Title = string.IsNullOrWhiteSpace(NewBlogg.Title)
-                    ? BloggTextHelper.GenerateFallbackTitle(NewBlogg.Content)
-                    : NewBlogg.Title;
-
                 var savedBlogg = await _bloggApi.SaveBloggAsync(NewBlogg);
                 if (savedBlogg == null)
                 {
@@ -147,13 +135,10 @@ namespace SarasBlogg.Pages
                 if (currentBlogg == null)
                     return NotFound();
 
-                currentBlogg.Title = string.IsNullOrWhiteSpace(NewBlogg.Title)
-                    ? BloggTextHelper.GenerateFallbackTitle(NewBlogg.Content)
-                    : NewBlogg.Title;
+                currentBlogg.Title = NewBlogg.Title;
                 currentBlogg.Content = NewBlogg.Content;
                 currentBlogg.Author = NewBlogg.Author;
                 currentBlogg.LaunchDate = NewBlogg.LaunchDate;
-                currentBlogg.UserId = NewBlogg.UserId;
 
                 await _bloggApi.UpdateBloggAsync(currentBlogg);
             }
