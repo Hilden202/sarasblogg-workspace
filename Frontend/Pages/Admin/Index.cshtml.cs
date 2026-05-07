@@ -59,7 +59,6 @@ namespace SarasBlogg.Pages.Admin
             if ((IsAdmin || IsSuperAdmin) && hiddenId is int hid and > 0)
             {
                 await _bloggApi.ToggleHiddenAsync(hid);
-                _bloggService.InvalidateBlogListCache();
                 return RedirectToPage();
             }
 
@@ -67,7 +66,6 @@ namespace SarasBlogg.Pages.Admin
             if ((IsAdmin || IsSuperAdmin) && archiveId is int aid and > 0)
             {
                 await _bloggApi.ToggleArchivedAsync(aid);
-                _bloggService.InvalidateBlogListCache();
                 return RedirectToPage();
             }
 
@@ -175,8 +173,6 @@ namespace SarasBlogg.Pages.Admin
                 }
             }
 
-            _bloggService.InvalidateBlogListCache();
-
             if (uploadErrors.Count > 0)
                 TempData["UploadErrors"] = string.Join("\n", uploadErrors);
 
@@ -194,7 +190,6 @@ namespace SarasBlogg.Pages.Admin
                 await _commentApi.DeleteCommentsAsync(bloggToDelete.Id);
                 await _imageApi.DeleteImagesByBloggIdAsync(bloggToDelete.Id);
                 await _bloggApi.DeleteBloggAsync(bloggToDelete.Id);
-                _bloggService.InvalidateBlogListCache();
             }
 
             return RedirectToPage();
@@ -214,7 +209,6 @@ namespace SarasBlogg.Pages.Admin
                 images.Insert(0, imageToSet);
 
                 await _imageApi.UpdateImageOrderAsync(bloggId, images);
-                _bloggService.InvalidateBlogListCache();
             }
 
             return RedirectToPage(new { editId = bloggId });
@@ -225,7 +219,6 @@ namespace SarasBlogg.Pages.Admin
         {
             if (!User.IsInRole("superadmin")) return Forbid();
             await _imageApi.DeleteImageAsync(imageId);
-            _bloggService.InvalidateBlogListCache();
 
             return RedirectToPage(new { editId = bloggId });
         }
