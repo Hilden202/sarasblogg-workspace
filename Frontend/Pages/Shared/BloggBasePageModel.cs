@@ -6,7 +6,6 @@ using SarasBlogg.DAL;
 using System.Security.Claims;
 using SarasBlogg.DTOs;
 using Microsoft.Extensions.DependencyInjection;
-using Humanizer;
 
 namespace SarasBlogg.Pages.Shared
 {

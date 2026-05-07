@@ -2,10 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using SarasBlogg.DAL;
-using SarasBlogg.DTOs;
 using SarasBlogg.Models;
 using SarasBlogg.Extensions; // ToSwedishTime (används i listan)
-using SarasBlogg.Services;   // BloggService för cache-invalidering
 
 namespace SarasBlogg.Pages.Admin
 {
@@ -17,21 +15,16 @@ namespace SarasBlogg.Pages.Admin
         private readonly BloggImageAPIManager _imageApi;
         private readonly CommentAPIManager _commentApi;
 
-        // Cache-tjänst (publik listcache)
-        private readonly BloggService _bloggService;
-
         private static readonly TimeZoneInfo TzSe = TimeZoneInfo.FindSystemTimeZoneById("Europe/Stockholm");
 
         public IndexModel(
             BloggAPIManager bloggApi,
             BloggImageAPIManager imageApi,
-            CommentAPIManager commentApi,
-            BloggService bloggService)
+            CommentAPIManager commentApi)
         {
             _bloggApi = bloggApi;
             _imageApi = imageApi;
             _commentApi = commentApi;
-            _bloggService = bloggService;
         }
 
         public List<BloggWithImage> BloggsWithImage { get; set; } = new();

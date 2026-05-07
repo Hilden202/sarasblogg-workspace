@@ -1,19 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.DataProtection;
+﻿using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using SarasBlogg.DAL;
 using SarasBlogg.Services;
-using Npgsql.EntityFrameworkCore.PostgreSQL;
 using Microsoft.AspNetCore.HttpOverrides;
 using Polly;
 using Polly.Extensions.Http;
-using System.Net.Http;
-using System.IO;
-using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Authentication;
 using SarasBlogg.Infrastructure;
-using Microsoft.AspNetCore.Mvc;
-
 
 namespace SarasBlogg
 {
@@ -155,16 +147,6 @@ namespace SarasBlogg
             builder.Services.AddScoped<IAccessTokenStore, CookieAccessTokenStore>();
             
             builder.Services.AddTransient<JwtAuthHandler>();
-
-            // 🟨 Originalregistreringar — behållna men utkommenterade nedan:
-            // builder.Services.AddScoped<BloggAPIManager>();
-            // builder.Services.AddHttpClient<BloggImageAPIManager>();
-            // builder.Services.AddScoped<CommentAPIManager>();
-            // builder.Services.AddScoped<ForbiddenWordAPIManager>();
-            // builder.Services.AddScoped<AboutMeAPIManager>();
-            // builder.Services.AddHttpClient<AboutMeImageAPIManager>();
-            // builder.Services.AddScoped<ContactMeAPIManager>();
-            // builder.Services.AddSingleton<UserAPIManager>();
 
             // 🔹 API base URL från konfig (dev: appsettings.Development.json, prod: env ApiSettings__BaseAddress)
             var apiBase = builder.Configuration["ApiSettings:BaseAddress"]

@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using SarasBlogg.DAL;
-using SarasBlogg.Extensions; // f�r visning i vyer (ToSwedishTime)
 
 namespace SarasBlogg.Pages
 {

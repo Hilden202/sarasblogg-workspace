@@ -83,7 +83,6 @@ namespace SarasBlogg.Services
             }
 
             vm.RoleCssByName = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            vm.VerifiedCommentIds ??= new HashSet<int>(); // säkra init
 
             if (vm.Blogg is not null && vm.Blogg.Id != 0)
             {
@@ -104,9 +103,6 @@ namespace SarasBlogg.Services
                     var css = MapTopRoleToCss(d.TopRole);
                     if (!string.IsNullOrEmpty(css))
                         vm.RoleCssByName[d.Name] = css;
-
-                    if (!string.IsNullOrWhiteSpace(d.TopRole))
-                        vm.VerifiedCommentIds.Add(d.Id);
                 }
             }
             else
@@ -128,9 +124,6 @@ namespace SarasBlogg.Services
                     var css = MapTopRoleToCss(d.TopRole);
                     if (!string.IsNullOrEmpty(css))
                         vm.RoleCssByName[d.Name] = css;
-
-                    if (!string.IsNullOrWhiteSpace(d.TopRole))
-                        vm.VerifiedCommentIds.Add(d.Id);
                 }
             }
 
