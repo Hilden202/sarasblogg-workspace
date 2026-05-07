@@ -4,13 +4,6 @@ namespace SarasBlogg.Extensions
 {
     public static class RegexExtensions
     {
-        public static bool ContainsForbiddenWord(this string input, string pattern)
-        {
-            if (string.IsNullOrEmpty(input) || string.IsNullOrEmpty(pattern))
-                return false;
-
-            return Regex.IsMatch(input, pattern, RegexOptions.IgnoreCase);
-        }
         public static string ToRegexPattern(this string word)
         {
             if (string.IsNullOrWhiteSpace(word))

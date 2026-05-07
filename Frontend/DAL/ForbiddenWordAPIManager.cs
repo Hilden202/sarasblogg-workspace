@@ -26,12 +26,6 @@ namespace SarasBlogg.DAL
             return JsonSerializer.Deserialize<List<ForbiddenWord>>(json, _jsonOpts) ?? new();
         }
 
-        public async Task<List<string>> GetForbiddenPatternsAsync()
-        {
-            var forbiddenWords = await GetAllAsync();
-            return forbiddenWords.Select(f => f.WordPattern).ToList();
-        }
-
         public async Task<ForbiddenWord?> GetByIdAsync(int id)
         {
             var resp = await _httpClient.GetAsync($"api/ForbiddenWord/{id}");

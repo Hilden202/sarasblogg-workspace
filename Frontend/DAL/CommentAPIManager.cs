@@ -52,21 +52,7 @@ namespace SarasBlogg.DAL
             return JsonSerializer.Deserialize<DTOs.CommentWithRoleDto>(json, _jsonOpts);
         }
 
-        // --- Bakåtkompatibla metoder (mappar DTO -> gamla modellen) ---
-
-        public async Task<List<Models.Comment>> GetAllCommentsAsync()
-        {
-            var dtos = await GetAllCommentsWithRolesAsync();
-            return dtos.Select(d => new Models.Comment
-            {
-                Id = d.Id,
-                BloggId = d.BloggId,
-                Name = d.Name,
-                Email = null,              // Exponeras ej publikt
-                Content = d.Content ?? "",
-                CreatedAt = d.CreatedAt
-            }).ToList();
-        }
+        // --- Bakåtkompatibel metod (mappar DTO -> gamla modellen) ---
 
         public async Task<Models.Comment?> GetCommentAsync(int id)
         {
