@@ -5,10 +5,10 @@ SarasBlogg är ett API-first monorepo där backend är systemets kärna och fron
 Projektet är byggt för att stödja flera klienter mot samma API-kontrakt:
 
 - Razor Pages (nuvarande stabil frontend)
-- SvelteKit (nästa generations frontend)
-- framtida mobilapp eller andra klienter
+- SvelteKit (under utveckling)
+- framtida klienter och integrationer
 
-API:t är redan frikopplat från frontend och äger all auth, dataintegritet och affärslogik.
+API:t är frikopplat från frontend och ansvarar för auth, dataintegritet och affärslogik.
 
 ---
 
@@ -16,9 +16,9 @@ API:t är redan frikopplat från frontend och äger all auth, dataintegritet och
 
 ```text
 sarasblogg-workspace/
-├── Frontend/                 # Razor Pages frontend (nuvarande produktion)
-├── Client/                   # SvelteKit-klient (under utveckling)
-├── API/                      # ASP.NET API (Identity, auth, DB, business logic)
+├── Frontend/                 # Razor Pages frontend
+├── Client/                   # SvelteKit-klient
+├── API/                      # ASP.NET API
 ├── APITests/                 # Integrationstester
 ├── SarasBlogg-Workspace.sln  # Gemensam solution
 ├── sync-media.ps1            # DEV-script för mediasynk
@@ -33,15 +33,15 @@ sarasblogg-workspace/
 
 API:t är source of truth.
 
-Frontend är endast konsument av API-kontraktet.
+Frontend fungerar som konsument av API-kontraktet.
 
 Systemet är byggt för att möjliggöra:
 
-- frontend-oberoende utveckling
 - flera klienter
-- centraliserad auth
 - stabila DTO-kontrakt
-- backend-driven affärslogik
+- centraliserad auth
+- tydlig ansvarsfördelning
+- frikopplad frontend-utveckling
 
 ---
 
@@ -49,21 +49,17 @@ Systemet är byggt för att möjliggöra:
 
 ## Backend (API)
 
-API äger:
+API:t ansvarar för:
 
 - Databas
-- Identity
-- Roller
-- Auth
-- Claims
-- Ownership
-- Moderering
-- ViewCount
-- Timestamps
+- Identity & auth
+- Roller & claims
+- Affärslogik
 - Dataintegritet
-- Externa integrationer
+- Moderering
 - Bildhantering
-- Fallback-värden
+- ViewCount
+- Externa integrationer
 
 Teknik:
 
@@ -71,8 +67,7 @@ Teknik:
 - EF Core
 - PostgreSQL
 - Identity
-- JWT + refresh flow
-- Cookie-baserad refresh/sessionhantering
+- JWT/auth-flöden
 - Typed HttpClients
 - Polly retry policies
 
@@ -80,16 +75,15 @@ Teknik:
 
 ## Frontend
 
-Frontend äger:
+Frontend ansvarar för:
 
 - Presentation
 - UX
 - Routing
 - State
-- UI-transformationer
-- Rendering
+- UI-anpassning av data
 
-Frontend får aldrig anta databasstruktur.
+Frontend får inte anta databasstruktur eller duplicera backend-logik.
 
 ---
 
@@ -99,13 +93,9 @@ Frontend får aldrig anta databasstruktur.
 
 Nuvarande stabil frontend.
 
-- Fungerar som API-klient
-- Ingen DbContext
-- Ingen backend-logik
-- Ingen säkerhetslogik som auktoritet
+- API-driven
+- Ingen direkt databasåtkomst
 - All data hämtas via API
-
-Razor används fortfarande aktivt och måste behandlas varsamt vid cleanup/refaktorering.
 
 ---
 
@@ -131,42 +121,20 @@ lib/
 
 Regler:
 
-- all API-kommunikation sker via services
+- API-anrop sker via services
 - inga direkta fetch-anrop i komponenter
-- error mapping sker i services
 - DTOs typas
 - komponenter hålls presentationsnära
 
 ---
 
-# 🔐 Auth-arkitektur
+# 🔐 Auth
 
-Auth hanteras helt av API:t.
+Auth hanteras av API:t.
 
-Google OAuth/OIDC är implementerat backend-first.
+Systemet använder backend-driven auth med tokenbaserade API-anrop och centraliserad sessionshantering.
 
-Flödet:
-
-1. Frontend skickar användare till API
-2. API hanterar Google OIDC
-3. API skapar JWT/access token
-4. Refresh token lagras som HttpOnly-cookie
-5. Frontend använder Bearer-token mot API
-
-Designprincip:
-
-```text
-Backend = auth authority
-Frontend = token consumer
-Google = identity provider
-```
-
-Detta möjliggör:
-
-- multi-origin auth
-- frontend-oberoende auth
-- framtida mobilappar
-- säkrare tokenhantering
+Målet är att auth-flödet ska fungera oberoende av frontend-teknik.
 
 ---
 
@@ -176,21 +144,13 @@ Detta möjliggör:
 
 - PostgreSQL
 - Produktion körs på Render
-- Lokalt används Development/Test-databaser
+- Lokala development/test-miljöer stöds
 
 ## Hosting
 
 - API körs på Render
 - Razor frontend körs på Render
-- SvelteKit kommer kunna deployas separat
-
-## Reverse proxy / drift
-
-Forwarded headers används för korrekt proxy-hantering:
-
-- scheme forwarding
-- HTTPS-detektering
-- korrekt redirect-url i auth-flöden
+- Frontends kan deployas separat
 
 ---
 
@@ -204,17 +164,9 @@ Media ligger i separat repository:
 sarasblogg-media
 ```
 
-Bilder hämtas via GitHub raw/GitHub Pages.
-
 ## Lokal utveckling
 
-Lokal mediafolder används:
-
-```text
-API/SarasBlogg-Media/
-```
-
-(gitignorerad)
+Lokal mediafolder används i utvecklingsmiljö.
 
 ## DEV-sync
 
@@ -222,81 +174,65 @@ API/SarasBlogg-Media/
 sync-media.ps1
 ```
 
-synkar media från GitHub till lokal miljö.
+kan användas för att synka media lokalt.
 
 ---
 
 # 🧩 API-kontrakt
 
-## Viktiga principer
+DTOs används som klientkontrakt.
 
-- DTOs är klientkontrakt
-- Frontend skickar aldrig databasspecifika fält
-- Backend sätter ownership och säkerhetskritiska värden
-- Legacy payloads är bortstädade
+Backend ansvarar för:
+
+- ownership
+- timestamps
+- moderation
+- fallback-värden
+- dataintegritet
+
+Frontend skickar endast det som behövs för användarens handling.
 
 ---
 
-# 📝 Bloggflöde
+# 📝 Blogg & kommentarer
 
-## Backend-owned
+## Blogg
 
-API sätter:
+Blog create/update använder DTO-baserade requests.
+
+API:t ansvarar för:
 
 - UserId
 - ViewCount
 - fallback title
 - timestamps
-- LaunchDate-normalisering
-
-Frontend skickar:
-
-```json
-BlogPostWriteRequest
-```
-
-Frontend får inte skicka:
-
-- id
-- userId
-- viewCount
-- createdAt
-- launchDate
-- ownership-data
+- dataintegritet
 
 ---
 
-# 💬 Kommentarssystem
+## Kommentarer
 
-Kommentarer är API-drivna.
+Kommentarssystemet är API-drivet.
 
-API hanterar:
+API:t ansvarar för:
 
 - moderation
-- forbidden words
 - ownership
 - authenticated username
-- anonymous fallback (`"Gäst"`)
 - timestamps
+- AI-baserad innehållsanalys och filtrering
 
-Frontend skickar endast:
-
-```json
-CommentCreateRequest
-```
+Frontend skickar endast nödvändig data för skapande av kommentarer.
 
 ---
 
 # 👁️ ViewCount
 
-ViewCount är backend-owned.
+ViewCount hanteras helt av backend.
 
-Princip:
-
-- ViewCount ökas i API när specifik bloggpost hämtas
-- Frontend ska aldrig incrementera views själv
-- Blogglistor hämtar färsk data från API
-- Frontend-cache för blogglistor används inte om den riskerar stale ViewCount
+- Detaljhämtning ökar ViewCount i API:t
+- Blogglistor hämtar uppdaterad data från API:t
+- Frontend ska inte incrementera views lokalt
 
 ---
 
@@ -310,16 +246,13 @@ Projekt:
 APITests/
 ```
 
-Tester körs mot isolerad PostgreSQL-miljö via Testcontainers.
-
 Fokus:
 
 - API-kontrakt
 - auth
 - kommentarer
-- view count
-- public/private blogflöden
 - moderation
+- view count
 - DTO-validering
 
 CI kör:
@@ -328,27 +261,21 @@ CI kör:
 dotnet test SarasBlogg-Workspace.sln
 ```
 
+Frontend testas för närvarande huvudsakligen manuellt.
+
 ---
 
-# 🧹 Refaktorering & cleanup
+# 🧹 Refaktorering
 
-Projektet har nyligen genomgått större cleanup där frontend-owned business logic tagits bort.
+Projektet har successivt refaktorerats mot tydligare API-first-principer.
 
-Borttaget:
+Fokusområden:
 
-- frontend ownership-logik
-- frontend moderation-logik
-- legacy payloads
-- stale cache-logik
-- duplicerad auth/business logic
-- oanvända helpers och dead code
-
-Målet är:
-
-```text
-API = business authority
-Frontend = presentation
-```
+- borttagning av duplicerad frontend-logik
+- tydligare ansvarsfördelning
+- stabilare API-kontrakt
+- cleanup av legacy-flöden
+- bättre separation mellan UI och affärslogik
 
 ---
 
@@ -359,12 +286,10 @@ Frontend = presentation
 Var försiktig med:
 
 - hidden fields
-- modal-state
 - model binding
-- editor lifecycle
+- modal-state
+- form lifecycle
 - date formatting
-
-Ta inte bort Razor-kod utan att förstå flödet.
 
 ---
 
@@ -372,60 +297,36 @@ Ta inte bort Razor-kod utan att förstå flödet.
 
 Tänk alltid:
 
-- är detta breaking change?
-- påverkar detta andra klienter?
+- är detta en breaking change?
+- påverkar detta flera klienter?
 - är detta backend- eller frontend-ansvar?
-- är DTO:t ett kontrakt eller en DB-modell?
 
 ---
 
-# 🧠 Monorepo-medvetenhet
+# 🧠 Monorepo
 
 Var uppmärksam på:
 
 - Node-version
 - .NET-version
 - CORS
-- SameSite/Secure cookies
-- VITE_ env vs server-env
-- Render rootDir
-- auth redirect URLs
-- integrationstester när API redan kör lokalt
+- cookies/auth
+- environment variables
+- build/deploy-påverkan
 
 ---
 
 # ☁️ Deployment
 
-## Render services
-
-Separata services:
-
-- SarasBlogg (frontend)
-- SarasBloggAPI (backend)
-
-Samma GitHub-repo används.
+Separata Render-services används för frontend och API.
 
 Konfiguration sker via environment variables.
 
 ---
 
-# 📦 Backup & Restore
+# 📦 Backup
 
-Backup-script använder:
-
-```powershell
-pg_dump
-```
-
-Backup sparas lokalt och loggas.
-
-Återställning sker via pgAdmin med:
-
-```text
-Clean before restore
-```
-
-för att undvika FK-konflikter.
+PostgreSQL-backups hanteras via scripts och utvecklingsverktyg för lokal återställning och testning.
 
 ---
 
@@ -435,43 +336,21 @@ för att undvika FK-konflikter.
 
 - ✅ API-first arkitektur etablerad
 - ✅ Frontend frikopplad från databasen
-- ✅ Backend-owned auth
-- ✅ Google OAuth/OIDC backend-driven
 - ✅ Integrationstester
-- ✅ ViewCount backend-driven
-- ✅ Legacy payload cleanup
-- ✅ Frontend business logic cleanup
-- ✅ Monorepo etablerat
+- ✅ Backend-driven ViewCount
+- ✅ Cleanup av legacy payloads
 - ✅ Typed HttpClients + Polly
-- ✅ Shared DataProtection keys
-- ✅ Refresh token flow
+- ✅ Monorepo etablerat
+- ✅ AI-baserad kommentarsmoderering
 
 ---
 
 # 🔮 Planerat
 
-- SvelteKit som primär frontend
-- Mobilklient
-- Tarotsystem
-- Betalflöden
+- Vidareutveckling av SvelteKit-klienten
+- Fler API-klienter/integrationer
 - Utökad AI-funktionalitet
-- GitHub Pages-hostad frontend möjlig
-- Fler API-klienter
-
----
-
-# 🃏 Tarotkortssystem (planerat)
-
-Kommande subsystem i API:t.
-
-Planerat:
-
-- inloggningskrav
-- dagliga kortdragningar
-- AI-tolkning
-- moderation av frågor
-- framtida betalflöden
-- egen app/site på sikt
+- Förbättrad frontend-upplevelse
 
 ---
 
@@ -487,17 +366,3 @@ Planerat:
 - 🌍 Hilden Media: https://hildenmedia.se
 - 💻 GitHub: https://github.com/Hilden202
 - 🖼 Media repo: https://github.com/Hilden202/sarasblogg-media
-
----
-
-# 📚 Intern dokumentation
-
-Flera interna designbeslut och auth-flöden finns dokumenterade separat, bland annat:
-
-- Google OAuth-flöde
-- JWT + refresh-strategi
-- multi-origin auth
-- monorepo auth setup
-- Render proxy/scheme-hantering
-
-Se intern dokumentation för detaljerade auth-sekvenser och implementationstänk.
