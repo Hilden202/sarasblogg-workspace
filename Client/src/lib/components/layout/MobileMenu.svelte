@@ -81,7 +81,7 @@
 		background: rgba(244, 217, 202, 0.5);
 	}
 
-	@media (min-width: 861px) {
+	@media (min-width: 1101px) {
 		.mobile-panel {
 			display: none;
 		}

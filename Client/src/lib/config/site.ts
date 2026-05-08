@@ -1,6 +1,7 @@
 export const brand = {
 	name: 'Med Hjärtat som Kompass',
 	tagline: 'Inspiration, reflektioner och berättelser från hjärtat.',
+	heartLogo: '/images/logo/hearth-logo.png',
 	heroLogo: '/images/logo/logga.png',
 	compactLogo: '/images/logo/medhjartatsomkompass.png',
 	footerFlower: '/images/logo/bottomrightflowercut.png',
