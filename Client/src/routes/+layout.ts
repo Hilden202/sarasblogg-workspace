@@ -1,16 +1,14 @@
-import { getCurrentUser, mapToFrontendUser } from "$lib/services/authService";
-import { auth } from "$lib/stores/auth";
+import { getCurrentUser, mapToFrontendUser } from '$lib/services/authService';
 
 export const load = async ({ fetch }) => {
-  const me = await getCurrentUser(fetch);
-
-  if (!me) {
-    auth.clear();
-    return {};
-  }
-
-  const frontendUser = mapToFrontendUser(me);
-  auth.setUser(frontendUser);
-
-  return {};
+	try {
+		const me = await getCurrentUser(fetch);
+		return {
+			user: me ? mapToFrontendUser(me) : null
+		};
+	} catch {
+		return {
+			user: null
+		};
+	}
 };

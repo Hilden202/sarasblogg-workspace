@@ -1,36 +1,28 @@
 <script lang="ts">
-	import favicon from '$lib/assets/favicon.svg';
-	import { auth } from '$lib/stores/auth';
-	import { logout } from '$lib/services/authService';
-	import { goto } from '$app/navigation';
+	import '$lib/styles/global.css';
+	import Navbar from '$lib/components/layout/Navbar.svelte';
+	import Footer from '$lib/components/layout/Footer.svelte';
+	import Toast from '$lib/components/ui/Toast.svelte';
+	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
+	import { brand } from '$lib/config/site';
+	import { auth } from '$lib/stores/authStore';
 
-	let { children } = $props();
+	export let data;
 
-	async function handleLogout() {
-		await logout(fetch);
-		auth.clear();
-		goto('/');
-	}
+	$: auth.setUser(data.user ?? null);
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
+	<link rel="icon" href={brand.favicon} />
+	<meta name="theme-color" content="#fbf4ea" />
 </svelte:head>
 
-<nav style="padding:1rem; border-bottom:1px solid #ccc;">
-	{#if $auth.user}
-		<span>
-			Logged in as <strong>{$auth.user.displayName}</strong>
-		</span>
-
-		{#if auth.hasMinRole('admin')}
-			<span style="margin-left:1rem;">(Admin)</span>
-		{/if}
-
-		<button style="margin-left:1rem;" on:click={handleLogout}> Logout </button>
-	{:else}
-		<a href="/login">Login</a>
-	{/if}
-</nav>
-
-{@render children()}
+<div class="app-shell">
+	<Navbar />
+	<main class="page-main">
+		<slot />
+	</main>
+	<Footer />
+	<Toast />
+	<ConfirmDialog />
+</div>
