@@ -43,7 +43,7 @@
 	<div class="container contact-page__grid">
 		<div>
 			<p class="eyebrow">Kontakt</p>
-			<h1>Skriv nagra rader</h1>
+			<h1>Skriv några rader</h1>
 			<p>Här kan du skicka en hälsning, fråga eller tanke. Formuläret går direkt till API:t.</p>
 		</div>
 
