@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import BrandLockup from '$lib/components/brand/BrandLockup.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import MobileMenu from '$lib/components/layout/MobileMenu.svelte';
-	import { brand } from '$lib/config/site';
 	import { logout } from '$lib/services/authService';
 	import { auth } from '$lib/stores/authStore';
 	import { toasts } from '$lib/stores/toastStore';
@@ -39,9 +39,7 @@
 
 <header class="site-header">
 	<div class="nav-wrap container">
-		<a class="brand" href={routes.home} aria-label="SarasBlogg startsida">
-			<img src={brand.compactLogo} alt={brand.name} />
-		</a>
+		<BrandLockup variant="nav" href={routes.home} ariaLabel="SarasBlogg startsida" />
 
 		<nav class="desktop-nav" aria-label="Huvudnavigering">
 			{#each navItems as item}
@@ -64,9 +62,7 @@
 		</div>
 
 		<button class="menu-button" type="button" aria-label="Öppna meny" aria-expanded={open} on:click={() => (open = !open)}>
-			<span></span>
-			<span></span>
-			<span></span>
+			<span class="menu-button__icon" aria-hidden="true"></span>
 		</button>
 
 		<MobileMenu
@@ -93,19 +89,22 @@
 	.nav-wrap {
 		position: relative;
 		display: grid;
-		grid-template-columns: 180px 1fr auto;
+		grid-template-columns: 1fr auto 1fr;
 		align-items: center;
 		gap: 1.25rem;
-		min-height: 6.1rem;
+		width: min(100% - 2rem, 1280px);
+		max-width: none;
+		min-height: 5.7rem;
+		margin-inline: auto;
 	}
 
-	.brand img {
-		width: 142px;
-		height: auto;
+	.nav-wrap :global(.brand-lockup--nav) {
+		justify-self: start;
 	}
 
 	.desktop-nav {
 		display: flex;
+		justify-self: center;
 		justify-content: center;
 		gap: clamp(1.1rem, 3vw, 3rem);
 	}
@@ -145,6 +144,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: flex-end;
+		justify-self: end;
 		gap: 0.65rem;
 	}
 
@@ -170,28 +170,63 @@
 	}
 
 	.menu-button {
-		display: none;
+		position: absolute;
+		top: 50%;
+		right: 0;
+		z-index: 5;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
 		width: 3rem;
 		height: 3rem;
-		gap: 0.23rem;
 		justify-self: end;
 		padding: 0;
+		transform: translateY(-50%);
 	}
 
-	.menu-button span {
+	.menu-button__icon,
+	.menu-button__icon::before,
+	.menu-button__icon::after {
+		display: block;
 		width: 1.4rem;
 		height: 2px;
+		border-radius: 999px;
 		background: currentColor;
 	}
 
-	@media (max-width: 860px) {
+	.menu-button__icon {
+		position: relative;
+	}
+
+	.menu-button__icon::before,
+	.menu-button__icon::after {
+		position: absolute;
+		left: 0;
+		content: "";
+	}
+
+	.menu-button__icon::before {
+		top: -0.42rem;
+	}
+
+	.menu-button__icon::after {
+		top: 0.42rem;
+	}
+
+	@media (min-width: 1101px) {
+		.menu-button {
+			display: none;
+		}
+	}
+
+	@media (max-width: 1100px) {
 		.nav-wrap {
-			grid-template-columns: 1fr auto;
+			grid-template-columns: minmax(0, 1fr) auto;
 			min-height: 5rem;
 		}
 
-		.brand img {
-			width: 112px;
+		.nav-wrap :global(.brand-lockup--nav) {
+			min-width: 0;
 		}
 
 		.desktop-nav,
@@ -200,7 +235,9 @@
 		}
 
 		.menu-button {
-			display: inline-grid;
+			border-color: rgba(95, 74, 59, 0.22);
+			background: rgba(255, 250, 244, 0.9);
+			color: var(--color-heading);
 		}
 	}
 </style>

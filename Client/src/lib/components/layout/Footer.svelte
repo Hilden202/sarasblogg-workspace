@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { brand } from '$lib/config/site';
+	import BrandLockup from '$lib/components/brand/BrandLockup.svelte';
 	import SocialLinks from '$lib/components/layout/SocialLinks.svelte';
 	import { routes } from '$lib/utils/routes';
 </script>
 
 <footer class="site-footer">
 	<div class="container footer-grid">
-		<div>
-			<img class="footer-logo" src={brand.compactLogo} alt={brand.name} />
-			<p>{brand.tagline}</p>
+		<div class="footer-brand">
+			<BrandLockup variant="footer" />
 		</div>
 
 		<nav aria-label="Sidfot">
@@ -60,9 +60,9 @@
 		align-items: start;
 	}
 
-	.footer-logo {
-		width: 135px;
-		margin-bottom: 1rem;
+	.footer-brand {
+		display: flex;
+		align-items: center;
 	}
 
 	h2 {
