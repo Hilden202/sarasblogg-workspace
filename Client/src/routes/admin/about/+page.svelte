@@ -6,6 +6,7 @@
 	import RichTextEditor from '$lib/components/forms/RichTextEditor.svelte';
 	import { getFriendlyApiMessage } from '$lib/api/apiErrors';
 	import { createAboutMe, deleteAboutImage, updateAboutMe, uploadAboutImage } from '$lib/services/aboutService';
+	import { uploadEditorImage as uploadEditorImageFile } from '$lib/services/editorUploadService';
 	import { confirmDialog } from '$lib/stores/confirmStore';
 	import { toasts } from '$lib/stores/toastStore';
 	import { resolveMediaUrl } from '$lib/utils/routes';
@@ -64,6 +65,15 @@
 			isSaving = false;
 		}
 	}
+
+	async function uploadEmbeddedImage(file: File) {
+		try {
+			return await uploadEditorImageFile(fetch, file);
+		} catch (error) {
+			toasts.error(getFriendlyApiMessage(error, 'Editorbilden kunde inte laddas upp.'));
+			throw error;
+		}
+	}
 </script>
 
 <svelte:head>
@@ -98,7 +108,7 @@
 					<label><input type="checkbox" bind:checked={removeImage} disabled={Boolean(imageFile)} /> Ta bort bild</label>
 				</div>
 			{/if}
-			<RichTextEditor bind:value={content} id="about-content" label="Innehåll" />
+			<RichTextEditor bind:value={content} id="about-content" label="Innehåll" height={440} uploadImage={uploadEmbeddedImage} />
 			<Button type="submit" disabled={isSaving}>{isSaving ? 'Sparar...' : 'Spara'}</Button>
 		</form>
 	</FormSection>
