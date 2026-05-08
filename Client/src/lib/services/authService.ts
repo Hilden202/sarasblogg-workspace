@@ -1,76 +1,74 @@
-export type MeResponse = {
-  id: string;
-  userName: string;
-  email?: string | null;
-  name?: string | null;
-  birthYear?: number | null;
-  emailConfirmed: boolean;
-  phoneNumber?: string | null;
-  roles: string[];
-  notifyOnNewPost: boolean;
-  requiresUsernameSetup: boolean;
-};
+import { apiGet, apiPost, getExternalApiBaseUrl, type ApiFetch } from '$lib/api/apiClient';
+import type {
+	AuthSessionDto,
+	BasicResultDto,
+	FrontendUser,
+	LoginResponse,
+	RegisterRequest,
+	Role
+} from '$lib/types/auth';
 
-import type { FrontendUser, Role } from '$lib/types/auth';
+const knownRoles: Role[] = ['user', 'superuser', 'admin', 'superadmin'];
 
-export function mapToFrontendUser(me: MeResponse): FrontendUser {
-  return {
-    id: me.id,
-    userName: me.userName,
-    displayName: me.name ?? me.userName,
-    email: me.email ?? '',
-    emailConfirmed: me.emailConfirmed,
-    roles: me.roles as Role[],
-    notifyOnNewPost: me.notifyOnNewPost,
-    requiresUsernameSetup: me.requiresUsernameSetup
-  };
+export function mapToFrontendUser(me: AuthSessionDto): FrontendUser {
+	const roles = me.roles
+		.map((role) => role.toLowerCase())
+		.filter((role): role is Role => knownRoles.includes(role as Role));
+
+	return {
+		id: me.id,
+		userName: me.userName,
+		displayName: me.name?.trim() || me.userName,
+		email: me.email ?? '',
+		emailConfirmed: me.emailConfirmed,
+		roles,
+		notifyOnNewPost: me.notifyOnNewPost,
+		requiresUsernameSetup: me.requiresUsernameSetup,
+		name: me.name,
+		birthYear: me.birthYear,
+		phoneNumber: me.phoneNumber
+	};
 }
 
-export async function getCurrentUser(
-  fetchFn: typeof fetch
-): Promise<MeResponse | null> {
-
-  const response = await fetchFn(
-    '/api/users/me',
-    {
-      method: "GET",
-      credentials: "include",
-    }
-  );
-
-  if (response.status === 401) return null;
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch current user");
-  }
-
-  return await response.json();
+export async function getCurrentUser(fetchFn: ApiFetch): Promise<AuthSessionDto | null> {
+	try {
+		return await apiGet<AuthSessionDto>(fetchFn, '/api/users/me');
+	} catch (error) {
+		if (error instanceof Error && 'status' in error && (error as { status: number }).status === 401) {
+			return null;
+		}
+		throw error;
+	}
 }
 
 export async function login(
-  fetchFn: typeof fetch,
-  userNameOrEmail: string,
-  password: string,
-  rememberMe: boolean
-): Promise<boolean> {
-
-  const response = await fetchFn('/api/auth/login', {
-    method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      userNameOrEmail,
-      password,
-      rememberMe
-    })
-  });
-
-  return response.ok;
+	fetchFn: ApiFetch,
+	userNameOrEmail: string,
+	password: string,
+	rememberMe = true
+): Promise<LoginResponse> {
+	return apiPost<LoginResponse>(fetchFn, '/api/auth/login', {
+		userNameOrEmail,
+		password,
+		rememberMe
+	});
 }
 
-export async function logout(fetchFn: typeof fetch): Promise<void> {
-  await fetchFn('/api/auth/logout', {
-    method: 'POST',
-    credentials: 'include'
-  });
+export async function register(fetchFn: ApiFetch, request: RegisterRequest): Promise<BasicResultDto> {
+	return apiPost<BasicResultDto>(fetchFn, '/api/auth/register', request);
+}
+
+export async function logout(fetchFn: ApiFetch): Promise<void> {
+	await apiPost<void>(fetchFn, '/api/auth/logout', undefined, { emptyResponse: true });
+}
+
+export async function exchangeExternalLoginCode(fetchFn: ApiFetch, code: string): Promise<LoginResponse> {
+	return apiPost<LoginResponse>(fetchFn, '/api/auth/external/exchange', { code });
+}
+
+export function getGoogleLoginUrl(returnUrl: string, localReturnUrl = '/') {
+	const url = new URL(`${getExternalApiBaseUrl()}/api/auth/external/google/start`);
+	url.searchParams.set('returnUrl', returnUrl);
+	if (localReturnUrl) url.searchParams.set('localReturnUrl', localReturnUrl);
+	return url.toString();
 }
