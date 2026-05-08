@@ -19,7 +19,8 @@
 <style>
 	.blog-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
-		gap: clamp(1rem, 3vw, 1.55rem);
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 18rem));
+		justify-content: center;
+		gap: clamp(1.1rem, 2.8vw, 1.65rem);
 	}
 </style>

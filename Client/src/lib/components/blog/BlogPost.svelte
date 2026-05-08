@@ -23,7 +23,19 @@
 	function nextImage() {
 		activeIndex = activeIndex === images.length - 1 ? 0 : activeIndex + 1;
 	}
+
+	function closeLightbox() {
+		lightboxOpen = false;
+	}
+
+	function handleKeydown(event: KeyboardEvent) {
+		if (event.key === 'Escape') {
+			closeLightbox();
+		}
+	}
 </script>
+
+<svelte:window on:keydown={handleKeydown} />
 
 <article class="post">
 	<header>
@@ -43,8 +55,8 @@
 				<img class="post__cover" src={images[activeIndex].src} alt={images[activeIndex].alt} />
 			</button>
 			{#if images.length > 1}
-				<button type="button" class="gallery__nav gallery__nav--prev" aria-label="Föregående bild" on:click={previousImage}>‹</button>
-				<button type="button" class="gallery__nav gallery__nav--next" aria-label="Nästa bild" on:click={nextImage}>›</button>
+				<button type="button" class="gallery__nav gallery__nav--prev" aria-label="Föregående bild" on:click|stopPropagation={previousImage}>‹</button>
+				<button type="button" class="gallery__nav gallery__nav--next" aria-label="Nästa bild" on:click|stopPropagation={nextImage}>›</button>
 			{/if}
 		</div>
 		{#if images.length > 1}
@@ -70,9 +82,12 @@
 </article>
 
 {#if lightboxOpen}
-	<div class="lightbox" role="dialog" aria-modal="true" aria-label="Förstorad bloggbild">
-		<button type="button" aria-label="Stäng bild" on:click={() => (lightboxOpen = false)}>×</button>
-		<img src={images[activeIndex].src} alt={images[activeIndex].alt} />
+	<div class="lightbox" role="dialog" aria-modal="true" aria-label="Förstorad bloggbild" tabindex="-1">
+		<button type="button" class="lightbox__backdrop" aria-label="Stäng bild" on:click={closeLightbox}></button>
+		<div class="lightbox__content">
+			<button type="button" aria-label="Stäng bild" on:click={closeLightbox}>×</button>
+			<img src={images[activeIndex].src} alt={images[activeIndex].alt} />
+		</div>
 	</div>
 {/if}
 
@@ -151,6 +166,7 @@
 	.gallery__nav {
 		position: absolute;
 		top: 50%;
+		z-index: 2;
 		width: 2.75rem;
 		height: 2.75rem;
 		border: 1px solid rgba(255, 250, 244, 0.82);
@@ -217,15 +233,33 @@
 		background: rgba(37, 28, 21, 0.86);
 	}
 
-	.lightbox img {
+	.lightbox__backdrop {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		border: 0;
+		background: transparent;
+	}
+
+	.lightbox__content {
+		position: relative;
+		z-index: 1;
+		display: grid;
+		place-items: center;
 		max-width: min(100%, 1120px);
+		max-height: 88vh;
+	}
+
+	.lightbox img {
+		max-width: 100%;
 		max-height: 88vh;
 		border-radius: var(--radius-soft);
 		object-fit: contain;
 		box-shadow: var(--shadow-soft);
 	}
 
-	.lightbox button {
+	.lightbox__content > button {
 		position: fixed;
 		top: 1rem;
 		right: 1rem;
