@@ -7,6 +7,7 @@
 	import { getFriendlyApiMessage } from '$lib/api/apiErrors';
 	import { createPost, deletePost, togglePostArchived, togglePostHidden, updatePost } from '$lib/services/blogService';
 	import { deleteBlogImage, updateBlogImageOrder, uploadBlogImage } from '$lib/services/blogImageService';
+	import { uploadEditorImage as uploadEditorImageFile } from '$lib/services/editorUploadService';
 	import { confirmDialog } from '$lib/stores/confirmStore';
 	import { toasts } from '$lib/stores/toastStore';
 	import type { AdminBlogPostDto, BloggImageDto, BlogPostWriteRequest } from '$lib/types/blog';
@@ -46,6 +47,15 @@
 		} finally {
 			isSaving = false;
 			isUploading = false;
+		}
+	}
+
+	async function uploadEmbeddedImage(file: File) {
+		try {
+			return await uploadEditorImageFile(fetch, file, selected?.id ?? 0);
+		} catch (error) {
+			toasts.error(getFriendlyApiMessage(error, 'Editorbilden kunde inte laddas upp.'));
+			throw error;
 		}
 	}
 
@@ -175,6 +185,7 @@
 					onSave={save}
 					onDeleteImage={removeImage}
 					onMakeCover={makeCover}
+					uploadEditorImage={uploadEmbeddedImage}
 				/>
 			{/key}
 		</FormSection>

@@ -14,6 +14,7 @@
 	export let onSave: (request: BlogPostWriteRequest, files: File[]) => void | Promise<void> = () => {};
 	export let onDeleteImage: (image: BloggImageDto) => void | Promise<void> = () => {};
 	export let onMakeCover: (image: BloggImageDto) => void | Promise<void> = () => {};
+	export let uploadEditorImage: ((file: File) => Promise<string>) | undefined;
 
 	let title = '';
 	let author = '';
@@ -79,7 +80,7 @@
 		<input id="post-launch" type="datetime-local" bind:value={launchDateLocal} />
 	</FormField>
 
-	<RichTextEditor bind:value={content} id="post-content" label="Innehåll" />
+	<RichTextEditor bind:value={content} id="post-content" label="Innehåll" height={550} uploadImage={uploadEditorImage} />
 
 	{#if canManageImages}
 		<section class="image-manager" aria-labelledby="post-images-title">
