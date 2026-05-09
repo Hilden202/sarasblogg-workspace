@@ -145,10 +145,31 @@ img {
 	font-size: 1.02rem;
 }
 
+.prose :where(p, ul, ol, blockquote, figure, table) {
+	margin-block: 0 1rem;
+}
+
 .prose :where(h1, h2, h3) {
 	color: var(--color-heading);
 	font-family: var(--font-serif);
 	line-height: 1.1;
+}
+
+.prose :where(h4, h5, h6) {
+	color: var(--color-heading);
+	line-height: 1.2;
+}
+
+.prose :where(ul, ol) {
+	padding-left: 1.35rem;
+}
+
+.prose :where(blockquote) {
+	padding: 0.8rem 1rem;
+	border-left: 4px solid var(--color-accent);
+	background: rgba(255, 250, 244, 0.72);
+	color: var(--color-muted);
+	font-style: italic;
 }
 
 .prose :where(a) {
@@ -159,8 +180,22 @@ img {
 }
 
 .prose :where(img) {
+	max-width: 100%;
+	height: auto;
 	border-radius: var(--radius-card);
 	box-shadow: var(--shadow-small);
+}
+
+.prose :where(table) {
+	display: block;
+	width: 100%;
+	overflow-x: auto;
+	border-collapse: collapse;
+}
+
+.prose :where(th, td) {
+	padding: 0.55rem 0.7rem;
+	border: 1px solid var(--color-border);
 }
 
 .form-grid {
