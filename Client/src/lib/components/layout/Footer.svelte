@@ -1,8 +1,11 @@
 <script lang="ts">
+	import { createEventDispatcher } from 'svelte';
 	import { brand } from '$lib/config/site';
 	import BrandLockup from '$lib/components/brand/BrandLockup.svelte';
 	import SocialLinks from '$lib/components/layout/SocialLinks.svelte';
 	import { routes } from '$lib/utils/routes';
+
+	const dispatch = createEventDispatcher<{ privacy: void }>();
 </script>
 
 <footer class="site-footer">
@@ -36,7 +39,7 @@
 
 	<div class="container footer-bottom">
 		<span>© 2026 {brand.name}</span>
-		<span>Integritet · Cookies</span>
+		<button type="button" on:click={() => dispatch('privacy')}>Integritet · Cookies</button>
 	</div>
 	<img class="footer-flower" src={brand.footerFlower} alt="" loading="lazy" />
 </footer>
@@ -141,6 +144,21 @@
 		border-top: 1px solid rgba(95, 74, 59, 0.09);
 		color: var(--color-muted);
 		font-size: 0.85rem;
+	}
+
+	.footer-bottom button {
+		padding: 0;
+		border: 0;
+		background: transparent;
+		color: inherit;
+		font: inherit;
+		cursor: pointer;
+	}
+
+	.footer-bottom button:hover {
+		color: var(--color-heading);
+		text-decoration: underline;
+		text-underline-offset: 0.22em;
 	}
 
 	@media (max-width: 860px) {
