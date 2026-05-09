@@ -1,4 +1,3 @@
-import { env } from '$env/dynamic/public';
 import { createApiError } from './apiErrors';
 
 export type ApiFetch = typeof fetch;
@@ -8,12 +7,32 @@ export type ApiRequestOptions = Omit<RequestInit, 'body'> & {
 	emptyResponse?: boolean;
 };
 
+const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL ?? '').trim();
+const missingApiBaseUrlMessage =
+	'Missing required VITE_API_BASE_URL. Production builds must set the API base URL, for example https://sarasbloggapi-backend.onrender.com.';
+
+function normalizeBaseUrl(url: string) {
+	return url.replace(/\/+$/, '');
+}
+
 export function getApiBaseUrl() {
-	return (env.PUBLIC_API_BASE_URL ?? '').replace(/\/$/, '');
+	if (apiBaseUrl) return normalizeBaseUrl(apiBaseUrl);
+
+	if (import.meta.env.PROD) {
+		throw new Error(missingApiBaseUrlMessage);
+	}
+
+	return '';
 }
 
 export function getExternalApiBaseUrl() {
-	return (env.PUBLIC_API_BASE_URL ?? 'https://localhost:5003').replace(/\/$/, '');
+	if (apiBaseUrl) return normalizeBaseUrl(apiBaseUrl);
+
+	if (import.meta.env.PROD) {
+		throw new Error(missingApiBaseUrlMessage);
+	}
+
+	return 'https://localhost:5003';
 }
 
 function resolveApiUrl(path: string) {
