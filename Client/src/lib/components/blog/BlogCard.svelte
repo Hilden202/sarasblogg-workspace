@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { BlogPostSummaryDto } from '$lib/types/blog';
-	import { formatDate, readingMinutes } from '$lib/utils/dates';
+	import { formatDate } from '$lib/utils/dates';
 	import { blogPostPath, fallbackBlogImage, resolveMediaUrl } from '$lib/utils/routes';
 
 	export let post: BlogPostSummaryDto;
@@ -10,10 +10,13 @@
 	$: image = post.coverImage?.filePath
 		? resolveMediaUrl(post.coverImage.filePath)
 		: fallbackBlogImage(index);
-	$: title = post.title || 'Utan titel';
+	$: showTitle = post.showTitle && post.title.trim().length > 0;
+	$: title = post.title || 'inlägg';
+	$: readingTime = post.readingTimeMinutes || 1;
 </script>
 
 <article class="blog-card" class:blog-card--editorial={variant === 'editorial'}>
+	<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
 	<a href={blogPostPath(post)} aria-label={`Läs ${title}`}>
 		<div class="blog-card__media">
 			<img class="blog-card__image" src={image} alt="" loading="lazy" />
@@ -22,11 +25,13 @@
 			{#if post.author}
 				<p class="blog-card__category">{post.author}</p>
 			{/if}
-			<h2>{title}</h2>
+			{#if showTitle}
+				<h2>{post.title}</h2>
+			{/if}
 			<p>{post.excerpt}</p>
 			<footer>
 				<span>{formatDate(post.publishedAtUtc)}</span>
-				<span>{readingMinutes(post.excerpt)} min läsning</span>
+				<span>{readingTime} min läsning</span>
 				<i aria-hidden="true">→</i>
 			</footer>
 		</div>

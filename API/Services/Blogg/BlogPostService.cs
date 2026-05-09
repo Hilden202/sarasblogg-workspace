@@ -1,6 +1,4 @@
-using System.Net;
 using System.Security.Claims;
-using System.Text.RegularExpressions;
 using Ganss.Xss;
 using SarasBloggAPI.DAL;
 using SarasBloggAPI.DTOs.Blogg;
@@ -27,9 +25,12 @@ namespace SarasBloggAPI.Services.Blogg
         public async Task<BloggModel> CreateAsync(BlogPostWriteRequest request, ClaimsPrincipal user)
         {
             var sanitizedContent = SanitizeContent(request.Content);
+            var title = ResolveTitle(request.Title, sanitizedContent, request.ShowTitle);
             var blogg = new BloggModel
             {
-                Title = ResolveTitle(request.Title, sanitizedContent),
+                Title = title.Value,
+                ShowTitle = title.ShowTitle,
+                IsTitleGenerated = title.IsGenerated,
                 Content = sanitizedContent,
                 Author = ResolveAuthor(request.Author, user),
                 LaunchDate = ResolveLaunchDateUtc(request),
@@ -55,8 +56,11 @@ namespace SarasBloggAPI.Services.Blogg
                 return null;
 
             var sanitizedContent = SanitizeContent(request.Content);
+            var title = ResolveTitle(request.Title, sanitizedContent, request.ShowTitle, existing.ShowTitle);
 
-            existing.Title = ResolveTitle(request.Title, sanitizedContent);
+            existing.Title = title.Value;
+            existing.ShowTitle = title.ShowTitle;
+            existing.IsTitleGenerated = title.IsGenerated;
             existing.Content = sanitizedContent;
             existing.Author = ResolveAuthor(request.Author, user);
             existing.LaunchDate = ResolveLaunchDateUtc(request);
@@ -91,44 +95,24 @@ namespace SarasBloggAPI.Services.Blogg
             return DateTime.UtcNow;
         }
 
-        private static string ResolveTitle(string? title, string content)
+        private static ResolvedTitle ResolveTitle(
+            string? title,
+            string content,
+            bool? requestedShowTitle,
+            bool existingShowTitle = false)
         {
             if (!string.IsNullOrWhiteSpace(title))
-                return title.Trim();
-
-            return GenerateFallbackTitle(content);
-        }
-
-        private static string GenerateFallbackTitle(string? content, int maxLength = 80)
-        {
-            var plain = StripHtml(content);
-            if (string.IsNullOrWhiteSpace(plain))
-                return string.Empty;
-
-            var text = plain.Trim();
-
-            if (text.Length <= maxLength)
-                return text;
-
-            var truncated = text.Substring(0, maxLength);
-
-            var lastSpace = truncated.LastIndexOf(' ');
-            if (lastSpace > 20)
             {
-                truncated = truncated.Substring(0, lastSpace);
+                var showTitle = requestedShowTitle ?? existingShowTitle;
+                return new ResolvedTitle(title.Trim(), IsGenerated: false, ShowTitle: showTitle);
             }
 
-            return truncated.TrimEnd() + "...";
+            return new ResolvedTitle(
+                BlogTextHelper.GenerateFallbackTitle(content),
+                IsGenerated: true,
+                ShowTitle: false);
         }
 
-        private static string StripHtml(string? html)
-        {
-            if (string.IsNullOrWhiteSpace(html))
-                return string.Empty;
-
-            var text = Regex.Replace(html, "<[^>]+>", " ");
-            text = WebUtility.HtmlDecode(text);
-            return Regex.Replace(text, "\\s+", " ").Trim();
-        }
+        private readonly record struct ResolvedTitle(string Value, bool IsGenerated, bool ShowTitle);
     }
 }

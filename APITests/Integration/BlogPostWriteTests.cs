@@ -28,6 +28,7 @@ public class BlogPostWriteTests : IClassFixture<CustomWebApplicationFactory<Prog
         var response = await client.PostAsJsonAsync("/api/blogg", new BlogPostWriteRequest
         {
             Title = "API owned post",
+            ShowTitle = true,
             Content = "<p>Hello <strong>world</strong></p>",
             Author = "Sara",
             LaunchDateLocal = new DateTime(2026, 1, 15, 9, 30, 0),
@@ -40,6 +41,8 @@ public class BlogPostWriteTests : IClassFixture<CustomWebApplicationFactory<Prog
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         Assert.NotNull(created);
         Assert.Equal("API owned post", created!.Title);
+        Assert.True(created.ShowTitle);
+        Assert.False(created.IsTitleGenerated);
         Assert.Equal("<p>Hello <strong>world</strong></p>", created.Content);
         Assert.Equal("Sara", created.Author);
         Assert.Equal("creator-user", created.UserId);
@@ -70,6 +73,8 @@ public class BlogPostWriteTests : IClassFixture<CustomWebApplicationFactory<Prog
         var stored = await FindBloggAsync(bloggId);
         Assert.NotNull(stored);
         Assert.Equal("Updated title", stored!.Title);
+        Assert.True(stored.ShowTitle);
+        Assert.False(stored.IsTitleGenerated);
         Assert.Equal("<p>Updated content</p>", stored.Content);
         Assert.Equal("Updated author", stored.Author);
         Assert.True(stored.Hidden);
@@ -97,6 +102,8 @@ public class BlogPostWriteTests : IClassFixture<CustomWebApplicationFactory<Prog
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         Assert.NotNull(created);
         Assert.Equal("Det här blir titel från innehållet", created!.Title);
+        Assert.False(created.ShowTitle);
+        Assert.True(created.IsTitleGenerated);
     }
 
     [Fact]
@@ -175,6 +182,8 @@ public class BlogPostWriteTests : IClassFixture<CustomWebApplicationFactory<Prog
         var blogg = new Blogg
         {
             Title = "Original title",
+            ShowTitle = true,
+            IsTitleGenerated = false,
             Content = "<p>Original content</p>",
             Author = "Original author",
             LaunchDate = DateTime.UtcNow.AddDays(-1),

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SarasBloggAPI.Data;
 using SarasBloggAPI.Models;
+using SarasBloggAPI.Services.Comment;
 
 namespace SarasBloggAPI.DAL
 {
@@ -25,6 +26,7 @@ namespace SarasBloggAPI.DAL
 
         public async Task<ForbiddenWord> CreateAsync(ForbiddenWord word)
         {
+            word.WordPattern = ForbiddenWordPatternNormalizer.Normalize(word.WordPattern);
             _context.ForbiddenWords.Add(word);
             await _context.SaveChangesAsync();
             return word;
@@ -35,7 +37,7 @@ namespace SarasBloggAPI.DAL
             var existing = await _context.ForbiddenWords.FindAsync(word.Id);
             if (existing == null) return false;
 
-            existing.WordPattern = word.WordPattern;
+            existing.WordPattern = ForbiddenWordPatternNormalizer.Normalize(word.WordPattern);
             await _context.SaveChangesAsync();
             return true;
         }

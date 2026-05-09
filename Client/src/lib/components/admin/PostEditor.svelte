@@ -11,13 +11,17 @@
 	export let isUploading = false;
 	export let canManageImages = false;
 	export let submitLabel = 'Spara';
-	export let onSave: (request: BlogPostWriteRequest, files: File[]) => void | Promise<void> = () => {};
+	export let onSave: (
+		request: BlogPostWriteRequest,
+		files: File[]
+	) => void | Promise<void> = () => {};
 	export let onCancel: () => void = () => {};
 	export let onDeleteImage: (image: BloggImageDto) => void | Promise<void> = () => {};
 	export let onMakeCover: (image: BloggImageDto) => void | Promise<void> = () => {};
 	export let uploadEditorImage: ((file: File) => Promise<string>) | undefined;
 
 	let title = '';
+	let showTitle = false;
 	let author = '';
 	let content = '';
 	let launchDateLocal = '';
@@ -29,6 +33,7 @@
 
 	$: if (post) {
 		title = post.title ?? '';
+		showTitle = post.showTitle ?? false;
 		author = post.author ?? '';
 		content = post.content ?? '';
 		launchDateLocal = toLocalDateTimeInput(post.launchDate);
@@ -36,6 +41,7 @@
 		isArchived = post.isArchived;
 	} else {
 		title = '';
+		showTitle = false;
 		author = '';
 		content = '';
 		launchDateLocal = '';
@@ -51,6 +57,7 @@
 	function getRequest(): BlogPostWriteRequest {
 		return {
 			title: title.trim() || null,
+			showTitle: title.trim() ? showTitle : false,
 			author: author.trim() || null,
 			content,
 			launchDateLocal: launchDateLocal || null,
@@ -88,7 +95,13 @@
 		<input id="post-launch" type="datetime-local" bind:value={launchDateLocal} />
 	</FormField>
 
-	<RichTextEditor bind:value={content} id="post-content" label="Innehåll" height={550} uploadImage={uploadEditorImage} />
+	<RichTextEditor
+		bind:value={content}
+		id="post-content"
+		label="Innehåll"
+		height={550}
+		uploadImage={uploadEditorImage}
+	/>
 
 	{#if canManageImages}
 		<section class="image-manager" aria-labelledby="post-images-title">
@@ -110,7 +123,7 @@
 				<div class="pending-files">
 					<strong>Valda filer</strong>
 					<ul>
-						{#each selectedFiles as file}
+						{#each selectedFiles as file (file.name)}
 							<li>{file.name}</li>
 						{/each}
 					</ul>
@@ -124,8 +137,17 @@
 							<img src={resolveMediaUrl(image.filePath)} alt={`Bild ${index + 1} för inlägget`} />
 							<div>
 								<span>{index === 0 ? 'Första bild' : `Bild ${index + 1}`}</span>
-								<button type="button" disabled={index === 0 || isUploading} on:click={() => onMakeCover(image)}>Gör först</button>
-								<button type="button" class="danger" disabled={isUploading} on:click={() => onDeleteImage(image)}>Ta bort</button>
+								<button
+									type="button"
+									disabled={index === 0 || isUploading}
+									on:click={() => onMakeCover(image)}>Gör först</button
+								>
+								<button
+									type="button"
+									class="danger"
+									disabled={isUploading}
+									on:click={() => onDeleteImage(image)}>Ta bort</button
+								>
 							</div>
 						</article>
 					{/each}
@@ -139,13 +161,20 @@
 	{/if}
 
 	<div class="checks">
+		<label
+			><input type="checkbox" bind:checked={showTitle} disabled={!title.trim()} /> Visa titel i inlägget</label
+		>
 		<label><input type="checkbox" bind:checked={hidden} /> Dolt</label>
 		<label><input type="checkbox" bind:checked={isArchived} /> Arkiverat</label>
 	</div>
 
 	<div class="form-actions">
-		<Button type="button" variant="ghost" disabled={isSaving || isUploading} on:click={onCancel}>Avbryt</Button>
-		<Button type="submit" disabled={isSaving || isUploading}>{isSaving || isUploading ? 'Sparar...' : submitLabel}</Button>
+		<Button type="button" variant="ghost" disabled={isSaving || isUploading} on:click={onCancel}
+			>Avbryt</Button
+		>
+		<Button type="submit" disabled={isSaving || isUploading}
+			>{isSaving || isUploading ? 'Sparar...' : submitLabel}</Button
+		>
 	</div>
 </form>
 

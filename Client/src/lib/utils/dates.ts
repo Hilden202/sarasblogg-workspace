@@ -33,9 +33,3 @@ export function toLocalDateTimeInput(value?: string | Date | null) {
 	const local = new Date(date.getTime() - offset * 60_000);
 	return local.toISOString().slice(0, 16);
 }
-
-export function readingMinutes(text?: string | null) {
-	if (!text) return 1;
-	const words = text.replace(/<[^>]*>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
-	return Math.max(1, Math.ceil(words / 220));
-}
