@@ -7,6 +7,7 @@
 	export let path = '/';
 	export let userName: string | null = null;
 	export let roles: Role[] = [];
+	export let loginHref = routes.login;
 	export let onNavigate: () => void = () => {};
 	export let onLogout: () => void | Promise<void> = () => {};
 
@@ -24,10 +25,18 @@
 	<div class="mobile-panel">
 		<nav aria-label="Mobil navigering">
 			{#each items as item}
-				<a class:active={isRouteActive(path, item.href, item.href === routes.home)} href={item.href} on:click={onNavigate}>{item.label}</a>
+				<a
+					class:active={isRouteActive(path, item.href, item.href === routes.home)}
+					href={item.href}
+					on:click={onNavigate}>{item.label}</a
+				>
 			{/each}
 			{#if isAdmin}
-				<a class:active={isRouteActive(path, routes.admin)} href={routes.admin} on:click={onNavigate}>Admin</a>
+				<a
+					class:active={isRouteActive(path, routes.admin)}
+					href={routes.admin}
+					on:click={onNavigate}>Admin</a
+				>
 			{/if}
 		</nav>
 
@@ -36,8 +45,7 @@
 				<a href={routes.profile} on:click={onNavigate}>{userName}</a>
 				<button type="button" on:click={onLogout}>Logga ut</button>
 			{:else}
-				<Button href={routes.login} variant="secondary" full>Logga in</Button>
-				<Button href={routes.register} full>Skapa konto</Button>
+				<Button href={loginHref} variant="secondary" full>Logga in</Button>
 			{/if}
 		</div>
 	</div>

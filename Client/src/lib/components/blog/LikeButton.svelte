@@ -6,7 +6,7 @@
 	import { auth } from '$lib/stores/authStore';
 	import { toasts } from '$lib/stores/toastStore';
 	import type { LikeDto } from '$lib/types/like';
-	import { routes } from '$lib/utils/routes';
+	import { loginRoute, routePathFromUrl } from '$lib/utils/routes';
 
 	export let bloggId: number;
 	export let initialLike: LikeDto | null = null;
@@ -17,14 +17,16 @@
 	let liked = initialLike?.liked ?? false;
 	let isSaving = false;
 
-	$: loginUrl = `${routes.login}?returnUrl=${encodeURIComponent($page.url.pathname + $page.url.search)}`;
+	$: loginUrl = loginRoute(routePathFromUrl($page.url));
 
 	async function toggle() {
 		if (!$auth.user) return;
 		isSaving = true;
 		try {
 			const apiFetch = getClientFetch();
-			const result = liked ? await unlikePost(apiFetch, bloggId) : await likePost(apiFetch, bloggId);
+			const result = liked
+				? await unlikePost(apiFetch, bloggId)
+				: await likePost(apiFetch, bloggId);
 			count = result.count;
 			liked = !liked;
 		} catch (error) {

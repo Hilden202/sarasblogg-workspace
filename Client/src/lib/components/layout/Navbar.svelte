@@ -8,7 +8,7 @@
 	import { logout } from '$lib/services/authService';
 	import { auth } from '$lib/stores/authStore';
 	import { toasts } from '$lib/stores/toastStore';
-	import { isRouteActive, routes } from '$lib/utils/routes';
+	import { isRouteActive, loginRoute, routePathFromUrl, routes } from '$lib/utils/routes';
 
 	const getClientFetch = useClientFetch();
 
@@ -22,8 +22,10 @@
 	];
 
 	$: path = $page.url.pathname;
+	$: loginHref = loginRoute(routePathFromUrl($page.url));
 	$: user = $auth.user;
-	$: isAdmin = user?.roles.some((role) => ['superuser', 'admin', 'superadmin'].includes(role)) ?? false;
+	$: isAdmin =
+		user?.roles.some((role) => ['superuser', 'admin', 'superadmin'].includes(role)) ?? false;
 
 	async function handleLogout() {
 		try {
@@ -46,7 +48,9 @@
 
 		<nav class="desktop-nav" aria-label="Huvudnavigering">
 			{#each navItems as item}
-				<a class:active={isRouteActive(path, item.href, item.href === routes.home)} href={item.href}>{item.label}</a>
+				<a class:active={isRouteActive(path, item.href, item.href === routes.home)} href={item.href}
+					>{item.label}</a
+				>
 			{/each}
 			{#if isAdmin}
 				<a class:active={isRouteActive(path, routes.admin)} href={routes.admin}>Admin</a>
@@ -56,15 +60,27 @@
 		<div class="desktop-actions">
 			{#if user}
 				<a class="profile-link" href={routes.profile}>{user.displayName}</a>
-				<button class="icon-button" type="button" aria-label="Logga ut" title="Logga ut" on:click={handleLogout}>
+				<button
+					class="icon-button"
+					type="button"
+					aria-label="Logga ut"
+					title="Logga ut"
+					on:click={handleLogout}
+				>
 					<span aria-hidden="true">↗</span>
 				</button>
 			{:else}
-				<Button href={routes.login} variant="ghost">Logga in</Button>
+				<Button href={loginHref} variant="ghost">Logga in</Button>
 			{/if}
 		</div>
 
-		<button class="menu-button" type="button" aria-label="Öppna meny" aria-expanded={open} on:click={() => (open = !open)}>
+		<button
+			class="menu-button"
+			type="button"
+			aria-label="Öppna meny"
+			aria-expanded={open}
+			on:click={() => (open = !open)}
+		>
 			<span class="menu-button__icon" aria-hidden="true"></span>
 		</button>
 
@@ -73,6 +89,7 @@
 			{path}
 			userName={user?.displayName ?? null}
 			roles={user?.roles ?? []}
+			{loginHref}
 			onNavigate={() => (open = false)}
 			onLogout={handleLogout}
 		/>
@@ -129,7 +146,7 @@
 		left: 0;
 		height: 2px;
 		background: var(--color-accent);
-		content: "";
+		content: '';
 		opacity: 0;
 		transform: scaleX(0.5);
 		transition:
@@ -205,7 +222,7 @@
 	.menu-button__icon::after {
 		position: absolute;
 		left: 0;
-		content: "";
+		content: '';
 	}
 
 	.menu-button__icon::before {

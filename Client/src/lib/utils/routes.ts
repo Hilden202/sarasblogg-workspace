@@ -1,9 +1,35 @@
 import { base } from '$app/paths';
+import { browser } from '$app/environment';
 import type { BlogPostSummaryDto, BlogPostDetailDto } from '$lib/types/blog';
 
 function appRoute(path: string) {
 	const normalizedPath = path.startsWith('/') ? path : `/${path}`;
 	return `${base}${normalizedPath}`;
+}
+
+export function isSafeLocalPath(path: string | null | undefined): path is string {
+	return Boolean(path && path.startsWith('/') && !path.startsWith('//') && !path.includes('\\'));
+}
+
+export function ensureBasePath(path: string) {
+	if (!base) return path || '/';
+	if (
+		path === base ||
+		path.startsWith(`${base}/`) ||
+		path.startsWith(`${base}?`) ||
+		path.startsWith(`${base}#`)
+	) {
+		return path;
+	}
+
+	const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+	return `${base}${normalizedPath}`;
+}
+
+export function routePathFromUrl(url: URL) {
+	const search = browser ? url.search : '';
+	const hash = browser ? url.hash : '';
+	return `${url.pathname}${search}${hash}`;
 }
 
 export function staticAsset(path: string) {
@@ -43,6 +69,13 @@ export const routes = {
 	adminRoles: appRoute('/admin/roles'),
 	adminForbiddenWords: appRoute('/admin/forbidden-words')
 };
+
+export function loginRoute(returnUrl?: string | null) {
+	if (!isSafeLocalPath(returnUrl)) return routes.login;
+
+	const safeReturnUrl = ensureBasePath(returnUrl);
+	return `${routes.login}?returnUrl=${encodeURIComponent(safeReturnUrl)}`;
+}
 
 export function blogPostPath(post: Pick<BlogPostSummaryDto | BlogPostDetailDto, 'slug' | 'id'>) {
 	return `${routes.blog}/${post.slug || post.id}`;

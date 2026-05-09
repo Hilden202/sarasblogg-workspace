@@ -1,6 +1,8 @@
 import { getCurrentUser, mapToFrontendUser } from '$lib/services/authService';
 
-export const load = async ({ fetch }) => {
+export const load = async ({ depends, fetch }) => {
+	depends('auth:session');
+
 	try {
 		const me = await getCurrentUser(fetch);
 		return {
