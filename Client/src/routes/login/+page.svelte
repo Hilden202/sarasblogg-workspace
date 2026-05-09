@@ -4,10 +4,13 @@
 	import AuthPanel from '$lib/components/auth/AuthPanel.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormField from '$lib/components/forms/FormField.svelte';
+	import { useClientFetch } from '$lib/api/clientFetch';
 	import { getFriendlyApiMessage } from '$lib/api/apiErrors';
 	import { getCurrentUser, getGoogleLoginUrl, login, mapToFrontendUser } from '$lib/services/authService';
 	import { auth } from '$lib/stores/authStore';
 	import { toasts } from '$lib/stores/toastStore';
+
+	const getClientFetch = useClientFetch();
 
 	let userNameOrEmail = '';
 	let password = '';
@@ -21,8 +24,9 @@
 		error = '';
 		isSaving = true;
 		try {
-			await login(fetch, userNameOrEmail, password, rememberMe);
-			const me = await getCurrentUser(fetch);
+			const apiFetch = getClientFetch();
+			await login(apiFetch, userNameOrEmail, password, rememberMe);
+			const me = await getCurrentUser(apiFetch);
 			if (me) auth.setUser(mapToFrontendUser(me));
 			toasts.success('Du är inloggad.');
 			await goto(returnUrl);

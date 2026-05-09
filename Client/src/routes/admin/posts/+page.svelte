@@ -4,6 +4,7 @@
 	import PostEditor from '$lib/components/admin/PostEditor.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
+	import { useClientFetch } from '$lib/api/clientFetch';
 	import { getFriendlyApiMessage } from '$lib/api/apiErrors';
 	import { createPost, deletePost, togglePostHidden, updatePost } from '$lib/services/blogService';
 	import { deleteBlogImage, updateBlogImageOrder, uploadBlogImage } from '$lib/services/blogImageService';
@@ -13,6 +14,8 @@
 	import type { AdminBlogPostDto, BloggImageDto, BlogPostWriteRequest } from '$lib/types/blog';
 
 	export let data;
+
+	const getClientFetch = useClientFetch();
 
 	let selected: AdminBlogPostDto | null = null;
 	let editorOpen = false;
@@ -43,19 +46,20 @@
 	async function save(request: BlogPostWriteRequest, files: File[]) {
 		isSaving = true;
 		try {
+			const apiFetch = getClientFetch();
 			let savedId = selected?.id;
 			if (selected) {
-				await updatePost(fetch, selected.id, request);
+				await updatePost(apiFetch, selected.id, request);
 				toasts.success('Inlägget är uppdaterat.');
 			} else {
-				const created = await createPost(fetch, request);
+				const created = await createPost(apiFetch, request);
 				savedId = created.id;
 				toasts.success('Inlägget är skapat.');
 			}
 			if (savedId && files.length > 0) {
 				isUploading = true;
 				for (const file of files) {
-					await uploadBlogImage(fetch, savedId, file);
+					await uploadBlogImage(apiFetch, savedId, file);
 				}
 				toasts.success(files.length === 1 ? 'Bilden laddades upp.' : 'Bilderna laddades upp.');
 			}
@@ -72,7 +76,7 @@
 
 	async function uploadEmbeddedImage(file: File) {
 		try {
-			return await uploadEditorImageFile(fetch, file, selected?.id ?? 0);
+			return await uploadEditorImageFile(getClientFetch(), file, selected?.id ?? 0);
 		} catch (error) {
 			toasts.error(getFriendlyApiMessage(error, 'Editorbilden kunde inte laddas upp.'));
 			throw error;
@@ -82,7 +86,7 @@
 	async function toggleHidden(post: AdminBlogPostDto) {
 		busyPostId = post.id;
 		try {
-			await togglePostHidden(fetch, post.id);
+			await togglePostHidden(getClientFetch(), post.id);
 			await invalidateAll();
 			toasts.success(post.hidden ? 'Inlägget visas igen.' : 'Inlägget är dolt.');
 		} catch (error) {
@@ -109,7 +113,7 @@
 
 		busyPostId = post.id;
 		try {
-			await deletePost(fetch, post.id);
+			await deletePost(getClientFetch(), post.id);
 			await invalidateAll();
 			toasts.success('Inlägget togs bort.');
 		} catch (error) {
@@ -131,7 +135,7 @@
 
 		isUploading = true;
 		try {
-			await deleteBlogImage(fetch, image.id);
+			await deleteBlogImage(getClientFetch(), image.id);
 			selected = {
 				...selected,
 				images: (selected.images ?? []).filter((item) => item.id !== image.id)
@@ -154,9 +158,9 @@
 				image,
 				...selected.images
 					.filter((item) => item.id !== image.id)
-					.sort((a, b) => a.order - b.order || a.id - b.id)
+				.sort((a, b) => a.order - b.order || a.id - b.id)
 			].map((item, index) => ({ ...item, order: index }));
-			await updateBlogImageOrder(fetch, selected.id, ordered);
+			await updateBlogImageOrder(getClientFetch(), selected.id, ordered);
 			selected = { ...selected, images: ordered };
 			await invalidateAll();
 			toasts.success('Första bilden är uppdaterad.');

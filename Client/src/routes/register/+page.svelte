@@ -2,9 +2,12 @@
 	import AuthPanel from '$lib/components/auth/AuthPanel.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormField from '$lib/components/forms/FormField.svelte';
+	import { useClientFetch } from '$lib/api/clientFetch';
 	import { getFriendlyApiMessage } from '$lib/api/apiErrors';
 	import { register } from '$lib/services/authService';
 	import { toasts } from '$lib/stores/toastStore';
+
+	const getClientFetch = useClientFetch();
 
 	let userName = '';
 	let email = '';
@@ -23,7 +26,7 @@
 		confirmEmailUrl = null;
 		isSaving = true;
 		try {
-			const result = await register(fetch, {
+			const result = await register(getClientFetch(), {
 				userName,
 				email,
 				password,

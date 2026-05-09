@@ -4,10 +4,13 @@
 	import BrandLockup from '$lib/components/brand/BrandLockup.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import MobileMenu from '$lib/components/layout/MobileMenu.svelte';
+	import { useClientFetch } from '$lib/api/clientFetch';
 	import { logout } from '$lib/services/authService';
 	import { auth } from '$lib/stores/authStore';
 	import { toasts } from '$lib/stores/toastStore';
 	import { routes } from '$lib/utils/routes';
+
+	const getClientFetch = useClientFetch();
 
 	let open = false;
 
@@ -24,7 +27,7 @@
 
 	async function handleLogout() {
 		try {
-			await logout(fetch);
+			await logout(getClientFetch());
 			auth.clear();
 			toasts.success('Du är utloggad.');
 			open = false;

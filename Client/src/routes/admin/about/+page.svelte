@@ -3,6 +3,7 @@
 	import AboutEditor from '$lib/components/admin/AboutEditor.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
+	import { useClientFetch } from '$lib/api/clientFetch';
 	import { getFriendlyApiMessage } from '$lib/api/apiErrors';
 	import { createAboutMe, deleteAboutImage, updateAboutMe, uploadAboutImage } from '$lib/services/aboutService';
 	import { uploadEditorImage as uploadEditorImageFile } from '$lib/services/editorUploadService';
@@ -11,6 +12,8 @@
 	import { resolveMediaUrl } from '$lib/utils/routes';
 
 	export let data;
+
+	const getClientFetch = useClientFetch();
 
 	type AboutSavePayload = {
 		title: string;
@@ -35,6 +38,7 @@
 	async function save(payload: AboutSavePayload) {
 		isSaving = true;
 		try {
+			const apiFetch = getClientFetch();
 			let imageUrl = payload.image.trim() || null;
 			if (payload.removeImage && payload.image) {
 				const confirmed = await confirmDialog.ask({
@@ -47,18 +51,18 @@
 					isSaving = false;
 					return;
 				}
-				await deleteAboutImage(fetch);
+				await deleteAboutImage(apiFetch);
 				imageUrl = null;
 			} else if (payload.imageFile) {
-				const uploaded = await uploadAboutImage(fetch, payload.imageFile);
+				const uploaded = await uploadAboutImage(apiFetch, payload.imageFile);
 				imageUrl = uploaded.imageUrl ?? null;
 			}
 
 			if (data.about?.id) {
-				await updateAboutMe(fetch, { id: data.about.id, title: payload.title, content: payload.content, image: imageUrl });
+				await updateAboutMe(apiFetch, { id: data.about.id, title: payload.title, content: payload.content, image: imageUrl });
 				toasts.success('Om mig-sidan är uppdaterad.');
 			} else {
-				await createAboutMe(fetch, { title: payload.title, content: payload.content, image: imageUrl });
+				await createAboutMe(apiFetch, { title: payload.title, content: payload.content, image: imageUrl });
 				toasts.success('Om mig-sidan är skapad.');
 			}
 			editorOpen = false;
@@ -72,7 +76,7 @@
 
 	async function uploadEmbeddedImage(file: File) {
 		try {
-			return await uploadEditorImageFile(fetch, file);
+			return await uploadEditorImageFile(getClientFetch(), file);
 		} catch (error) {
 			toasts.error(getFriendlyApiMessage(error, 'Editorbilden kunde inte laddas upp.'));
 			throw error;

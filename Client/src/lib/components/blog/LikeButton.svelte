@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { useClientFetch } from '$lib/api/clientFetch';
 	import { getFriendlyApiMessage } from '$lib/api/apiErrors';
 	import { likePost, unlikePost } from '$lib/services/likeService';
 	import { auth } from '$lib/stores/authStore';
@@ -8,6 +9,8 @@
 
 	export let bloggId: number;
 	export let initialLike: LikeDto | null = null;
+
+	const getClientFetch = useClientFetch();
 
 	let count = initialLike?.count ?? 0;
 	let liked = initialLike?.liked ?? false;
@@ -19,7 +22,8 @@
 		if (!$auth.user) return;
 		isSaving = true;
 		try {
-			const result = liked ? await unlikePost(fetch, bloggId) : await likePost(fetch, bloggId);
+			const apiFetch = getClientFetch();
+			const result = liked ? await unlikePost(apiFetch, bloggId) : await likePost(apiFetch, bloggId);
 			count = result.count;
 			liked = !liked;
 		} catch (error) {

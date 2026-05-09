@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import AdminTable from '$lib/components/admin/AdminTable.svelte';
+	import { useClientFetch } from '$lib/api/clientFetch';
 	import { getFriendlyApiMessage } from '$lib/api/apiErrors';
 	import { addUserRole, changeUserName, deleteUser, removeUserRole, sendResetLink } from '$lib/services/userService';
 	import { confirmDialog } from '$lib/stores/confirmStore';
@@ -8,6 +9,8 @@
 	import type { UserDto } from '$lib/types/user';
 
 	export let data;
+
+	const getClientFetch = useClientFetch();
 
 	let selectedRole: Record<string, string> = {};
 	let userNames: Record<string, string> = {};
@@ -28,7 +31,7 @@
 		if (!role) return;
 		busyUserId = user.id;
 		try {
-			await addUserRole(fetch, user.id, role);
+			await addUserRole(getClientFetch(), user.id, role);
 			await invalidateAll();
 			toasts.success('Rollen lades till.');
 		} catch (error) {
@@ -50,7 +53,7 @@
 
 		busyUserId = user.id;
 		try {
-			await removeUserRole(fetch, user.id, role);
+			await removeUserRole(getClientFetch(), user.id, role);
 			await invalidateAll();
 			toasts.success('Rollen togs bort.');
 		} catch (error) {
@@ -72,7 +75,7 @@
 
 		busyUserId = user.id;
 		try {
-			await deleteUser(fetch, user.id);
+			await deleteUser(getClientFetch(), user.id);
 			await invalidateAll();
 			toasts.success('Användaren togs bort.');
 		} catch (error) {
@@ -88,7 +91,7 @@
 
 		busyUserId = user.id;
 		try {
-			const result = await changeUserName(fetch, user.id, { newUserName });
+			const result = await changeUserName(getClientFetch(), user.id, { newUserName });
 			if (!result.succeeded) {
 				toasts.error(result.message ?? 'Användarnamnet kunde inte ändras.');
 				return;
@@ -114,7 +117,7 @@
 		busyUserId = user.id;
 		manualResetLink = '';
 		try {
-			const result = await sendResetLink(fetch, user.email);
+			const result = await sendResetLink(getClientFetch(), user.email);
 			manualResetLink = result.confirmEmailUrl ?? '';
 			toasts.success(result.message ?? 'Återställningslänken har hanterats.');
 		} catch (error) {
