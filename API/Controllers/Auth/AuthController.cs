@@ -19,7 +19,7 @@ namespace SarasBloggAPI.Controllers.Auth;
 [Produces("application/json")]
 public class AuthController : ControllerBase
 {
-    private const string SvelteFrontend = "svelte";
+    private const string DefaultExternalLoginCallbackPath = "/Identity/Account/ExternalLoginCallback";
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly TokenService _tokenService;
@@ -45,16 +45,8 @@ public class AuthController : ControllerBase
         _cache = cache;
     }
     
-    private string GetFrontendBaseUrl(bool useSvelte = false)
+    private string GetFrontendBaseUrl()
     {
-        if (useSvelte)
-        {
-            return _cfg["Frontend:SvelteBaseUrl"]
-                   ?? _cfg["Frontend:BaseUrl"]
-                   ?? throw new InvalidOperationException(
-                       "Frontend base URL is not configured");
-        }
-
         return _cfg["Frontend:BaseUrl"]
                ?? throw new InvalidOperationException(
                    "Frontend:BaseUrl is not configured");
@@ -92,18 +84,51 @@ public class AuthController : ControllerBase
             ? Array.Empty<string>()
             : csv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        var configuredOrigins = new[]
-        {
-            TryGetOrigin(_cfg["Frontend:BaseUrl"]),
-            TryGetOrigin(_cfg["Frontend:SvelteBaseUrl"])
-        };
+        var configuredOrigin = TryGetOrigin(_cfg["Frontend:BaseUrl"]);
 
         var allowed = allowedOrigins
-            .Concat(configuredOrigins.OfType<string>())
+            .Concat(string.IsNullOrWhiteSpace(configuredOrigin) ? Array.Empty<string>() : new[] { configuredOrigin })
             .Select(origin => origin!.TrimEnd('/'))
             .Distinct(StringComparer.OrdinalIgnoreCase);
 
         return allowed.Any(origin => string.Equals(returnOrigin, origin, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool IsSafeCallbackPath(string callbackPath)
+    {
+        if (string.IsNullOrWhiteSpace(callbackPath))
+            return false;
+
+        if (!callbackPath.StartsWith('/') || callbackPath.StartsWith("//"))
+            return false;
+
+        if (callbackPath.Contains('\\') || callbackPath.Contains('?') || callbackPath.Contains('#'))
+            return false;
+
+        if (Uri.TryCreate(callbackPath, UriKind.Absolute, out _))
+            return false;
+
+        var decodedPath = Uri.UnescapeDataString(callbackPath);
+        var segments = decodedPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        return !segments.Any(segment => segment == "..");
+    }
+
+    private static string BuildFrontendCallbackUrl(
+        string returnUrl,
+        string callbackPath,
+        string loginCode,
+        string? localReturnUrl)
+    {
+        var callbackBase = $"{returnUrl.TrimEnd('/')}{callbackPath}";
+        var callbackQuery = new Dictionary<string, string?>
+        {
+            ["code"] = loginCode
+        };
+
+        if (!string.IsNullOrWhiteSpace(localReturnUrl))
+            callbackQuery["returnUrl"] = localReturnUrl;
+
+        return QueryHelpers.AddQueryString(callbackBase, callbackQuery);
     }
 
     // ---------- REGISTER ----------
@@ -743,10 +768,17 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> GoogleStart(
         [FromQuery] string? returnUrl = null,
         [FromQuery] string? localReturnUrl = null,
-        [FromQuery] string? frontend = null)
+        [FromQuery] string? callbackPath = null)
     {
         if (string.IsNullOrWhiteSpace(returnUrl))
             return BadRequest("Missing returnUrl.");
+
+        callbackPath = string.IsNullOrWhiteSpace(callbackPath)
+            ? DefaultExternalLoginCallbackPath
+            : callbackPath;
+
+        if (!IsSafeCallbackPath(callbackPath))
+            return BadRequest("Invalid callbackPath.");
 
         await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
@@ -765,10 +797,9 @@ public class AuthController : ControllerBase
 
         // 🔥 DETTA ÄR DET VIKTIGA
         props.Items["returnUrl"] = returnUrl;
+        props.Items["callbackPath"] = callbackPath;
         if (!string.IsNullOrWhiteSpace(localReturnUrl))
             props.Items["localReturnUrl"] = localReturnUrl;
-        if (string.Equals(frontend, SvelteFrontend, StringComparison.OrdinalIgnoreCase))
-            props.Items["frontend"] = SvelteFrontend;
 
         return Challenge(props, GoogleDefaults.AuthenticationScheme);
     }
@@ -792,19 +823,29 @@ public class AuthController : ControllerBase
 
         string? returnUrl = null;
         string? localReturnUrl = null;
-        string? frontend = null;
+        string? callbackPath = null;
 
         if (info.AuthenticationProperties?.Items != null)
         {
             info.AuthenticationProperties.Items.TryGetValue("returnUrl", out returnUrl);
             info.AuthenticationProperties.Items.TryGetValue("localReturnUrl", out localReturnUrl);
-            info.AuthenticationProperties.Items.TryGetValue("frontend", out frontend);
+            info.AuthenticationProperties.Items.TryGetValue("callbackPath", out callbackPath);
         }
 
         if (string.IsNullOrWhiteSpace(returnUrl))
         {
             _logger.LogWarning("GoogleCallback: missing returnUrl");
             return BadRequest("Missing returnUrl.");
+        }
+
+        callbackPath = string.IsNullOrWhiteSpace(callbackPath)
+            ? DefaultExternalLoginCallbackPath
+            : callbackPath;
+
+        if (!IsSafeCallbackPath(callbackPath))
+        {
+            _logger.LogWarning("GoogleCallback: invalid callbackPath {CallbackPath}", callbackPath);
+            return Forbid();
         }
 
         var email = info.Principal.FindFirstValue(ClaimTypes.Email);
@@ -889,23 +930,7 @@ public class AuthController : ControllerBase
             return Forbid();
         }
 
-        var useSvelte = string.Equals(frontend, SvelteFrontend, StringComparison.OrdinalIgnoreCase);
-        var frontendBase = GetFrontendBaseUrl(useSvelte);
-        var callbackPath = useSvelte
-            ? "/auth/external/callback/"
-            : "/Identity/Account/ExternalLoginCallback";
-
-        var callbackQuery = new Dictionary<string, string?>
-        {
-            ["code"] = loginCode
-        };
-
-        if (!string.IsNullOrWhiteSpace(localReturnUrl))
-            callbackQuery["returnUrl"] = localReturnUrl;
-
-        var frontendCallbackUrl = QueryHelpers.AddQueryString(
-            $"{frontendBase.TrimEnd('/')}{callbackPath}",
-            callbackQuery);
+        var frontendCallbackUrl = BuildFrontendCallbackUrl(returnUrl, callbackPath, loginCode, localReturnUrl);
 
         return Redirect(frontendCallbackUrl);
     }

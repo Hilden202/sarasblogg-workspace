@@ -31,6 +31,9 @@ namespace SarasBlogg.Areas.Identity.Pages.Account
             {
                 var googleStartUrl =
                     $"{ApiBaseUrl.TrimEnd('/')}/api/auth/external/google/start?returnUrl={Uri.EscapeDataString(CurrentOrigin)}";
+                
+                googleStartUrl +=
+                    $"&callbackPath={Uri.EscapeDataString("/Identity/Account/ExternalLoginCallback")}";
 
                 var localReturnUrl = NormalizeLocalReturnUrl(ReturnUrl);
                 if (!string.IsNullOrWhiteSpace(localReturnUrl))
