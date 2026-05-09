@@ -3,11 +3,12 @@ import { getAllPosts } from '$lib/services/blogService';
 import { getBlogImages } from '$lib/services/blogImageService';
 import { getFriendlyApiMessage } from '$lib/api/apiErrors';
 import { userHasAnyRole, userHasRole } from '$lib/utils/auth';
+import { routes } from '$lib/utils/routes';
 
 export const load = async ({ fetch, parent }) => {
 	const { user } = await parent();
 	if (!userHasAnyRole(user, ['admin', 'superadmin'])) {
-		throw redirect(303, '/admin');
+		throw redirect(303, routes.admin);
 	}
 
 	try {

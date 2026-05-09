@@ -2,11 +2,12 @@ import { redirect } from '@sveltejs/kit';
 import { getRoles } from '$lib/services/adminService';
 import { getFriendlyApiMessage } from '$lib/api/apiErrors';
 import { userHasRole } from '$lib/utils/auth';
+import { routes } from '$lib/utils/routes';
 
 export const load = async ({ fetch, parent }) => {
 	const { user } = await parent();
 	if (!userHasRole(user, 'superadmin')) {
-		throw redirect(303, '/admin');
+		throw redirect(303, routes.admin);
 	}
 
 	try {
