@@ -1,6 +1,8 @@
 <script lang="ts">
+	import { base } from '$app/paths';
 	import BlogGrid from '$lib/components/blog/BlogGrid.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import { routes } from '$lib/utils/routes';
 
 	export let data;
 </script>
@@ -15,12 +17,12 @@
 		<header>
 			<img
 				class="blog-index__logo"
-				src="/images/logo/sarablogglogga.png"
+				src={`${base}/images/logo/sarablogglogga.png`}
 				alt="SarasBlogg textlogga"
 			/>
 			<div class="filters">
-				<Button href="/blog" variant={!data.archive ? 'primary' : 'secondary'}>Aktuellt</Button>
-				<Button href="/blog?archive=true" variant={data.archive ? 'primary' : 'secondary'}>Arkiv</Button>
+				<Button href={routes.blog} variant={!data.archive ? 'primary' : 'secondary'}>Aktuellt</Button>
+				<Button href={`${routes.blog}?archive=true`} variant={data.archive ? 'primary' : 'secondary'}>Arkiv</Button>
 			</div>
 		</header>
 
@@ -33,11 +35,11 @@
 		{#if data.posts.totalPages > 1}
 			<nav class="päger" aria-label="Sidindelning">
 				{#if data.posts.page > 1}
-					<a href={`/blog?page=${data.posts.page - 1}${data.archive ? '&archive=true' : ''}`}>Föregående</a>
+					<a href={`${routes.blog}?page=${data.posts.page - 1}${data.archive ? '&archive=true' : ''}`}>Föregående</a>
 				{/if}
 				<span>Sida {data.posts.page} av {data.posts.totalPages}</span>
 				{#if data.posts.page < data.posts.totalPages}
-					<a href={`/blog?page=${data.posts.page + 1}${data.archive ? '&archive=true' : ''}`}>Nästa</a>
+					<a href={`${routes.blog}?page=${data.posts.page + 1}${data.archive ? '&archive=true' : ''}`}>Nästa</a>
 				{/if}
 			</nav>
 		{/if}

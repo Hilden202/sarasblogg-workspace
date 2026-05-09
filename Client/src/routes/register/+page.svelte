@@ -6,6 +6,7 @@
 	import { getFriendlyApiMessage } from '$lib/api/apiErrors';
 	import { register } from '$lib/services/authService';
 	import { toasts } from '$lib/stores/toastStore';
+	import { routes } from '$lib/utils/routes';
 
 	const getClientFetch = useClientFetch();
 
@@ -88,7 +89,7 @@
 			<p class="status-text status-text--error">{error}</p>
 		{/if}
 
-		<p class="auth-link">Har du redan konto? <a href="/login">Logga in</a>.</p>
+		<p class="auth-link">Har du redan konto? <a href={routes.login}>Logga in</a>.</p>
 	</form>
 </AuthPanel>
 

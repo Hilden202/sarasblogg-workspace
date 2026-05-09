@@ -1,6 +1,8 @@
 import { getAboutMe } from '$lib/services/aboutService';
 import { getPublicPosts } from '$lib/services/blogService';
 
+export const prerender = true;
+
 export const load = async ({ fetch }) => {
 	const [postsResult, aboutResult] = await Promise.allSettled([
 		getPublicPosts(fetch, { pageSize: 3 }),

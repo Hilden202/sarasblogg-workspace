@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
+	import { base } from '$app/paths';
 	import { onDestroy, onMount, tick } from 'svelte';
 
 	export let value = '';
@@ -59,7 +60,7 @@
 			}
 
 			const script = document.createElement('script');
-			script.src = '/lib/tinymce/tinymce.min.js';
+			script.src = `${base}/lib/tinymce/tinymce.min.js`;
 			script.async = true;
 			script.dataset.tinymceLoader = 'true';
 			script.addEventListener('load', () => resolve(), { once: true });
@@ -80,7 +81,7 @@
 
 		const result = await tinymce.init({
 			target: textarea,
-			base_url: '/lib/tinymce',
+			base_url: `${base}/lib/tinymce`,
 			suffix: '.min',
 			license_key: 'gpl',
 			branding: false,

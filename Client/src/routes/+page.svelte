@@ -3,10 +3,14 @@
 	import LatestPosts from '$lib/components/blog/LatestPosts.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { brand } from '$lib/config/site';
-	import { resolveMediaUrl, routes } from '$lib/utils/routes';
+	import { resolveMediaUrl, routes, staticAsset } from '$lib/utils/routes';
 	import { truncate } from '$lib/utils/text';
 
 	export let data;
+
+	const aboutFallbackImage = staticAsset('/images/aboutme/foto.jpg');
+
+	$: aboutPreviewImage = data.about?.image ? resolveMediaUrl(data.about.image) : aboutFallbackImage;
 </script>
 
 <svelte:head>
@@ -24,8 +28,8 @@
 <section class="section about-preview">
 	<div class="container about-preview__grid">
 		<div class="about-preview__media">
-			<img class="about-preview__blur" src={resolveMediaUrl(data.about?.image || '/images/aboutme/foto.jpg')} alt="" aria-hidden="true" />
-			<img class="about-preview__image" src={resolveMediaUrl(data.about?.image || '/images/aboutme/foto.jpg')} alt="" />
+			<img class="about-preview__blur" src={aboutPreviewImage} alt="" aria-hidden="true" />
+			<img class="about-preview__image" src={aboutPreviewImage} alt="" />
 		</div>
 		<div>
 			<p class="eyebrow">Om mig</p>

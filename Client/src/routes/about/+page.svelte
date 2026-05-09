@@ -1,5 +1,11 @@
 <script lang="ts">
+	import { resolveMediaUrl, staticAsset } from '$lib/utils/routes';
+
 	export let data;
+
+	const aboutFallbackImage = staticAsset('/images/aboutme/foto.jpg');
+
+	$: aboutImage = data.image || data.about?.image ? resolveMediaUrl(data.image || data.about?.image) : aboutFallbackImage;
 </script>
 
 <svelte:head>
@@ -10,7 +16,7 @@
 <section class="section about-page">
 	<div class="container about-page__grid">
 		<div class="about-page__image">
-			<img src={data.image || data.about?.image || '/images/aboutme/foto.jpg'} alt="" />
+			<img src={aboutImage} alt="" />
 		</div>
 		<article class="about-page__content">
 			<p class="eyebrow">Om mig</p>

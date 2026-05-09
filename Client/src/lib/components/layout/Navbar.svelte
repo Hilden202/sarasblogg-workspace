@@ -8,7 +8,7 @@
 	import { logout } from '$lib/services/authService';
 	import { auth } from '$lib/stores/authStore';
 	import { toasts } from '$lib/stores/toastStore';
-	import { routes } from '$lib/utils/routes';
+	import { isRouteActive, routes } from '$lib/utils/routes';
 
 	const getClientFetch = useClientFetch();
 
@@ -46,10 +46,10 @@
 
 		<nav class="desktop-nav" aria-label="Huvudnavigering">
 			{#each navItems as item}
-				<a class:active={path === item.href} href={item.href}>{item.label}</a>
+				<a class:active={isRouteActive(path, item.href, item.href === routes.home)} href={item.href}>{item.label}</a>
 			{/each}
 			{#if isAdmin}
-				<a class:active={path.startsWith(routes.admin)} href={routes.admin}>Admin</a>
+				<a class:active={isRouteActive(path, routes.admin)} href={routes.admin}>Admin</a>
 			{/if}
 		</nav>
 

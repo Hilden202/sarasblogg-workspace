@@ -1,11 +1,13 @@
+import { staticAsset } from '$lib/utils/routes';
+
 export const brand = {
 	name: 'Med Hjärtat som Kompass',
 	tagline: 'Inspiration, reflektioner och berättelser från hjärtat.',
-	heartLogo: '/images/logo/hearth-logo.png',
-	heroLogo: '/images/logo/logga.png',
-	compactLogo: '/images/logo/medhjartatsomkompass.png',
-	footerFlower: '/images/logo/bottomrightflowercut.png',
-	favicon: '/images/logo/hjartafavicon.ico'
+	heartLogo: staticAsset('/images/logo/hearth-logo.png'),
+	heroLogo: staticAsset('/images/logo/logga.png'),
+	compactLogo: staticAsset('/images/logo/medhjartatsomkompass.png'),
+	footerFlower: staticAsset('/images/logo/bottomrightflowercut.png'),
+	favicon: staticAsset('/images/logo/hjartafavicon.ico')
 };
 
 export const spotifyItems = [
