@@ -1,5 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import { getAllPosts } from '$lib/services/blogService';
+import { getBlogImages } from '$lib/services/blogImageService';
 import { getFriendlyApiMessage } from '$lib/api/apiErrors';
 import { userHasAnyRole, userHasRole } from '$lib/utils/auth';
 
@@ -10,7 +11,12 @@ export const load = async ({ fetch, parent }) => {
 	}
 
 	try {
-		const posts = await getAllPosts(fetch);
+		const posts = await Promise.all(
+			(await getAllPosts(fetch)).map(async (post) => ({
+				...post,
+				images: await getBlogImages(fetch, post.id)
+			}))
+		);
 		return {
 			posts,
 			error: '',
