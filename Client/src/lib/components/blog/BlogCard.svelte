@@ -5,6 +5,7 @@
 
 	export let post: BlogPostSummaryDto;
 	export let index = 0;
+	export let variant: 'compact' | 'editorial' = 'compact';
 
 	$: image = post.coverImage?.filePath
 		? resolveMediaUrl(post.coverImage.filePath)
@@ -12,7 +13,7 @@
 	$: title = post.title || 'Utan titel';
 </script>
 
-<article class="blog-card">
+<article class="blog-card" class:blog-card--editorial={variant === 'editorial'}>
 	<a href={blogPostPath(post)} aria-label={`Läs ${title}`}>
 		<div class="blog-card__media">
 			<img class="blog-card__image" src={image} alt="" loading="lazy" />
@@ -63,6 +64,36 @@
 		height: clamp(11rem, 21vw, 13rem);
 		overflow: hidden;
 		background: rgba(255, 250, 244, 0.72);
+	}
+
+	.blog-card--editorial {
+		max-width: 32rem;
+	}
+
+	.blog-card--editorial .blog-card__media {
+		height: clamp(15rem, 32vw, 22rem);
+	}
+
+	.blog-card--editorial .blog-card__body {
+		gap: 0.75rem;
+		padding: clamp(1.2rem, 2.5vw, 1.65rem);
+	}
+
+	.blog-card--editorial h2 {
+		font-size: clamp(1.45rem, 2.4vw, 1.85rem);
+		line-height: 1.12;
+	}
+
+	.blog-card--editorial .blog-card__body > p:not(.blog-card__category) {
+		-webkit-line-clamp: 3;
+		line-clamp: 3;
+		font-size: 0.98rem;
+		line-height: 1.58;
+	}
+
+	.blog-card--editorial footer {
+		margin-top: 0.35rem;
+		font-size: 0.8rem;
 	}
 
 	.blog-card__image {
@@ -127,5 +158,11 @@
 		background: rgba(244, 217, 202, 0.55);
 		color: var(--color-heading);
 		font-style: normal;
+	}
+
+	@media (max-width: 640px) {
+		.blog-card--editorial .blog-card__media {
+			height: clamp(13rem, 62vw, 17rem);
+		}
 	}
 </style>

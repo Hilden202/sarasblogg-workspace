@@ -13,6 +13,11 @@
 <section class="section blog-index">
 	<div class="container">
 		<header>
+			<img
+				class="blog-index__logo"
+				src="/images/logo/sarablogglogga.png"
+				alt="SarasBlogg textlogga"
+			/>
 			<p class="eyebrow">Blogg</p>
 			<h1>Texter från hjärtat</h1>
 			<p>Reflektioner, personliga berättelser och mjuka påminnelser för vardagen.</p>
@@ -26,7 +31,7 @@
 			<p class="status-text status-text--error">{data.error}</p>
 		{/if}
 
-		<BlogGrid posts={data.posts.items} />
+		<BlogGrid posts={data.posts.items} variant="editorial" />
 
 		{#if data.posts.totalPages > 1}
 			<nav class="päger" aria-label="Sidindelning">
@@ -47,6 +52,13 @@
 		max-width: 740px;
 		margin: 0 auto 2.5rem;
 		text-align: center;
+	}
+
+	.blog-index__logo {
+		width: min(100%, 34rem);
+		max-height: 12.5rem;
+		margin: 0 auto 1rem;
+		object-fit: contain;
 	}
 
 	h1 {
