@@ -20,7 +20,6 @@
 		</div>
 		<article class="about-page__content">
 			<p class="eyebrow">Om mig</p>
-			<h1>{data.about?.title || 'Med hjärtat som kompass'}</h1>
 			<div class="prose about-page__prose">
 				{@html data.about?.content ||
 					'<p>Här kommer Saras presentation att visas när den finns i API:t.</p>'}
@@ -59,15 +58,6 @@
 	.about-page__content {
 		justify-self: start;
 		width: min(100%, 620px);
-	}
-
-	h1 {
-		margin: 0.25rem 0 1.25rem;
-		max-width: 11ch;
-		color: var(--color-heading);
-		font-family: var(--font-serif);
-		font-size: clamp(2.75rem, 4.8vw, 4.5rem);
-		line-height: 0.95;
 	}
 
 	.about-page__prose {

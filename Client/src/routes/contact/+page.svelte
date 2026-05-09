@@ -47,7 +47,7 @@
 		<div>
 			<p class="eyebrow">Kontakt</p>
 			<h1>Skriv några rader</h1>
-			<p>Här kan du skicka en hälsning, fråga eller tanke. Formuläret går direkt till API:t.</p>
+			<p>Här kan du skicka en hälsning, fråga eller tanke. Jag läser allt med värme.</p>
 		</div>
 
 		<form class="card" on:submit|preventDefault={submit}>
