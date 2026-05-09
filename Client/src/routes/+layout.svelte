@@ -2,6 +2,7 @@
 	import '$lib/styles/global.css';
 	import Navbar from '$lib/components/layout/Navbar.svelte';
 	import Footer from '$lib/components/layout/Footer.svelte';
+	import CookieConsent from '$lib/components/layout/CookieConsent.svelte';
 	import Toast from '$lib/components/ui/Toast.svelte';
 	import ConfirmDialog from '$lib/components/ui/ConfirmDialog.svelte';
 	import { brand } from '$lib/config/site';
@@ -13,6 +14,7 @@
 	const topLeftFlower = staticAsset('/images/logo/top-left-corner-flower-ny.png');
 	const bottomRightFlower = staticAsset('/images/logo/bottom-right-corner-flower-ny.png');
 	const appShellStyle = `--app-flower-top-left: url("${topLeftFlower}"); --app-flower-bottom-right: url("${bottomRightFlower}");`;
+	let cookieConsent: CookieConsent;
 
 	$: auth.setUser(data.user ?? null);
 </script>
@@ -27,7 +29,8 @@
 	<main class="page-main">
 		<slot />
 	</main>
-	<Footer />
+	<Footer on:privacy={() => cookieConsent?.openPrivacy()} />
+	<CookieConsent bind:this={cookieConsent} />
 	<Toast />
 	<ConfirmDialog />
 </div>
