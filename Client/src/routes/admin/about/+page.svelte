@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
+	import AboutEditor from '$lib/components/admin/AboutEditor.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import FormField from '$lib/components/forms/FormField.svelte';
-	import FormSection from '$lib/components/forms/FormSection.svelte';
-	import RichTextEditor from '$lib/components/forms/RichTextEditor.svelte';
+	import Modal from '$lib/components/ui/Modal.svelte';
 	import { getFriendlyApiMessage } from '$lib/api/apiErrors';
 	import { createAboutMe, deleteAboutImage, updateAboutMe, uploadAboutImage } from '$lib/services/aboutService';
 	import { uploadEditorImage as uploadEditorImageFile } from '$lib/services/editorUploadService';
@@ -13,24 +12,31 @@
 
 	export let data;
 
-	let title = data.about?.title ?? '';
-	let content = data.about?.content ?? '';
-	let image = data.about?.image ?? '';
-	let imageFile: File | null = null;
-	let removeImage = false;
+	type AboutSavePayload = {
+		title: string;
+		content: string;
+		image: string;
+		imageFile: File | null;
+		removeImage: boolean;
+	};
+
+	let editorOpen = false;
 	let isSaving = false;
 
-	function handleImageChange(event: Event) {
-		const input = event.currentTarget as HTMLInputElement;
-		imageFile = input.files?.[0] ?? null;
-		if (imageFile) removeImage = false;
+	function openEditor() {
+		editorOpen = true;
 	}
 
-	async function save() {
+	function closeEditor() {
+		if (isSaving) return;
+		editorOpen = false;
+	}
+
+	async function save(payload: AboutSavePayload) {
 		isSaving = true;
 		try {
-			let imageUrl = image.trim() || null;
-			if (removeImage && image) {
+			let imageUrl = payload.image.trim() || null;
+			if (payload.removeImage && payload.image) {
 				const confirmed = await confirmDialog.ask({
 					title: 'Ta bort bild',
 					message: 'Vill du ta bort den nuvarande Om mig-bilden?',
@@ -43,21 +49,19 @@
 				}
 				await deleteAboutImage(fetch);
 				imageUrl = null;
-			} else if (imageFile) {
-				const uploaded = await uploadAboutImage(fetch, imageFile);
+			} else if (payload.imageFile) {
+				const uploaded = await uploadAboutImage(fetch, payload.imageFile);
 				imageUrl = uploaded.imageUrl ?? null;
 			}
 
 			if (data.about?.id) {
-				await updateAboutMe(fetch, { id: data.about.id, title, content, image: imageUrl });
+				await updateAboutMe(fetch, { id: data.about.id, title: payload.title, content: payload.content, image: imageUrl });
 				toasts.success('Om mig-sidan är uppdaterad.');
 			} else {
-				await createAboutMe(fetch, { title, content, image: imageUrl });
+				await createAboutMe(fetch, { title: payload.title, content: payload.content, image: imageUrl });
 				toasts.success('Om mig-sidan är skapad.');
 			}
-			image = imageUrl ?? '';
-			imageFile = null;
-			removeImage = false;
+			editorOpen = false;
 			await invalidateAll();
 		} catch (error) {
 			toasts.error(getFriendlyApiMessage(error, 'Om mig-sidan kunde inte sparas.'));
@@ -81,37 +85,38 @@
 </svelte:head>
 
 <section class="admin-page">
-	<div>
-		<p class="eyebrow">Innehåll</p>
-		<h1>Om mig</h1>
+	<div class="admin-toolbar">
+		<div>
+			<p class="eyebrow">Innehåll</p>
+			<h1>Om mig</h1>
+		</div>
+		<Button variant="secondary" on:click={openEditor}>{data.about ? 'Redigera' : 'Skapa'}</Button>
 	</div>
 
-	<FormSection title="Redigera presentation" text="Innehåll och bild sparas via API:t. Beskärning från Razor är kvar som en separat parity-punkt.">
-		<form class="form-grid" on:submit|preventDefault={save}>
-			<FormField label="Titel" id="about-title">
-				<input id="about-title" bind:value={title} />
-			</FormField>
-			<FormField label="Bild-URL" id="about-image">
-				<input id="about-image" bind:value={image} />
-			</FormField>
-			<FormField label="Ladda upp bild" id="about-image-file">
-				<input
-					id="about-image-file"
-					type="file"
-					accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
-					on:change={handleImageChange}
-				/>
-			</FormField>
-			{#if image}
-				<div class="image-preview">
-					<img src={resolveMediaUrl(image)} alt="Nuvarande Om mig-bild" />
-					<label><input type="checkbox" bind:checked={removeImage} disabled={Boolean(imageFile)} /> Ta bort bild</label>
-				</div>
-			{/if}
-			<RichTextEditor bind:value={content} id="about-content" label="Innehåll" height={440} uploadImage={uploadEmbeddedImage} />
-			<Button type="submit" disabled={isSaving}>{isSaving ? 'Sparar...' : 'Spara'}</Button>
-		</form>
-	</FormSection>
+	<article class="about-admin-preview">
+		{#if data.about?.image}
+			<img src={resolveMediaUrl(data.about.image)} alt="" />
+		{/if}
+		<div>
+			<p class="eyebrow">Aktuell sida</p>
+			<h2>{data.about?.title || 'Om mig'}</h2>
+			<div class="prose about-admin-preview__content">
+				{@html data.about?.content || '<p>Ingen presentation är publicerad ännu.</p>'}
+			</div>
+		</div>
+	</article>
+
+	<Modal open={editorOpen} title={data.about ? 'Redigera Om mig' : 'Skapa Om mig'} size="wide" on:close={closeEditor}>
+		{#key data.about?.id ?? 'new'}
+			<AboutEditor
+				about={data.about}
+				{isSaving}
+				onSave={save}
+				onCancel={closeEditor}
+				uploadEditorImage={uploadEmbeddedImage}
+			/>
+		{/key}
+	</Modal>
 </section>
 
 <style>
@@ -122,28 +127,45 @@
 		font-size: clamp(2.4rem, 5vw, 4rem);
 	}
 
-	.image-preview {
+	.about-admin-preview {
 		display: grid;
-		gap: 0.75rem;
-		padding: 1rem;
+		grid-template-columns: minmax(180px, 260px) minmax(0, 1fr);
+		gap: clamp(1rem, 3vw, 1.75rem);
+		align-items: start;
+		padding: clamp(1rem, 3vw, 1.35rem);
 		border: 1px solid var(--color-border);
-		border-radius: var(--radius-soft);
-		background: rgba(255, 250, 244, 0.62);
+		border-radius: 0.75rem;
+		background: rgba(255, 250, 244, 0.72);
+		box-shadow: var(--shadow-small);
 	}
 
-	.image-preview img {
-		width: min(100%, 320px);
-		aspect-ratio: 4 / 3;
-		border-radius: var(--radius-soft);
+	.about-admin-preview > img {
+		width: 100%;
+		aspect-ratio: 0.82;
+		border-radius: 0.75rem;
 		object-fit: cover;
 		box-shadow: var(--shadow-small);
 	}
 
-	.image-preview label {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.45rem;
+	h2 {
+		margin: 0.25rem 0 1rem;
 		color: var(--color-heading);
-		font-weight: 800;
+		font-family: var(--font-serif);
+		font-size: clamp(2rem, 4vw, 3rem);
+		line-height: 1;
+	}
+
+	.about-admin-preview__content {
+		max-width: 70ch;
+	}
+
+	@media (max-width: 720px) {
+		.about-admin-preview {
+			grid-template-columns: 1fr;
+		}
+
+		.about-admin-preview > img {
+			width: min(100%, 280px);
+		}
 	}
 </style>

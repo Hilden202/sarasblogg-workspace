@@ -88,13 +88,16 @@
 			height,
 			menubar: true,
 			toolbar_mode: 'wrap',
-			mobile: false,
+			mobile: {
+				menubar: false,
+				toolbar_mode: 'scrolling'
+			},
 			skin: 'oxide',
 			content_css: 'default',
 			plugins:
 				'advlist autolink charmap code fullscreen image insertdatetime link lists media preview searchreplace visualblocks wordcount',
 			toolbar:
-				'undo redo | blocks | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | blockquote | link image | fullscreen code removeformat',
+				'undo redo | blocks | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | blockquote | link image | preview fullscreen code removeformat',
 			block_formats: 'Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3; Heading 4=h4',
 			forced_root_block: 'p',
 			convert_urls: false,
@@ -210,6 +213,10 @@
 		border-color: var(--color-border) !important;
 		border-radius: var(--radius-soft) !important;
 		box-shadow: var(--shadow-small);
+	}
+
+	:global(.tox-tinymce-aux) {
+		z-index: 120 !important;
 	}
 
 	:global(.tox .tox-toolbar__primary),

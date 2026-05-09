@@ -74,4 +74,29 @@
 		background: rgba(244, 217, 202, 0.52);
 		color: var(--color-heading);
 	}
+
+	@media (max-width: 860px) {
+		.admin-sidebar {
+			gap: 0.85rem;
+			padding: 0.85rem;
+		}
+
+		h2 {
+			font-size: 1.55rem;
+		}
+
+		nav {
+			display: flex;
+			gap: 0.45rem;
+			overflow-x: auto;
+			padding-bottom: 0.15rem;
+			scrollbar-width: thin;
+		}
+
+		a {
+			flex: 0 0 auto;
+			padding: 0.55rem 0.7rem;
+			white-space: nowrap;
+		}
+	}
 </style>

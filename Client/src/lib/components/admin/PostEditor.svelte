@@ -12,6 +12,7 @@
 	export let canManageImages = false;
 	export let submitLabel = 'Spara';
 	export let onSave: (request: BlogPostWriteRequest, files: File[]) => void | Promise<void> = () => {};
+	export let onCancel: () => void = () => {};
 	export let onDeleteImage: (image: BloggImageDto) => void | Promise<void> = () => {};
 	export let onMakeCover: (image: BloggImageDto) => void | Promise<void> = () => {};
 	export let uploadEditorImage: ((file: File) => Promise<string>) | undefined;
@@ -33,6 +34,13 @@
 		launchDateLocal = toLocalDateTimeInput(post.launchDate);
 		hidden = post.hidden;
 		isArchived = post.isArchived;
+	} else {
+		title = '';
+		author = '';
+		content = '';
+		launchDateLocal = '';
+		hidden = false;
+		isArchived = false;
 	}
 	$: if ((post?.id ?? 'new') !== currentPostKey) {
 		currentPostKey = post?.id ?? 'new';
@@ -136,6 +144,7 @@
 	</div>
 
 	<div class="form-actions">
+		<Button type="button" variant="ghost" disabled={isSaving || isUploading} on:click={onCancel}>Avbryt</Button>
 		<Button type="submit" disabled={isSaving || isUploading}>{isSaving || isUploading ? 'Sparar...' : submitLabel}</Button>
 	</div>
 </form>
@@ -242,6 +251,15 @@
 
 	.form-actions {
 		display: flex;
+		flex-wrap: wrap;
 		justify-content: flex-end;
+		gap: 0.65rem;
+	}
+
+	@media (max-width: 640px) {
+		.form-actions {
+			display: grid;
+			grid-template-columns: 1fr;
+		}
 	}
 </style>

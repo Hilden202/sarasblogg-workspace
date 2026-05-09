@@ -74,10 +74,6 @@
 	.about-page__prose :global(li),
 	.about-page__prose :global(span) {
 		max-width: 62ch;
-		text-align: left !important;
-		font-family: inherit !important;
-		font-size: inherit !important;
-		line-height: inherit !important;
 	}
 
 	.about-page__prose :global(h1),
@@ -87,11 +83,6 @@
 	.about-page__prose :global(h5),
 	.about-page__prose :global(h6) {
 		max-width: 16ch;
-		text-align: left !important;
-	}
-
-	.about-page__prose :global([style*='text-align']) {
-		text-align: left !important;
 	}
 
 	.about-page__prose :global(img) {
