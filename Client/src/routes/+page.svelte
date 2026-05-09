@@ -36,23 +36,12 @@
 	</div>
 </section>
 
-<section class="section newsletter-band">
-	<div class="container newsletter-band__inner">
-		<div>
-			<p class="eyebrow">Nyhetsbrev</p>
-			<h2>Få nya inlägg när de publiceras</h2>
-			<p>En stillsam påminnelse i inkorgen när nya texter finns att läsa.</p>
-		</div>
-		<form on:submit|preventDefault>
-			<input type="email" placeholder="Din e-postadress" aria-label="Din e-postadress" />
-			<Button type="submit">Anmäl</Button>
-		</form>
-	</div>
-</section>
-
 <style>
-	.about-preview__grid,
-	.newsletter-band__inner {
+	.about-preview {
+		padding-bottom: clamp(3.5rem, 7vw, 5.5rem);
+	}
+
+	.about-preview__grid {
 		display: grid;
 		grid-template-columns: 0.95fr 1.05fr;
 		gap: clamp(1.5rem, 5vw, 4rem);
@@ -91,8 +80,7 @@
 		object-position: center;
 	}
 
-	.about-preview h2,
-	.newsletter-band h2 {
+	.about-preview h2 {
 		margin: 0.25rem 0 1rem;
 		color: var(--color-heading);
 		font-family: var(--font-serif);
@@ -100,43 +88,14 @@
 		line-height: 1;
 	}
 
-	.about-preview p:not(.eyebrow),
-	.newsletter-band p:not(.eyebrow) {
+	.about-preview p:not(.eyebrow) {
 		max-width: 36rem;
 		margin: 0 0 1.25rem;
 		color: var(--color-muted);
 	}
 
-	.newsletter-band {
-		padding-top: 1rem;
-	}
-
-	.newsletter-band__inner {
-		padding: clamp(1.5rem, 4vw, 2.4rem);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-card);
-		background: rgba(255, 250, 244, 0.78);
-		box-shadow: var(--shadow-small);
-	}
-
-	.newsletter-band form {
-		display: grid;
-		grid-template-columns: 1fr auto;
-		gap: 0.75rem;
-	}
-
-	.newsletter-band input {
-		min-width: 0;
-		border: 1px solid var(--color-border);
-		border-radius: 999px;
-		background: #fff;
-		padding: 0.85rem 1rem;
-	}
-
 	@media (max-width: 760px) {
-		.about-preview__grid,
-		.newsletter-band__inner,
-		.newsletter-band form {
+		.about-preview__grid {
 			grid-template-columns: 1fr;
 		}
 	}

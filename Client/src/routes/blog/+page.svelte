@@ -18,9 +18,6 @@
 				src="/images/logo/sarablogglogga.png"
 				alt="SarasBlogg textlogga"
 			/>
-			<p class="eyebrow">Blogg</p>
-			<h1>Texter från hjärtat</h1>
-			<p>Reflektioner, personliga berättelser och mjuka påminnelser för vardagen.</p>
 			<div class="filters">
 				<Button href="/blog" variant={!data.archive ? 'primary' : 'secondary'}>Aktuellt</Button>
 				<Button href="/blog?archive=true" variant={data.archive ? 'primary' : 'secondary'}>Arkiv</Button>
@@ -59,19 +56,6 @@
 		max-height: 12.5rem;
 		margin: 0 auto 1rem;
 		object-fit: contain;
-	}
-
-	h1 {
-		margin: 0.25rem 0 1rem;
-		color: var(--color-heading);
-		font-family: var(--font-serif);
-		font-size: clamp(3rem, 7vw, 5.5rem);
-		line-height: 0.95;
-	}
-
-	header > p:not(.eyebrow) {
-		margin: 0 auto;
-		color: var(--color-muted);
 	}
 
 	.filters,
