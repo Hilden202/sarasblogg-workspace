@@ -6,9 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using SarasBloggAPI.Data;
 using SarasBloggAPI.DTOs.Blogg;
 using System.Globalization;
-using System.Net;
 using System.Text;
-using System.Text.RegularExpressions;
 using BloggModel = SarasBloggAPI.Models.Blogg;
 
 
@@ -219,13 +217,18 @@ namespace SarasBloggAPI.Controllers.Blogg
 
         private static BlogPostSummaryDto ToSummaryDto(BloggModel blogg)
         {
+            var isTitleGenerated = IsTitleGenerated(blogg);
+
             return new BlogPostSummaryDto
             {
                 Id = blogg.Id,
                 Slug = CreateSlug(blogg),
                 Title = blogg.Title ?? string.Empty,
+                ShowTitle = ShouldShowTitle(blogg, isTitleGenerated),
+                IsTitleGenerated = isTitleGenerated,
                 Author = blogg.Author,
                 Excerpt = CreateExcerpt(blogg.Content),
+                ReadingTimeMinutes = BlogTextHelper.CalculateReadingTimeMinutes(blogg.Content),
                 PublishedAtUtc = blogg.LaunchDate,
                 IsArchived = blogg.IsArchived,
                 ViewCount = blogg.ViewCount,
@@ -236,14 +239,18 @@ namespace SarasBloggAPI.Controllers.Blogg
         private static BlogPostDetailDto ToDetailDto(BloggModel blogg)
         {
             var images = GetOrderedImages(blogg).ToList();
+            var isTitleGenerated = IsTitleGenerated(blogg);
 
             return new BlogPostDetailDto
             {
                 Id = blogg.Id,
                 Slug = CreateSlug(blogg),
                 Title = blogg.Title ?? string.Empty,
+                ShowTitle = ShouldShowTitle(blogg, isTitleGenerated),
+                IsTitleGenerated = isTitleGenerated,
                 Content = blogg.Content,
                 Author = blogg.Author,
+                ReadingTimeMinutes = BlogTextHelper.CalculateReadingTimeMinutes(blogg.Content),
                 PublishedAtUtc = blogg.LaunchDate,
                 IsArchived = blogg.IsArchived,
                 ViewCount = blogg.ViewCount,
@@ -323,17 +330,21 @@ namespace SarasBloggAPI.Controllers.Blogg
 
         private static string CreateExcerpt(string? html, int maxLength = 180)
         {
-            if (string.IsNullOrWhiteSpace(html))
+            var text = BlogTextHelper.StripHtml(html);
+            if (string.IsNullOrWhiteSpace(text))
                 return string.Empty;
-
-            var text = Regex.Replace(html, "<.*?>", " ");
-            text = WebUtility.HtmlDecode(text);
-            text = Regex.Replace(text, "\\s+", " ").Trim();
 
             if (text.Length <= maxLength)
                 return text;
 
             return text[..maxLength].TrimEnd() + "...";
         }
+
+        private static bool IsTitleGenerated(BloggModel blogg)
+            => blogg.IsTitleGenerated ??
+               BlogTextHelper.IsTitleGeneratedFromContent(blogg.Title, blogg.Content);
+
+        private static bool ShouldShowTitle(BloggModel blogg, bool isTitleGenerated)
+            => blogg.ShowTitle && !isTitleGenerated && !string.IsNullOrWhiteSpace(blogg.Title);
     }
 }

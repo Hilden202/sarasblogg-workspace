@@ -280,8 +280,14 @@ namespace SarasBloggAPI.Migrations
                     b.Property<bool>("IsArchived")
                         .HasColumnType("boolean");
 
+                    b.Property<bool?>("IsTitleGenerated")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTime>("LaunchDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("ShowTitle")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Title")
                         .HasColumnType("text");

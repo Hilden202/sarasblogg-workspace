@@ -9,8 +9,11 @@ export type BlogPostSummaryDto = {
 	id: number;
 	slug: string;
 	title: string;
+	showTitle: boolean;
+	isTitleGenerated: boolean;
 	author: string;
 	excerpt: string;
+	readingTimeMinutes: number;
 	publishedAtUtc: string;
 	isArchived: boolean;
 	viewCount: number;
@@ -21,8 +24,11 @@ export type BlogPostDetailDto = {
 	id: number;
 	slug: string;
 	title: string;
+	showTitle: boolean;
+	isTitleGenerated: boolean;
 	content: string;
 	author: string;
+	readingTimeMinutes: number;
 	publishedAtUtc: string;
 	isArchived: boolean;
 	viewCount: number;
@@ -40,6 +46,7 @@ export type BlogPostListDto = {
 
 export type BlogPostWriteRequest = {
 	title?: string | null;
+	showTitle?: boolean | null;
 	content: string;
 	author?: string | null;
 	launchDateLocal?: string | null;
@@ -50,6 +57,8 @@ export type BlogPostWriteRequest = {
 export type AdminBlogPostDto = {
 	id: number;
 	title?: string | null;
+	showTitle?: boolean;
+	isTitleGenerated?: boolean | null;
 	content: string;
 	author: string;
 	images?: BloggImageDto[] | null;

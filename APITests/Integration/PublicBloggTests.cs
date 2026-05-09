@@ -107,6 +107,42 @@ public class PublicBloggTests : IClassFixture<CustomWebApplicationFactory<Progra
     }
 
     [Fact]
+    public async Task Get_PublicBloggs_UsesFullContentReadingTimeAndTitleMetadata()
+    {
+        await ResetBlogDataAsync();
+
+        var content = "<p>" + string.Join(" ", Enumerable.Range(1, 260).Select(i => $"ord{i}")) + "</p>";
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MyDbContext>();
+            db.Bloggs.Add(new Blogg
+            {
+                Title = "Long public",
+                ShowTitle = true,
+                IsTitleGenerated = false,
+                Content = content,
+                Author = "IntegrationTest",
+                LaunchDate = DateTime.UtcNow.AddHours(-1),
+                IsArchived = false,
+                Hidden = false
+            });
+            await db.SaveChangesAsync();
+        }
+
+        var list = await _client.GetFromJsonAsync<BlogPostListDto>("/api/blogg/public?page=1&pageSize=10", JsonOptions);
+        var item = Assert.Single(list!.Items);
+        var detail = await _client.GetFromJsonAsync<BlogPostDetailDto>($"/api/blogg/public/{item.Slug}", JsonOptions);
+
+        Assert.Equal(2, item.ReadingTimeMinutes);
+        Assert.True(item.ShowTitle);
+        Assert.False(item.IsTitleGenerated);
+        Assert.NotNull(detail);
+        Assert.Equal(item.ReadingTimeMinutes, detail!.ReadingTimeMinutes);
+        Assert.True(detail.ShowTitle);
+        Assert.False(detail.IsTitleGenerated);
+    }
+
+    [Fact]
     public async Task Get_PublicBloggByIdOrSlug_Returns404ForHiddenOrFuturePosts()
     {
         await ResetBlogDataAsync();

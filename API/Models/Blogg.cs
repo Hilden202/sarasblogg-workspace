@@ -10,6 +10,8 @@ namespace SarasBloggAPI.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public string? Title { get; set; } = "";
+        public bool ShowTitle { get; set; } = false;
+        public bool? IsTitleGenerated { get; set; }
         public string Content { get; set; } = "";
         public string Author { get; set; } = "";
         public ICollection<BloggImage>? Images { get; set; }

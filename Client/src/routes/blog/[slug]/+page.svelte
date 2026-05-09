@@ -4,11 +4,13 @@
 	import CommentSection from '$lib/components/comments/CommentSection.svelte';
 
 	export let data;
+
+	$: pageTitle = data.post.title || 'Blogginlägg';
 </script>
 
 <svelte:head>
-	<title>{data.post.title} | SarasBlogg</title>
-	<meta name="description" content={data.post.title} />
+	<title>{pageTitle} | SarasBlogg</title>
+	<meta name="description" content={pageTitle} />
 </svelte:head>
 
 <BlogPost post={data.post} />

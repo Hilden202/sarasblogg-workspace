@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { BlogPostDetailDto } from '$lib/types/blog';
-	import { formatDate, readingMinutes } from '$lib/utils/dates';
+	import { formatDate } from '$lib/utils/dates';
 	import { fallbackBlogImage, resolveMediaUrl } from '$lib/utils/routes';
 
 	export let post: BlogPostDetailDto;
@@ -8,12 +8,16 @@
 	let activeIndex = 0;
 	let lightboxOpen = false;
 
-	$: gallery = (post.images?.length ? post.images : post.coverImage ? [post.coverImage] : []).map((image, index) => ({
-		id: image.id,
-		src: resolveMediaUrl(image.filePath),
-		alt: `${post.title || 'Bloggbild'} ${index + 1}`
-	}));
+	$: gallery = (post.images?.length ? post.images : post.coverImage ? [post.coverImage] : []).map(
+		(image, index) => ({
+			id: image.id,
+			src: resolveMediaUrl(image.filePath),
+			alt: `${post.title || 'Bloggbild'} ${index + 1}`
+		})
+	);
 	$: images = gallery.length > 0 ? gallery : [{ id: 0, src: fallbackBlogImage(post.id), alt: '' }];
+	$: showTitle = post.showTitle && post.title.trim().length > 0;
+	$: readingTime = post.readingTimeMinutes || 1;
 	$: if (activeIndex >= images.length) activeIndex = 0;
 
 	function previousImage() {
@@ -40,23 +44,40 @@
 <article class="post">
 	<header>
 		<p class="eyebrow">{post.author || 'SarasBlogg'}</p>
-		<h1>{post.title || 'Utan titel'}</h1>
+		{#if showTitle}
+			<h1>{post.title}</h1>
+		{/if}
 		<div class="post__meta">
 			<span>{formatDate(post.publishedAtUtc)}</span>
-			<span>{readingMinutes(post.content)} min läsning</span>
+			<span>{readingTime} min läsning</span>
 			<span>{post.viewCount} visningar</span>
 		</div>
 	</header>
 
 	<section class="gallery" aria-label="Inläggsbilder">
 		<div class="gallery__frame">
-			<button type="button" class="gallery__open" aria-label="Visa bilden större" on:click={() => (lightboxOpen = true)}>
+			<button
+				type="button"
+				class="gallery__open"
+				aria-label="Visa bilden större"
+				on:click={() => (lightboxOpen = true)}
+			>
 				<img class="post__cover-blur" src={images[activeIndex].src} alt="" aria-hidden="true" />
 				<img class="post__cover" src={images[activeIndex].src} alt={images[activeIndex].alt} />
 			</button>
 			{#if images.length > 1}
-				<button type="button" class="gallery__nav gallery__nav--prev" aria-label="Föregående bild" on:click|stopPropagation={previousImage}>‹</button>
-				<button type="button" class="gallery__nav gallery__nav--next" aria-label="Nästa bild" on:click|stopPropagation={nextImage}>›</button>
+				<button
+					type="button"
+					class="gallery__nav gallery__nav--prev"
+					aria-label="Föregående bild"
+					on:click|stopPropagation={previousImage}>‹</button
+				>
+				<button
+					type="button"
+					class="gallery__nav gallery__nav--next"
+					aria-label="Nästa bild"
+					on:click|stopPropagation={nextImage}>›</button
+				>
 			{/if}
 		</div>
 		{#if images.length > 1}
@@ -77,13 +98,25 @@
 	</section>
 
 	<div class="post__content prose">
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html post.content}
 	</div>
 </article>
 
 {#if lightboxOpen}
-	<div class="lightbox" role="dialog" aria-modal="true" aria-label="Förstorad bloggbild" tabindex="-1">
-		<button type="button" class="lightbox__backdrop" aria-label="Stäng bild" on:click={closeLightbox}></button>
+	<div
+		class="lightbox"
+		role="dialog"
+		aria-modal="true"
+		aria-label="Förstorad bloggbild"
+		tabindex="-1"
+	>
+		<button
+			type="button"
+			class="lightbox__backdrop"
+			aria-label="Stäng bild"
+			on:click={closeLightbox}
+		></button>
 		<div class="lightbox__content">
 			<button type="button" aria-label="Stäng bild" on:click={closeLightbox}>×</button>
 			<img src={images[activeIndex].src} alt={images[activeIndex].alt} />

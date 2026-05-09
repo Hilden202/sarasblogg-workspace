@@ -29,6 +29,9 @@ namespace SarasBloggAPI.Controllers.Comment
         [HttpPost]
         public async Task<ActionResult<ForbiddenWord>> Create([FromBody] ForbiddenWord word)
         {
+            if (word == null || string.IsNullOrWhiteSpace(word.WordPattern))
+                return BadRequest("Ord eller mönster saknas.");
+
             var created = await _manager.CreateAsync(word);
             return CreatedAtAction(nameof(GetAll), new { id = created.Id }, created);
         }

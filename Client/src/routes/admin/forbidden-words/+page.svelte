@@ -21,9 +21,9 @@
 			await createForbiddenWord(getClientFetch(), wordPattern.trim());
 			wordPattern = '';
 			await invalidateAll();
-			toasts.success('Mönster lades till.');
+			toasts.success('Ord/mönster lades till.');
 		} catch (error) {
-			toasts.error(getFriendlyApiMessage(error, 'Monstret kunde inte läggas till.'));
+			toasts.error(getFriendlyApiMessage(error, 'Ord/mönster kunde inte läggas till.'));
 		}
 	}
 
@@ -60,9 +60,9 @@
 		<p class="status-text status-text--error">{data.error}</p>
 	{/if}
 
-	<FormSection title="Lägg till mönster" text="API:t äger själva censur- och säkerhetsreglerna.">
+	<FormSection title="Lägg till ord" text="API:t normaliserar nya ord och bevarar färdiga mönster.">
 		<form class="word-form" on:submit|preventDefault={add}>
-			<FormField label="Regex eller ordmönster" id="word-pattern">
+			<FormField label="Ord eller färdigt mönster" id="word-pattern">
 				<input id="word-pattern" bind:value={wordPattern} />
 			</FormField>
 			<Button type="submit">Lägg till</Button>

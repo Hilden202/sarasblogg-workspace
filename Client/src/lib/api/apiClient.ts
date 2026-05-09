@@ -87,22 +87,69 @@ export async function apiRequest<T>(
 	return payload as T;
 }
 
+export async function apiDownload(
+	fetchFn: ApiFetch,
+	path: string,
+	options: ApiRequestOptions = {}
+): Promise<Response> {
+	const init = { ...options } as RequestInit & { emptyResponse?: boolean };
+	delete init.body;
+	delete init.emptyResponse;
+
+	const headers = new Headers(options.headers);
+	if (!headers.has('Accept')) headers.set('Accept', '*/*');
+
+	const response = await fetchFn(resolveApiUrl(path), {
+		...init,
+		credentials: init.credentials ?? 'include',
+		headers,
+		method: init.method ?? 'GET'
+	});
+
+	if (!response.ok) {
+		const payload = await readResponsePayload(response);
+		throw createApiError(response, payload);
+	}
+
+	return response;
+}
+
 export function apiGet<T>(fetchFn: ApiFetch, path: string, options: ApiRequestOptions = {}) {
 	return apiRequest<T>(fetchFn, path, { ...options, method: 'GET' });
 }
 
-export function apiPost<T>(fetchFn: ApiFetch, path: string, body?: ApiRequestOptions['body'], options: ApiRequestOptions = {}) {
+export function apiPost<T>(
+	fetchFn: ApiFetch,
+	path: string,
+	body?: ApiRequestOptions['body'],
+	options: ApiRequestOptions = {}
+) {
 	return apiRequest<T>(fetchFn, path, { ...options, method: 'POST', body });
 }
 
-export function apiPut<T>(fetchFn: ApiFetch, path: string, body?: ApiRequestOptions['body'], options: ApiRequestOptions = {}) {
+export function apiPut<T>(
+	fetchFn: ApiFetch,
+	path: string,
+	body?: ApiRequestOptions['body'],
+	options: ApiRequestOptions = {}
+) {
 	return apiRequest<T>(fetchFn, path, { ...options, method: 'PUT', body });
 }
 
-export function apiPatch<T>(fetchFn: ApiFetch, path: string, body?: ApiRequestOptions['body'], options: ApiRequestOptions = {}) {
+export function apiPatch<T>(
+	fetchFn: ApiFetch,
+	path: string,
+	body?: ApiRequestOptions['body'],
+	options: ApiRequestOptions = {}
+) {
 	return apiRequest<T>(fetchFn, path, { ...options, method: 'PATCH', body });
 }
 
-export function apiDelete<T>(fetchFn: ApiFetch, path: string, body?: ApiRequestOptions['body'], options: ApiRequestOptions = {}) {
+export function apiDelete<T>(
+	fetchFn: ApiFetch,
+	path: string,
+	body?: ApiRequestOptions['body'],
+	options: ApiRequestOptions = {}
+) {
 	return apiRequest<T>(fetchFn, path, { ...options, method: 'DELETE', body });
 }

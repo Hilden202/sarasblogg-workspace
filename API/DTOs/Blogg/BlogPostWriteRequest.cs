@@ -7,6 +7,7 @@ namespace SarasBloggAPI.DTOs.Blogg
     public class BlogPostWriteRequest
     {
         public string? Title { get; set; }
+        public bool? ShowTitle { get; set; }
 
         [Required]
         public string? Content { get; set; }
