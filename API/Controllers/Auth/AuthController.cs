@@ -105,12 +105,16 @@ public class AuthController : ControllerBase
         if (callbackPath.Contains('\\') || callbackPath.Contains('?') || callbackPath.Contains('#'))
             return false;
 
-        if (Uri.TryCreate(callbackPath, UriKind.Absolute, out _))
-            return false;
-
-        var decodedPath = Uri.UnescapeDataString(callbackPath);
-        var segments = decodedPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var segments = callbackPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
         return !segments.Any(segment => segment == "..");
+    }
+
+    private static string ResolveCallbackPath(string? callbackPath)
+    {
+        if (string.IsNullOrWhiteSpace(callbackPath))
+            return DefaultExternalLoginCallbackPath;
+
+        return Uri.UnescapeDataString(callbackPath);
     }
 
     private static string BuildFrontendCallbackUrl(
@@ -773,9 +777,7 @@ public class AuthController : ControllerBase
         if (string.IsNullOrWhiteSpace(returnUrl))
             return BadRequest("Missing returnUrl.");
 
-        callbackPath = string.IsNullOrWhiteSpace(callbackPath)
-            ? DefaultExternalLoginCallbackPath
-            : callbackPath;
+        callbackPath = ResolveCallbackPath(callbackPath);
 
         if (!IsSafeCallbackPath(callbackPath))
             return BadRequest("Invalid callbackPath.");
@@ -838,9 +840,7 @@ public class AuthController : ControllerBase
             return BadRequest("Missing returnUrl.");
         }
 
-        callbackPath = string.IsNullOrWhiteSpace(callbackPath)
-            ? DefaultExternalLoginCallbackPath
-            : callbackPath;
+        callbackPath = ResolveCallbackPath(callbackPath);
 
         if (!IsSafeCallbackPath(callbackPath))
         {
