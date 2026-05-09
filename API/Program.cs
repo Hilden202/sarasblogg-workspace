@@ -74,7 +74,8 @@ namespace SarasBloggAPI
                 {
                     p.WithOrigins(allowedOrigins)
                         .AllowAnyHeader()
-                        .AllowAnyMethod();
+                        .AllowAnyMethod()
+                        .AllowCredentials();
                 });
             });
 
