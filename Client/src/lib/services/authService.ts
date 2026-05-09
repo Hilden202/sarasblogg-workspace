@@ -34,7 +34,11 @@ export async function getCurrentUser(fetchFn: ApiFetch): Promise<AuthSessionDto 
 	try {
 		return await apiGet<AuthSessionDto>(fetchFn, '/api/users/me');
 	} catch (error) {
-		if (error instanceof Error && 'status' in error && (error as { status: number }).status === 401) {
+		if (
+			error instanceof Error &&
+			'status' in error &&
+			(error as { status: number }).status === 401
+		) {
 			return null;
 		}
 		throw error;
@@ -54,7 +58,10 @@ export async function login(
 	});
 }
 
-export async function register(fetchFn: ApiFetch, request: RegisterRequest): Promise<BasicResultDto> {
+export async function register(
+	fetchFn: ApiFetch,
+	request: RegisterRequest
+): Promise<BasicResultDto> {
 	return apiPost<BasicResultDto>(fetchFn, '/api/auth/register', request);
 }
 
@@ -62,14 +69,26 @@ export async function logout(fetchFn: ApiFetch): Promise<void> {
 	await apiPost<void>(fetchFn, '/api/auth/logout', undefined, { emptyResponse: true });
 }
 
-export async function exchangeExternalLoginCode(fetchFn: ApiFetch, code: string): Promise<LoginResponse> {
+export async function exchangeExternalLoginCode(
+	fetchFn: ApiFetch,
+	code: string
+): Promise<LoginResponse> {
 	return apiPost<LoginResponse>(fetchFn, '/api/auth/external/exchange', { code });
 }
 
-export function getGoogleLoginUrl(returnUrl: string, localReturnUrl = '/') {
+export function getGoogleLoginUrl(
+	returnUrl: string,
+	localReturnUrl = '/',
+	callbackPath = '/auth/external/callback/'
+) {
 	const url = new URL(`${getExternalApiBaseUrl()}/api/auth/external/google/start`);
+
 	url.searchParams.set('returnUrl', returnUrl);
-	url.searchParams.set('callbackPath', '/auth/external/callback/');
-	if (localReturnUrl) url.searchParams.set('localReturnUrl', localReturnUrl);
+	url.searchParams.set('callbackPath', callbackPath);
+
+	if (localReturnUrl) {
+		url.searchParams.set('localReturnUrl', localReturnUrl);
+	}
+
 	return url.toString();
 }

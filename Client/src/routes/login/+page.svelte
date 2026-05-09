@@ -6,10 +6,16 @@
 	import FormField from '$lib/components/forms/FormField.svelte';
 	import { useClientFetch } from '$lib/api/clientFetch';
 	import { getFriendlyApiMessage } from '$lib/api/apiErrors';
-	import { getCurrentUser, getGoogleLoginUrl, login, mapToFrontendUser } from '$lib/services/authService';
+	import {
+		getCurrentUser,
+		getGoogleLoginUrl,
+		login,
+		mapToFrontendUser
+	} from '$lib/services/authService';
 	import { auth } from '$lib/stores/authStore';
 	import { toasts } from '$lib/stores/toastStore';
 	import { routes } from '$lib/utils/routes';
+	import { base } from '$app/paths';
 
 	const getClientFetch = useClientFetch();
 
@@ -40,7 +46,11 @@
 	}
 
 	function loginWithGoogle() {
-		window.location.href = getGoogleLoginUrl(window.location.origin, returnUrl);
+		window.location.href = getGoogleLoginUrl(
+			window.location.origin,
+			returnUrl,
+			`${base}/auth/external/callback`
+		);
 	}
 </script>
 
@@ -48,14 +58,23 @@
 	<title>Logga in | SarasBlogg</title>
 </svelte:head>
 
-<AuthPanel title="Välkommen tillbaka" text="Logga in för att kommentera, hantera din profil och komma åt adminytor när du har behörighet.">
+<AuthPanel
+	title="Välkommen tillbaka"
+	text="Logga in för att kommentera, hantera din profil och komma åt adminytor när du har behörighet."
+>
 	<form class="form-grid" on:submit|preventDefault={handleLogin}>
 		<FormField label="E-post eller användarnamn" id="login-identity">
 			<input id="login-identity" bind:value={userNameOrEmail} autocomplete="username" required />
 		</FormField>
 
 		<FormField label="Lösenord" id="login-password">
-			<input id="login-password" type="password" bind:value={password} autocomplete="current-password" required />
+			<input
+				id="login-password"
+				type="password"
+				bind:value={password}
+				autocomplete="current-password"
+				required
+			/>
 		</FormField>
 
 		<label class="check"><input type="checkbox" bind:checked={rememberMe} /> Kom ihåg mig</label>
