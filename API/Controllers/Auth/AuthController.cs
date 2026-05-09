@@ -43,6 +43,21 @@ public class AuthController : ControllerBase
         _logger = logger;
         _cache = cache;
     }
+    
+    private string GetFrontendBaseUrl(bool useSvelte = false)
+    {
+        if (useSvelte)
+        {
+            return _cfg["Frontend:SvelteBaseUrl"]
+                   ?? _cfg["Frontend:BaseUrl"]
+                   ?? throw new InvalidOperationException(
+                       "Frontend base URL is not configured");
+        }
+
+        return _cfg["Frontend:BaseUrl"]
+               ?? throw new InvalidOperationException(
+                   "Frontend:BaseUrl is not configured");
+    }
 
     // ---------- REGISTER ----------
     [AllowAnonymous]
@@ -118,8 +133,7 @@ public class AuthController : ControllerBase
         var codeBytes = Encoding.UTF8.GetBytes(code);
         var codeEncoded = WebEncoders.Base64UrlEncode(codeBytes);
 
-        var frontendBase = _cfg["Frontend:BaseUrl"]
-                           ?? throw new InvalidOperationException("Frontend:BaseUrl is not configured");
+        var frontendBase = GetFrontendBaseUrl();
 
         var frontendUri = new Uri(frontendBase);
         var frontendOrigin = frontendUri.GetLeftPart(UriPartial.Authority);
@@ -302,8 +316,7 @@ public class AuthController : ControllerBase
         var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         var codeEncoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
-        var frontendBase = _cfg["Frontend:BaseUrl"]
-                           ?? throw new InvalidOperationException("Frontend:BaseUrl is not configured");
+        var frontendBase = GetFrontendBaseUrl();
 
         var frontendUri = new Uri(frontendBase);
         var frontendOrigin = frontendUri.GetLeftPart(UriPartial.Authority);
@@ -345,8 +358,7 @@ public class AuthController : ControllerBase
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
         var tokenEncoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
-        var frontendBase = _cfg["Frontend:BaseUrl"]
-                           ?? throw new InvalidOperationException("Frontend:BaseUrl is not configured");
+        var frontendBase = GetFrontendBaseUrl();
 
         var frontendUri = new Uri(frontendBase);
         var frontendOrigin = frontendUri.GetLeftPart(UriPartial.Authority);
@@ -536,8 +548,7 @@ public class AuthController : ControllerBase
         var token = await _userManager.GenerateChangeEmailTokenAsync(user, dto.NewEmail);
         var codeEncoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
-        var frontendBase = _cfg["Frontend:BaseUrl"]
-                           ?? throw new InvalidOperationException("Frontend:BaseUrl is not configured");
+        var frontendBase = GetFrontendBaseUrl();
 
         var frontendUri = new Uri(frontendBase);
         var frontendOrigin = frontendUri.GetLeftPart(UriPartial.Authority);
@@ -613,8 +624,7 @@ public class AuthController : ControllerBase
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
         var tokenEncoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
-        var frontendBase = _cfg["Frontend:BaseUrl"]
-                           ?? throw new InvalidOperationException("Frontend:BaseUrl is not configured");
+        var frontendBase = GetFrontendBaseUrl();
 
         var frontendUri = new Uri(frontendBase);
         var frontendOrigin = frontendUri.GetLeftPart(UriPartial.Authority);
@@ -841,8 +851,10 @@ public class AuthController : ControllerBase
             return Forbid();
         }
 
+        var svelteBase = GetFrontendBaseUrl(useSvelte: true);
+
         var frontendCallbackUrl =
-            $"{returnUrl.TrimEnd('/')}/Identity/Account/ExternalLoginCallback?code={loginCode}";
+            $"{svelteBase.TrimEnd('/')}/Identity/Account/ExternalLoginCallback?code={loginCode}";
 
         if (!string.IsNullOrWhiteSpace(localReturnUrl))
             frontendCallbackUrl += $"&returnUrl={Uri.EscapeDataString(localReturnUrl)}";
