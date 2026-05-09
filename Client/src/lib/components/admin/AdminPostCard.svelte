@@ -12,20 +12,34 @@
 	export let onToggleHidden: (post: AdminBlogPostDto) => void | Promise<void> = () => {};
 	export let onDelete: (post: AdminBlogPostDto) => void | Promise<void> = () => {};
 
-	$: cover = getCoverImage(post);
+	type AdminPostWithCover = AdminBlogPostDto & {
+		coverImage?: BloggImageDto | null;
+		firstImage?: BloggImageDto | null;
+	};
 
-	function getCoverImage(item: AdminBlogPostDto): BloggImageDto | undefined {
-		return [...(item.images ?? [])].sort((a, b) => a.order - b.order || a.id - b.id)[0];
+	const fallbackImage = resolveMediaUrl('img/blogg/default.png');
+
+	$: image = getImageSource(post);
+
+	function getImageSource(item: AdminPostWithCover) {
+		const cover =
+			item.coverImage ??
+			item.firstImage ??
+			[...(item.images ?? [])].sort((a, b) => a.order - b.order || a.id - b.id)[0];
+
+		return cover?.filePath ? resolveMediaUrl(cover.filePath) : fallbackImage;
+	}
+
+	function useFallbackImage(event: Event) {
+		const imageElement = event.currentTarget as HTMLImageElement;
+		if (imageElement.getAttribute('src') === fallbackImage) return;
+		imageElement.src = fallbackImage;
 	}
 </script>
 
 <article class="post-card">
-	<div class="post-card__media" class:post-card__media--empty={!cover}>
-		{#if cover}
-			<img src={resolveMediaUrl(cover.filePath)} alt="" loading="lazy" />
-		{:else}
-			<span>Ingen bild</span>
-		{/if}
+	<div class="post-card__media">
+		<img src={image} alt="" loading="lazy" on:error={useFallbackImage} />
 	</div>
 
 	<div class="post-card__body">
@@ -103,14 +117,6 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-	}
-
-	.post-card__media--empty span {
-		padding: 0.5rem;
-		color: var(--color-muted);
-		font-size: 0.78rem;
-		font-weight: 800;
-		text-align: center;
 	}
 
 	.post-card__body {
