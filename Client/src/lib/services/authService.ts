@@ -69,6 +69,7 @@ export async function exchangeExternalLoginCode(fetchFn: ApiFetch, code: string)
 export function getGoogleLoginUrl(returnUrl: string, localReturnUrl = '/') {
 	const url = new URL(`${getExternalApiBaseUrl()}/api/auth/external/google/start`);
 	url.searchParams.set('returnUrl', returnUrl);
+	url.searchParams.set('frontend', 'svelte');
 	if (localReturnUrl) url.searchParams.set('localReturnUrl', localReturnUrl);
 	return url.toString();
 }

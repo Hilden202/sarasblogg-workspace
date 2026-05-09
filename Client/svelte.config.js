@@ -16,7 +16,7 @@ const config = {
 		},
 
 		prerender: {
-			entries: ['/', '/om-mig', '/kontakt'],
+			entries: ['/', '/om-mig', '/kontakt', '/auth/external/callback'],
 			handleHttpError: 'warn'
 		}
 	}

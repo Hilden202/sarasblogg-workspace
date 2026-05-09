@@ -19,6 +19,7 @@ namespace SarasBloggAPI.Controllers.Auth;
 [Produces("application/json")]
 public class AuthController : ControllerBase
 {
+    private const string SvelteFrontend = "svelte";
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly TokenService _tokenService;
@@ -57,6 +58,52 @@ public class AuthController : ControllerBase
         return _cfg["Frontend:BaseUrl"]
                ?? throw new InvalidOperationException(
                    "Frontend:BaseUrl is not configured");
+    }
+
+    private void AppendApiAccessTokenCookie(string accessToken, DateTime expiresUtc)
+    {
+        Response.Cookies.Append("api_access_token", accessToken, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Path = "/",
+            Expires = expiresUtc
+        });
+    }
+
+    private static string? TryGetOrigin(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value) || !Uri.TryCreate(value, UriKind.Absolute, out var uri))
+            return null;
+
+        return uri.GetLeftPart(UriPartial.Authority).TrimEnd('/');
+    }
+
+    private bool IsAllowedFrontendReturnUrl(string returnUrl)
+    {
+        var returnOrigin = TryGetOrigin(returnUrl);
+        if (string.IsNullOrWhiteSpace(returnOrigin))
+            return false;
+
+        var csv = _cfg["Cors:AllowedOrigins"];
+
+        var allowedOrigins = string.IsNullOrWhiteSpace(csv)
+            ? Array.Empty<string>()
+            : csv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        var configuredOrigins = new[]
+        {
+            TryGetOrigin(_cfg["Frontend:BaseUrl"]),
+            TryGetOrigin(_cfg["Frontend:SvelteBaseUrl"])
+        };
+
+        var allowed = allowedOrigins
+            .Concat(configuredOrigins.OfType<string>())
+            .Select(origin => origin!.TrimEnd('/'))
+            .Distinct(StringComparer.OrdinalIgnoreCase);
+
+        return allowed.Any(origin => string.Equals(returnOrigin, origin, StringComparison.OrdinalIgnoreCase));
     }
 
     // ---------- REGISTER ----------
@@ -204,14 +251,7 @@ public class AuthController : ControllerBase
         // Lagrar access token i en HttpOnly-cookie för säker klient-autentisering.
         // Secure + SameSite=None krävs för cross-site-scenarion (t.ex. separat frontend).
         // Token är inte åtkomlig via JavaScript och följer samma livslängd som JWT-expiration.
-        Response.Cookies.Append("api_access_token", access, new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.None,
-            Path = "/",
-            Expires = accessExp
-        });
+        AppendApiAccessTokenCookie(access, accessExp);
         
         return new LoginResponse(access, accessExp, refresh, refreshExp);
     }
@@ -702,7 +742,8 @@ public class AuthController : ControllerBase
     [HttpGet("external/google/start")]
     public async Task<IActionResult> GoogleStart(
         [FromQuery] string? returnUrl = null,
-        [FromQuery] string? localReturnUrl = null)
+        [FromQuery] string? localReturnUrl = null,
+        [FromQuery] string? frontend = null)
     {
         if (string.IsNullOrWhiteSpace(returnUrl))
             return BadRequest("Missing returnUrl.");
@@ -726,6 +767,8 @@ public class AuthController : ControllerBase
         props.Items["returnUrl"] = returnUrl;
         if (!string.IsNullOrWhiteSpace(localReturnUrl))
             props.Items["localReturnUrl"] = localReturnUrl;
+        if (string.Equals(frontend, SvelteFrontend, StringComparison.OrdinalIgnoreCase))
+            props.Items["frontend"] = SvelteFrontend;
 
         return Challenge(props, GoogleDefaults.AuthenticationScheme);
     }
@@ -749,11 +792,13 @@ public class AuthController : ControllerBase
 
         string? returnUrl = null;
         string? localReturnUrl = null;
+        string? frontend = null;
 
         if (info.AuthenticationProperties?.Items != null)
         {
             info.AuthenticationProperties.Items.TryGetValue("returnUrl", out returnUrl);
             info.AuthenticationProperties.Items.TryGetValue("localReturnUrl", out localReturnUrl);
+            info.AuthenticationProperties.Items.TryGetValue("frontend", out frontend);
         }
 
         if (string.IsNullOrWhiteSpace(returnUrl))
@@ -767,6 +812,7 @@ public class AuthController : ControllerBase
         var adminEmail = _cfg["AdminUser:Email"];
 
         if (!string.IsNullOrWhiteSpace(adminEmail) &&
+            !string.IsNullOrWhiteSpace(email) &&
             email.Equals(adminEmail, StringComparison.OrdinalIgnoreCase))
         {
             _logger.LogWarning(
@@ -813,6 +859,8 @@ public class AuthController : ControllerBase
         // 🔄 HÄMTA ANVÄNDAREN IGEN
         // så att roles + flags + claims är synkade
         user = await _userManager.FindByIdAsync(user.Id);
+        if (user is null)
+            return BadRequest("User not found.");
 
         // 🔐 Skapa JWT EFTER detta
         var accessToken = await _tokenService.CreateAccessTokenAsync(user);
@@ -835,29 +883,29 @@ public class AuthController : ControllerBase
             TimeSpan.FromMinutes(2)
         );
 
-// 🔐 Validera mot CORS allowed origins (CSV från user-secrets)
-        var csv = _cfg["Cors:AllowedOrigins"];
-
-        var allowedOrigins = string.IsNullOrWhiteSpace(csv)
-            ? Array.Empty<string>()
-            : csv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-        var isAllowed = allowedOrigins.Any(o =>
-            returnUrl.StartsWith(o, StringComparison.OrdinalIgnoreCase));
-
-        if (!isAllowed)
+        if (!IsAllowedFrontendReturnUrl(returnUrl))
         {
             _logger.LogWarning("GoogleCallback: invalid returnUrl {ReturnUrl}", returnUrl);
             return Forbid();
         }
 
-        var svelteBase = GetFrontendBaseUrl(useSvelte: true);
+        var useSvelte = string.Equals(frontend, SvelteFrontend, StringComparison.OrdinalIgnoreCase);
+        var frontendBase = GetFrontendBaseUrl(useSvelte);
+        var callbackPath = useSvelte
+            ? "/auth/external/callback/"
+            : "/Identity/Account/ExternalLoginCallback";
 
-        var frontendCallbackUrl =
-            $"{svelteBase.TrimEnd('/')}/Identity/Account/ExternalLoginCallback?code={loginCode}";
+        var callbackQuery = new Dictionary<string, string?>
+        {
+            ["code"] = loginCode
+        };
 
         if (!string.IsNullOrWhiteSpace(localReturnUrl))
-            frontendCallbackUrl += $"&returnUrl={Uri.EscapeDataString(localReturnUrl)}";
+            callbackQuery["returnUrl"] = localReturnUrl;
+
+        var frontendCallbackUrl = QueryHelpers.AddQueryString(
+            $"{frontendBase.TrimEnd('/')}{callbackPath}",
+            callbackQuery);
 
         return Redirect(frontendCallbackUrl);
     }
@@ -869,16 +917,18 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public IActionResult ExchangeExternalLoginCode([FromBody] ExternalLoginExchangeDto dto)
     {
-        if (string.IsNullOrWhiteSpace(dto.Code))
+        if (dto is null || string.IsNullOrWhiteSpace(dto.Code))
             return BadRequest("Missing code.");
 
         var cacheKey = $"external-login:{dto.Code}";
 
-        if (!_cache.TryGetValue(cacheKey, out ExternalLoginCodeDto? payload))
+        if (!_cache.TryGetValue(cacheKey, out ExternalLoginCodeDto? payload) || payload is null)
             return BadRequest("Invalid or expired code.");
 
         // 🔥 Viktigt: engångskod – ta bort direkt
         _cache.Remove(cacheKey);
+
+        AppendApiAccessTokenCookie(payload.AccessToken, payload.AccessTokenExpiresUtc);
 
         return Ok(new LoginResponse(
             payload.AccessToken,
