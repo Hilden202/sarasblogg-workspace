@@ -2,12 +2,15 @@
 	import { invalidateAll } from '$app/navigation';
 	import AdminTable from '$lib/components/admin/AdminTable.svelte';
 	import { getFriendlyApiMessage } from '$lib/api/apiErrors';
+	import { useClientFetch } from '$lib/api/clientFetch';
 	import { deleteComment } from '$lib/services/commentService';
 	import { confirmDialog } from '$lib/stores/confirmStore';
 	import { toasts } from '$lib/stores/toastStore';
 	import { formatDateTime } from '$lib/utils/dates';
 
 	export let data;
+	const getClientFetch = useClientFetch();
+
 	let deletingId: number | null = null;
 
 	async function remove(id: number) {
@@ -21,7 +24,7 @@
 
 		deletingId = id;
 		try {
-			await deleteComment(fetch, id);
+			await deleteComment(getClientFetch(), id);
 			await invalidateAll();
 			toasts.success('Kommentaren togs bort.');
 		} catch (error) {

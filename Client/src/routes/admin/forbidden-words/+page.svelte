@@ -3,6 +3,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormField from '$lib/components/forms/FormField.svelte';
 	import FormSection from '$lib/components/forms/FormSection.svelte';
+	import { useClientFetch } from '$lib/api/clientFetch';
 	import { getFriendlyApiMessage } from '$lib/api/apiErrors';
 	import { createForbiddenWord, deleteForbiddenWord } from '$lib/services/adminService';
 	import { confirmDialog } from '$lib/stores/confirmStore';
@@ -10,12 +11,14 @@
 
 	export let data;
 
+	const getClientFetch = useClientFetch();
+
 	let wordPattern = '';
 
 	async function add() {
 		if (!wordPattern.trim()) return;
 		try {
-			await createForbiddenWord(fetch, wordPattern.trim());
+			await createForbiddenWord(getClientFetch(), wordPattern.trim());
 			wordPattern = '';
 			await invalidateAll();
 			toasts.success('Mönster lades till.');
@@ -34,7 +37,7 @@
 		if (!confirmed) return;
 
 		try {
-			await deleteForbiddenWord(fetch, id);
+			await deleteForbiddenWord(getClientFetch(), id);
 			await invalidateAll();
 			toasts.success('Mönster togs bort.');
 		} catch (error) {

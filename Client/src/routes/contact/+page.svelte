@@ -1,9 +1,12 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormField from '$lib/components/forms/FormField.svelte';
+	import { useClientFetch } from '$lib/api/clientFetch';
 	import { getFriendlyApiMessage } from '$lib/api/apiErrors';
 	import { sendContactMessage } from '$lib/services/contactService';
 	import { toasts } from '$lib/stores/toastStore';
+
+	const getClientFetch = useClientFetch();
 
 	let name = '';
 	let email = '';
@@ -18,7 +21,7 @@
 		formMessage = '';
 		isSaving = true;
 		try {
-			await sendContactMessage(fetch, { name, email, subject, message });
+			await sendContactMessage(getClientFetch(), { name, email, subject, message });
 			formMessage = 'Tack, ditt meddelande är skickat.';
 			toasts.success(formMessage);
 			name = '';

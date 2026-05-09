@@ -3,6 +3,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormField from '$lib/components/forms/FormField.svelte';
 	import FormSection from '$lib/components/forms/FormSection.svelte';
+	import { useClientFetch } from '$lib/api/clientFetch';
 	import { getFriendlyApiMessage } from '$lib/api/apiErrors';
 	import { createRole, deleteRole } from '$lib/services/adminService';
 	import { confirmDialog } from '$lib/stores/confirmStore';
@@ -10,13 +11,15 @@
 
 	export let data;
 
+	const getClientFetch = useClientFetch();
+
 	let roleName = '';
 	const protectedRoles = new Set(['superadmin', 'admin', 'superuser', 'user']);
 
 	async function add() {
 		if (!roleName.trim()) return;
 		try {
-			await createRole(fetch, roleName.trim());
+			await createRole(getClientFetch(), roleName.trim());
 			roleName = '';
 			await invalidateAll();
 			toasts.success('Rollen skapades.');
@@ -37,7 +40,7 @@
 		if (!confirmed) return;
 
 		try {
-			await deleteRole(fetch, role);
+			await deleteRole(getClientFetch(), role);
 			await invalidateAll();
 			toasts.success('Rollen togs bort.');
 		} catch (error) {

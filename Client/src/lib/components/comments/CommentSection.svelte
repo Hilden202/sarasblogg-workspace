@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormField from '$lib/components/forms/FormField.svelte';
+	import { useClientFetch } from '$lib/api/clientFetch';
 	import { getFriendlyApiMessage } from '$lib/api/apiErrors';
 	import { createComment, deleteComment } from '$lib/services/commentService';
 	import { auth } from '$lib/stores/authStore';
@@ -11,6 +12,8 @@
 
 	export let bloggId: number;
 	export let comments: CommentDto[] = [];
+
+	const getClientFetch = useClientFetch();
 
 	let localComments: CommentDto[] = [];
 	let name = '';
@@ -37,7 +40,7 @@
 
 		isSaving = true;
 		try {
-			const created = await createComment(fetch, {
+			const created = await createComment(getClientFetch(), {
 				bloggId,
 				name: $auth.user ? null : name.trim() || null,
 				content: content.trim()
@@ -66,7 +69,7 @@
 
 		deletingId = id;
 		try {
-			await deleteComment(fetch, id);
+			await deleteComment(getClientFetch(), id);
 			localComments = localComments.filter((comment) => comment.id !== id);
 			toasts.success('Kommentaren togs bort.');
 		} catch (err) {

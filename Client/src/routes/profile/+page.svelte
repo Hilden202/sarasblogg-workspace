@@ -3,6 +3,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormField from '$lib/components/forms/FormField.svelte';
 	import FormSection from '$lib/components/forms/FormSection.svelte';
+	import { useClientFetch } from '$lib/api/clientFetch';
 	import { getFriendlyApiMessage } from '$lib/api/apiErrors';
 	import { getCurrentUser, mapToFrontendUser } from '$lib/services/authService';
 	import { changeMyUsername, updateMyProfile } from '$lib/services/userService';
@@ -10,6 +11,8 @@
 	import { toasts } from '$lib/stores/toastStore';
 
 	export let data;
+
+	const getClientFetch = useClientFetch();
 
 	let displayName = data.user.name ?? '';
 	let phoneNumber = data.user.phoneNumber ?? '';
@@ -21,7 +24,7 @@
 	let isSaving = false;
 
 	async function refreshSession() {
-		const me = await getCurrentUser(fetch);
+		const me = await getCurrentUser(getClientFetch());
 		if (me) auth.setUser(mapToFrontendUser(me));
 	}
 
@@ -30,7 +33,7 @@
 		status = '';
 		isSaving = true;
 		try {
-			const result = await updateMyProfile(fetch, {
+			const result = await updateMyProfile(getClientFetch(), {
 				name: displayName || null,
 				phoneNumber: phoneNumber || null,
 				birthYear,
@@ -51,7 +54,7 @@
 		error = '';
 		status = '';
 		try {
-			const result = await changeMyUsername(fetch, { newUserName });
+			const result = await changeMyUsername(getClientFetch(), { newUserName });
 			status = result.message || 'Användarnamnet är uppdaterat.';
 			await refreshSession();
 			toasts.success(status);
