@@ -8,8 +8,7 @@
 
 <section class="section section--surface latest-posts">
 	<div class="container">
-		<h2 class="section-title">Senaste inläggen</h2>
-		<p class="section-lead">Nya texter om vardagsmod, tacksamhet och att lyssna inåt.</p>
+		<h2 class="section-title latest-posts__title">Senaste inläggen</h2>
 		<BlogGrid {posts} />
 		<div class="latest-posts__action">
 			<Button href="/blog" variant="secondary">Till bloggen</Button>
@@ -18,6 +17,10 @@
 </section>
 
 <style>
+	.latest-posts__title {
+		margin-bottom: clamp(1.75rem, 4vw, 2.5rem);
+	}
+
 	.latest-posts__action {
 		display: flex;
 		justify-content: center;

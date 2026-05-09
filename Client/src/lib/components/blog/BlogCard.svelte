@@ -19,7 +19,9 @@
 			<img class="blog-card__image" src={image} alt="" loading="lazy" />
 		</div>
 		<div class="blog-card__body">
-			<p class="blog-card__category">{post.author || 'Reflektioner'}</p>
+			{#if post.author}
+				<p class="blog-card__category">{post.author}</p>
+			{/if}
 			<h2>{title}</h2>
 			<p>{post.excerpt}</p>
 			<footer>
