@@ -2,7 +2,7 @@
 	import { page } from '$app/stores';
 	import { auth } from '$lib/stores/authStore';
 	import type { Role } from '$lib/types/auth';
-	import { routes } from '$lib/utils/routes';
+	import { isRouteActive, routes } from '$lib/utils/routes';
 
 	type AdminNavItem = {
 		href: string;
@@ -31,7 +31,7 @@
 	</div>
 	<nav aria-label="Adminnavigering">
 		{#each visibleItems as item}
-			<a class:active={$page.url.pathname === item.href} href={item.href}>{item.label}</a>
+			<a class:active={isRouteActive($page.url.pathname, item.href, true)} href={item.href}>{item.label}</a>
 		{/each}
 	</nav>
 </aside>

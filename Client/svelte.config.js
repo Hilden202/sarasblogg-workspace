@@ -8,7 +8,7 @@ const config = {
 		adapter: adapter({
 			pages: 'build',
 			assets: 'build',
-			fallback: 'index.html'
+			fallback: '404.html'
 		}),
 
 		paths: {
@@ -16,6 +16,7 @@ const config = {
 		},
 
 		prerender: {
+			entries: ['/', '/om-mig', '/kontakt'],
 			handleHttpError: 'warn'
 		}
 	}

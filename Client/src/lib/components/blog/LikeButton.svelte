@@ -6,6 +6,7 @@
 	import { auth } from '$lib/stores/authStore';
 	import { toasts } from '$lib/stores/toastStore';
 	import type { LikeDto } from '$lib/types/like';
+	import { routes } from '$lib/utils/routes';
 
 	export let bloggId: number;
 	export let initialLike: LikeDto | null = null;
@@ -16,7 +17,7 @@
 	let liked = initialLike?.liked ?? false;
 	let isSaving = false;
 
-	$: loginUrl = `/login?returnUrl=${encodeURIComponent($page.url.pathname + $page.url.search)}`;
+	$: loginUrl = `${routes.login}?returnUrl=${encodeURIComponent($page.url.pathname + $page.url.search)}`;
 
 	async function toggle() {
 		if (!$auth.user) return;

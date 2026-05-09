@@ -35,10 +35,7 @@ html {
 body {
 	min-height: 100vh;
 	margin: 0;
-	background:
-		url("/images/logo/top-left-corner-flower-ny.png") top left / min(24vw, 220px) auto no-repeat,
-		url("/images/logo/bottom-right-corner-flower-ny.png") right 24rem / min(24vw, 240px) auto no-repeat,
-		var(--color-bg);
+	background: var(--color-bg);
 	color: var(--color-text);
 	font-family: var(--font-body);
 	line-height: 1.65;
@@ -79,6 +76,10 @@ img {
 	min-height: 100vh;
 	display: flex;
 	flex-direction: column;
+	background:
+		var(--app-flower-top-left) top left / min(24vw, 220px) auto no-repeat,
+		var(--app-flower-bottom-right) right 24rem / min(24vw, 240px) auto no-repeat,
+		var(--color-bg);
 }
 
 .page-main {

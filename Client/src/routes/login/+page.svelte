@@ -9,6 +9,7 @@
 	import { getCurrentUser, getGoogleLoginUrl, login, mapToFrontendUser } from '$lib/services/authService';
 	import { auth } from '$lib/stores/authStore';
 	import { toasts } from '$lib/stores/toastStore';
+	import { routes } from '$lib/utils/routes';
 
 	const getClientFetch = useClientFetch();
 
@@ -18,7 +19,7 @@
 	let isSaving = false;
 	let error = '';
 
-	$: returnUrl = $page.url.searchParams.get('returnUrl') || '/profile';
+	$: returnUrl = $page.url.searchParams.get('returnUrl') || routes.profile;
 
 	async function handleLogin() {
 		error = '';
@@ -70,7 +71,7 @@
 			<p class="status-text status-text--error">{error}</p>
 		{/if}
 
-		<p class="auth-link">Inget konto än? <a href="/register">Skapa ett här</a>.</p>
+		<p class="auth-link">Inget konto än? <a href={routes.register}>Skapa ett här</a>.</p>
 	</form>
 </AuthPanel>
 

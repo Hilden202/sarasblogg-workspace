@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
 	import type { Role } from '$lib/types/auth';
-	import { routes } from '$lib/utils/routes';
+	import { isRouteActive, routes } from '$lib/utils/routes';
 
 	export let open = false;
 	export let path = '/';
@@ -24,10 +24,10 @@
 	<div class="mobile-panel">
 		<nav aria-label="Mobil navigering">
 			{#each items as item}
-				<a class:active={path === item.href || (item.href !== '/' && path.startsWith(item.href))} href={item.href} on:click={onNavigate}>{item.label}</a>
+				<a class:active={isRouteActive(path, item.href, item.href === routes.home)} href={item.href} on:click={onNavigate}>{item.label}</a>
 			{/each}
 			{#if isAdmin}
-				<a class:active={path.startsWith(routes.admin)} href={routes.admin} on:click={onNavigate}>Admin</a>
+				<a class:active={isRouteActive(path, routes.admin)} href={routes.admin} on:click={onNavigate}>Admin</a>
 			{/if}
 		</nav>
 
