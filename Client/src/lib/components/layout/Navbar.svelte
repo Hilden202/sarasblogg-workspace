@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { afterNavigate, goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { onMount } from 'svelte';
 	import BrandLockup from '$lib/components/brand/BrandLockup.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import MobileMenu from '$lib/components/layout/MobileMenu.svelte';
@@ -13,6 +14,7 @@
 	const getClientFetch = useClientFetch();
 
 	let open = false;
+	let navWrap: HTMLDivElement;
 
 	afterNavigate(() => {
 		open = false;
@@ -44,10 +46,39 @@
 			await goto(routes.home);
 		}
 	}
+
+	function closeMenu() {
+		open = false;
+	}
+
+	function handleDocumentPointerdown(event: PointerEvent) {
+		if (!open || !navWrap) return;
+		const target = event.target;
+		if (target instanceof Node && !navWrap.contains(target)) {
+			closeMenu();
+		}
+	}
+
+	function handleDocumentKeydown(event: KeyboardEvent) {
+		if (open && event.key === 'Escape') {
+			event.preventDefault();
+			closeMenu();
+		}
+	}
+
+	onMount(() => {
+		document.addEventListener('pointerdown', handleDocumentPointerdown);
+		document.addEventListener('keydown', handleDocumentKeydown);
+
+		return () => {
+			document.removeEventListener('pointerdown', handleDocumentPointerdown);
+			document.removeEventListener('keydown', handleDocumentKeydown);
+		};
+	});
 </script>
 
 <header class="site-header">
-	<div class="nav-wrap container">
+	<div class="nav-wrap container" bind:this={navWrap}>
 		<BrandLockup variant="nav" href={routes.home} ariaLabel="SarasBlogg startsida" />
 
 		<nav class="desktop-nav" aria-label="Huvudnavigering">
@@ -81,8 +112,9 @@
 		<button
 			class="menu-button"
 			type="button"
-			aria-label="Öppna meny"
+			aria-label={open ? 'Stäng meny' : 'Öppna meny'}
 			aria-expanded={open}
+			aria-controls="mobile-menu"
 			on:click={() => (open = !open)}
 		>
 			<span class="menu-button__icon" aria-hidden="true"></span>
@@ -94,7 +126,7 @@
 			userName={user?.displayName ?? null}
 			roles={user?.roles ?? []}
 			{loginHref}
-			onNavigate={() => (open = false)}
+			onNavigate={closeMenu}
 			onLogout={handleLogout}
 		/>
 	</div>
