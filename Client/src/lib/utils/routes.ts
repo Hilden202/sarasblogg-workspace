@@ -1,5 +1,4 @@
 import { base } from '$app/paths';
-import { browser } from '$app/environment';
 import type { BlogPostSummaryDto, BlogPostDetailDto } from '$lib/types/blog';
 
 function appRoute(path: string) {
@@ -27,9 +26,15 @@ export function ensureBasePath(path: string) {
 }
 
 export function routePathFromUrl(url: URL) {
-	const search = browser ? url.search : '';
-	const hash = browser ? url.hash : '';
-	return `${url.pathname}${search}${hash}`;
+	let search = '';
+
+	try {
+		search = url.search;
+	} catch {
+		search = '';
+	}
+
+	return `${url.pathname}${search}`;
 }
 
 export function staticAsset(path: string) {
@@ -61,6 +66,7 @@ export const routes = {
 	login: appRoute('/login'),
 	register: appRoute('/register'),
 	profile: appRoute('/profile'),
+	profileUsername: appRoute('/profile/username'),
 	admin: appRoute('/admin'),
 	adminPosts: appRoute('/admin/posts'),
 	adminComments: appRoute('/admin/comments'),

@@ -13,6 +13,11 @@ export type LoginResponse = {
 	refreshTokenExpiresUtc: string;
 };
 
+export type AccessTokenResponse = {
+	accessToken: string;
+	accessTokenExpiresUtc: string;
+};
+
 export type RegisterRequest = {
 	userName: string;
 	email: string;
@@ -44,7 +49,6 @@ export type AuthSessionDto = {
 export type FrontendUser = {
 	id: string;
 	userName: string;
-	displayName: string;
 	email: string;
 	emailConfirmed: boolean;
 	roles: Role[];

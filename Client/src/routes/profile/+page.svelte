@@ -6,7 +6,7 @@
 	import FormSection from '$lib/components/forms/FormSection.svelte';
 	import { useClientFetch } from '$lib/api/clientFetch';
 	import { getFriendlyApiMessage } from '$lib/api/apiErrors';
-	import { getCurrentUser, mapToFrontendUser } from '$lib/services/authService';
+	import { getCurrentUser, mapToFrontendUser, refreshSession } from '$lib/services/authService';
 	import {
 		changeMyUsername,
 		deleteMyAccount,
@@ -22,7 +22,7 @@
 
 	const getClientFetch = useClientFetch();
 
-	let displayName = data.user.name ?? '';
+	let profileName = data.user.name ?? '';
 	let phoneNumber = data.user.phoneNumber ?? '';
 	let birthYear = data.user.birthYear ?? null;
 	let newUserName = data.user.userName;
@@ -32,11 +32,18 @@
 	let isExporting = false;
 	let isDeleting = false;
 	let deleteDialogOpen = false;
-	let deletePassword = '';
 	let deleteConfirmation = '';
+	$: currentUser = $auth.user ?? data.user;
 
-	async function refreshSession() {
+	async function refreshCurrentUserOnce() {
 		const me = await getCurrentUser(getClientFetch());
+		if (me) auth.setUser(mapToFrontendUser(me));
+	}
+
+	async function refreshAuthSessionAndUserOnce() {
+		const fetchFn = getClientFetch();
+		await refreshSession(fetchFn);
+		const me = await getCurrentUser(fetchFn);
 		if (me) auth.setUser(mapToFrontendUser(me));
 	}
 
@@ -46,12 +53,12 @@
 		isSaving = true;
 		try {
 			const result = await updateMyProfile(getClientFetch(), {
-				name: displayName || null,
+				name: profileName || null,
 				phoneNumber: phoneNumber || null,
 				birthYear
 			});
 			status = result.message || 'Profilen är uppdaterad.';
-			await refreshSession();
+			await refreshCurrentUserOnce();
 			toasts.success(status);
 		} catch (err) {
 			error = getFriendlyApiMessage(err, 'Profilen kunde inte sparas.');
@@ -64,10 +71,17 @@
 	async function saveUsername() {
 		error = '';
 		status = '';
+		const trimmedUserName = newUserName.trim();
+		if (!trimmedUserName) {
+			error = 'Skriv ett användarnamn först.';
+			return;
+		}
+
 		try {
-			const result = await changeMyUsername(getClientFetch(), { newUserName });
+			const result = await changeMyUsername(getClientFetch(), { newUserName: trimmedUserName });
+			newUserName = trimmedUserName;
 			status = result.message || 'Användarnamnet är uppdaterat.';
-			await refreshSession();
+			await refreshAuthSessionAndUserOnce();
 			toasts.success(status);
 		} catch (err) {
 			error = getFriendlyApiMessage(err, 'Användarnamnet kunde inte sparas.');
@@ -100,7 +114,6 @@
 
 	function openDeleteDialog() {
 		deleteDialogOpen = true;
-		deletePassword = '';
 		deleteConfirmation = '';
 	}
 
@@ -116,7 +129,7 @@
 		status = '';
 		isDeleting = true;
 		try {
-			const result = await deleteMyAccount(getClientFetch(), deletePassword || null);
+			const result = await deleteMyAccount(getClientFetch(), null);
 			auth.clear();
 			deleteDialogOpen = false;
 			toasts.success(result.message || 'Kontot är raderat.');
@@ -137,13 +150,13 @@
 
 <section class="section profile-page">
 	<div class="container profile-grid">
-		<ProfileCard user={data.user} />
+		<ProfileCard user={currentUser} />
 
 		<FormSection title="Dina uppgifter">
 			<form class="form-grid" on:submit|preventDefault={saveProfile}>
 				<div class="two-column">
 					<FormField label="Namn" id="profile-name">
-						<input id="profile-name" bind:value={displayName} />
+						<input id="profile-name" bind:value={profileName} />
 					</FormField>
 					<FormField label="Telefon" id="profile-phone">
 						<input id="profile-phone" bind:value={phoneNumber} />
@@ -250,14 +263,6 @@
 			<form class="form-grid" on:submit|preventDefault={deleteAccount}>
 				<FormField label="Skriv RADERA för att bekräfta" id="delete-confirmation">
 					<input id="delete-confirmation" bind:value={deleteConfirmation} autocomplete="off" />
-				</FormField>
-				<FormField label="Lösenord" id="delete-password">
-					<input
-						id="delete-password"
-						type="password"
-						bind:value={deletePassword}
-						autocomplete="current-password"
-					/>
 				</FormField>
 				<div class="delete-actions">
 					<Button type="button" variant="ghost" disabled={isDeleting} on:click={closeDeleteDialog}

@@ -82,6 +82,11 @@
 	function showOlder() {
 		visibleOlderCount = Math.min(olderComments.length, visibleOlderCount + 10);
 	}
+
+	function commentAuthorName(comment: CommentDto) {
+		if (comment.ownedByCurrentUser && $auth.user) return $auth.user.userName;
+		return comment.name;
+	}
 </script>
 
 <section class="comments" id="comments">
@@ -94,7 +99,7 @@
 
 		<form class="comment-form card" on:submit|preventDefault={submitComment}>
 			{#if $auth.user}
-				<p class="signed-in">Skriver som <strong>{$auth.user.displayName}</strong></p>
+				<p class="signed-in">Skriver som <strong>{$auth.user.userName}</strong></p>
 			{/if}
 			{#if !$auth.user}
 				<FormField label="Namn" id="comment-name">
@@ -124,7 +129,7 @@
 				{#each [...visibleOlderComments, ...recentComments] as comment (comment.id)}
 					<article class="comment">
 						<div>
-							<strong>{comment.name}</strong>
+							<strong>{commentAuthorName(comment)}</strong>
 							<span>{formatDateTime(comment.createdAt)}</span>
 							{#if comment.topRole}
 								<em>{comment.topRole}</em>

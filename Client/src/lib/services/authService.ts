@@ -5,6 +5,7 @@ import {
 } from '$lib/api/temporarySvelteAuth';
 import type {
 	AuthSessionDto,
+	AccessTokenResponse,
 	BasicResultDto,
 	FrontendUser,
 	LoginResponse,
@@ -22,7 +23,6 @@ export function mapToFrontendUser(me: AuthSessionDto): FrontendUser {
 	return {
 		id: me.id,
 		userName: me.userName,
-		displayName: me.name?.trim() || me.userName,
 		email: me.email ?? '',
 		emailConfirmed: me.emailConfirmed,
 		roles,
@@ -47,6 +47,16 @@ export async function getCurrentUser(fetchFn: ApiFetch): Promise<AuthSessionDto 
 		}
 		throw error;
 	}
+}
+
+export async function refreshSession(fetchFn: ApiFetch): Promise<AccessTokenResponse> {
+	const response = await apiPost<AccessTokenResponse>(
+		fetchFn,
+		'/api/auth/refresh-session',
+		undefined
+	);
+	setTemporarySvelteAccessToken(response.accessToken, response.accessTokenExpiresUtc);
+	return response;
 }
 
 export async function login(
