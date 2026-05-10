@@ -13,6 +13,19 @@
 		getContent: () => string;
 		setContent: (content: string) => void;
 		on: (events: string, callback: () => void) => void;
+		execCommand: (command: string, ui?: boolean, value?: unknown, ...args: unknown[]) => void;
+		ui: {
+			registry: {
+				addMenuButton: (
+					name: string,
+					config: {
+						text?: string;
+						icon?: string;
+						fetch: (callback: (items: unknown[]) => void) => void;
+					}
+				) => void;
+			};
+		};
 		remove: () => void;
 	};
 
@@ -25,6 +38,17 @@
 	let editor: TinyMceEditor | null = null;
 	let internalValue = '';
 	let loadError = '';
+	const toolbar =
+		'undo redo | blocks fontfamily fontsize | forecolor backcolor highlight | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | blockquote table | link image media | preview fullscreen code removeformat';
+	const mobileToolbar =
+		'undo redo | blocks | bold italic underline | forecolor backcolor highlight | bullist numlist | alignleft aligncenter | link image | removeformat';
+	const highlightColors = [
+		{ text: 'Gul', color: '#fceea7' },
+		{ text: 'Rosa', color: '#ffe5ec' },
+		{ text: 'Grön', color: '#cde8d5' },
+		{ text: 'Blå', color: '#e0f0ff' },
+		{ text: 'Koppar', color: '#a87363' }
+	];
 
 	$: if (editor && value !== internalValue) {
 		internalValue = value ?? '';
@@ -52,10 +76,16 @@
 		if (getTinyMce()) return Promise.resolve();
 
 		return new Promise<void>((resolve, reject) => {
-			const existing = document.querySelector<HTMLScriptElement>('script[data-tinymce-loader="true"]');
+			const existing = document.querySelector<HTMLScriptElement>(
+				'script[data-tinymce-loader="true"]'
+			);
 			if (existing) {
 				existing.addEventListener('load', () => resolve(), { once: true });
-				existing.addEventListener('error', () => reject(new Error('TinyMCE script failed to load.')), { once: true });
+				existing.addEventListener(
+					'error',
+					() => reject(new Error('TinyMCE script failed to load.')),
+					{ once: true }
+				);
 				return;
 			}
 
@@ -64,7 +94,9 @@
 			script.async = true;
 			script.dataset.tinymceLoader = 'true';
 			script.addEventListener('load', () => resolve(), { once: true });
-			script.addEventListener('error', () => reject(new Error('TinyMCE script failed to load.')), { once: true });
+			script.addEventListener('error', () => reject(new Error('TinyMCE script failed to load.')), {
+				once: true
+			});
 			document.head.appendChild(script);
 		});
 	}
@@ -91,41 +123,96 @@
 			toolbar_mode: 'wrap',
 			mobile: {
 				menubar: false,
-				toolbar_mode: 'scrolling'
+				toolbar_mode: 'sliding',
+				toolbar: mobileToolbar
 			},
 			skin: 'oxide',
 			content_css: 'default',
 			plugins:
-				'advlist autolink charmap code fullscreen image insertdatetime link lists media preview searchreplace visualblocks wordcount',
-			toolbar:
-				'undo redo | blocks | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | blockquote | link image | preview fullscreen code removeformat',
-			block_formats: 'Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3; Heading 4=h4',
+				'advlist autolink charmap code fullscreen image insertdatetime link lists media preview searchreplace table visualblocks wordcount',
+			toolbar,
+			block_formats: 'Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3',
+			font_family_formats:
+				'Cormorant Garamond=Cormorant Garamond,serif;' +
+				'Roboto=Roboto,Arial,sans-serif;' +
+				'Lato=Lato,Arial,sans-serif;' +
+				'Merriweather=Merriweather,Georgia,serif;' +
+				'Montserrat=Montserrat,Arial,sans-serif;' +
+				'Arial=arial,helvetica,sans-serif;' +
+				'Georgia=georgia,serif;' +
+				"Times New Roman='Times New Roman',times,serif;" +
+				'Verdana=verdana,geneva,sans-serif;' +
+				"Courier New='Courier New',courier,monospace;" +
+				"Lucida Handwriting='Lucida Handwriting',cursive;",
+			font_size_formats: '8pt 9pt 10pt 11pt 12pt 14pt 16pt 18pt 24pt 36pt 48pt 72pt 96pt 120pt',
+			color_map: [
+				'7e6655',
+				'Brun (Hjärtat)',
+				'a87363',
+				'Koppar',
+				'c48a7d',
+				'Rosa',
+				'b87333',
+				'Bronze',
+				'd4af37',
+				'Guld',
+				'fceea7',
+				'Highlight - Ljusgul',
+				'ffe5ec',
+				'Highlight - Rosa',
+				'cde8d5',
+				'Highlight - Ljusgrön',
+				'e0f0ff',
+				'Highlight - Ljusblå',
+				'ffffff',
+				'Vit',
+				'000000',
+				'Svart',
+				'708090',
+				'Slate Gray'
+			],
+			color_picker_callback: (callback: (value: string) => void, selectedColor?: string) => {
+				const input = document.createElement('input');
+				input.type = 'color';
+				input.value = selectedColor || '#fceea7';
+				input.addEventListener('change', () => callback(input.value), { once: true });
+				input.click();
+			},
 			forced_root_block: 'p',
 			convert_urls: false,
 			automatic_uploads: true,
 			file_picker_types: 'image',
 			images_file_types: 'jpg,jpeg,png,webp',
 			images_upload_handler: uploadEditorImage,
+			formats: {
+				alignleft: { block: 'p', styles: { 'text-align': 'left' } },
+				aligncenter: { block: 'p', styles: { 'text-align': 'center' } },
+				alignright: { block: 'p', styles: { 'text-align': 'right' } },
+				alignjustify: { block: 'p', styles: { 'text-align': 'justify' } }
+			},
+			valid_styles: {
+				'*': 'text-align,font-family,font-size,color,background-color,font-weight,font-style,text-decoration'
+			},
 			content_style: `
 				body {
-					color: #594238;
-					font-family: Inter, Arial, sans-serif;
+					color: #7e6655;
+					font-family: "Cormorant Garamond", Georgia, serif;
 					font-size: 16px;
-					line-height: 1.75;
+					line-height: 1.6;
 					padding: 1rem;
 				}
-				h1, h2, h3, h4 {
-					color: #7a4a35;
+				h1, h2, h3 {
+					color: #7e6655;
 					font-family: "Cormorant Garamond", Georgia, serif;
-					line-height: 1.15;
+					letter-spacing: 0.05em;
+					line-height: 1.1;
+					text-transform: uppercase;
 				}
 				blockquote {
-					margin: 1.25rem 0;
-					padding: 0.75rem 1rem;
-					border-left: 4px solid #d99b79;
-					background: rgba(255, 250, 244, 0.76);
-					color: #6d5247;
-					font-style: italic;
+					margin: 1.5rem 0;
+					padding: .75rem 1.25rem;
+					border-left: 4px solid #c48a7d;
+					background: #fdf3eb;
 				}
 				img {
 					max-width: 100%;
@@ -133,10 +220,33 @@
 					border-radius: 0.8rem;
 				}
 				a {
-					color: #9b5b3f;
+					color: #a87363;
+					text-decoration: underline;
+				}
+				ul, ol {
+					padding-left: 1.5rem;
 				}
 			`,
 			setup: (instance: TinyMceEditor) => {
+				instance.ui.registry.addMenuButton('highlight', {
+					text: 'Highlight',
+					icon: 'highlight-bg-color',
+					fetch: (callback) => {
+						callback([
+							...highlightColors.map((item) => ({
+								type: 'menuitem',
+								text: item.text,
+								onAction: () =>
+									instance.execCommand('mceApplyTextcolor', false, item.color, 'hilitecolor')
+							})),
+							{
+								type: 'menuitem',
+								text: 'Ta bort',
+								onAction: () => instance.execCommand('RemoveTextcolor', false, 'hilitecolor')
+							}
+						]);
+					}
+				});
 				instance.on('init', () => {
 					editor = instance;
 					internalValue = value ?? '';
@@ -160,17 +270,15 @@
 		value = nextValue;
 	}
 
-	async function uploadEditorImage(blobInfo: {
-		blob: () => Blob;
-		filename?: () => string;
-	}) {
+	async function uploadEditorImage(blobInfo: { blob: () => Blob; filename?: () => string }) {
 		if (!uploadImage) {
 			throw new Error('Bilduppladdning är inte konfigurerad för editorn.');
 		}
 
 		const blob = blobInfo.blob();
 		const filename = blobInfo.filename?.() ?? 'editor-image.png';
-		const file = blob instanceof File ? blob : new File([blob], filename, { type: blob.type || 'image/png' });
+		const file =
+			blob instanceof File ? blob : new File([blob], filename, { type: blob.type || 'image/png' });
 
 		return uploadImage(file);
 	}
@@ -211,6 +319,7 @@
 	}
 
 	:global(.tox-tinymce) {
+		max-width: 100%;
 		border-color: var(--color-border) !important;
 		border-radius: var(--radius-soft) !important;
 		box-shadow: var(--shadow-small);
@@ -226,5 +335,28 @@
 	:global(.tox .tox-edit-area__iframe),
 	:global(.tox .tox-statusbar) {
 		background: rgba(255, 250, 244, 0.96) !important;
+	}
+
+	:global(.tox .tox-toolbar__primary) {
+		flex-wrap: wrap !important;
+	}
+
+	:global(.tox .tox-toolbar__group) {
+		max-width: 100%;
+	}
+
+	@media (max-width: 640px) {
+		.rich-editor {
+			margin-inline: -0.25rem;
+		}
+
+		:global(.tox .tox-toolbar__group) {
+			padding-inline: 0.15rem !important;
+		}
+
+		:global(.tox .tox-tbtn) {
+			width: 2.1rem !important;
+			height: 2.1rem !important;
+		}
 	}
 </style>

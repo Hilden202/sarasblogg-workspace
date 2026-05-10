@@ -8,11 +8,24 @@
 </script>
 
 {#if href}
-	<a class:button--full={full} class="button button--{variant}" {href} aria-label={ariaLabel}>
+	<a
+		class:button--full={full}
+		class="button button--{variant}"
+		{href}
+		aria-label={ariaLabel}
+		on:click
+	>
 		<slot />
 	</a>
 {:else}
-	<button class:button--full={full} class="button button--{variant}" {type} {disabled} aria-label={ariaLabel} on:click>
+	<button
+		class:button--full={full}
+		class="button button--{variant}"
+		{type}
+		{disabled}
+		aria-label={ariaLabel}
+		on:click
+	>
 		<slot />
 	</button>
 {/if}

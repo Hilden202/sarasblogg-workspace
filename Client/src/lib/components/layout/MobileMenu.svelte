@@ -22,7 +22,7 @@
 </script>
 
 {#if open}
-	<div class="mobile-panel">
+	<div id="mobile-menu" class="mobile-panel">
 		<nav aria-label="Mobil navigering">
 			{#each items as item}
 				<a
@@ -45,7 +45,7 @@
 				<a href={routes.profile} on:click={onNavigate}>{userName}</a>
 				<button type="button" on:click={onLogout}>Logga ut</button>
 			{:else}
-				<Button href={loginHref} variant="secondary" full>Logga in</Button>
+				<Button href={loginHref} variant="secondary" full on:click={onNavigate}>Logga in</Button>
 			{/if}
 		</div>
 	</div>
