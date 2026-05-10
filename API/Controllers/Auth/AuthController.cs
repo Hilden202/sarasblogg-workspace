@@ -312,11 +312,11 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<MeResponse>> Me()
     {
-        var userName = User?.Identity?.Name;
-        if (string.IsNullOrWhiteSpace(userName))
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
             return Unauthorized();
 
-        var user = await _userManager.FindByNameAsync(userName);
+        var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
             return Unauthorized();
 
@@ -982,6 +982,8 @@ public class AuthController : ControllerBase
         var accessToken = await _tokenService.CreateAccessTokenAsync(user);
         var accessTokenExpiresUtc = DateTime.UtcNow.AddMinutes(
             int.Parse(_cfg["Jwt:AccessTokenMinutes"] ?? "60"));
+
+        AppendApiAccessTokenCookie(accessToken, accessTokenExpiresUtc);
 
         return Ok(new AccessTokenDto
         {

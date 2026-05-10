@@ -94,7 +94,7 @@
 
 		<div class="desktop-actions">
 			{#if user}
-				<a class="profile-link" href={routes.profile}>{user.displayName}</a>
+				<a class="profile-link" href={routes.profile}>{user.userName}</a>
 				<button
 					class="icon-button"
 					type="button"
@@ -123,7 +123,7 @@
 		<MobileMenu
 			{open}
 			{path}
-			userName={user?.displayName ?? null}
+			userName={user?.userName ?? null}
 			roles={user?.roles ?? []}
 			{loginHref}
 			onNavigate={closeMenu}

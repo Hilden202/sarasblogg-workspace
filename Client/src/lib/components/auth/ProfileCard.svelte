@@ -6,11 +6,11 @@
 </script>
 
 <article class="profile-card card">
-	<div class="avatar" aria-hidden="true">{initials(user.displayName)}</div>
+	<div class="avatar" aria-hidden="true">{initials(user.userName)}</div>
 	<div>
 		<p class="eyebrow">Profil</p>
-		<h1>{user.displayName}</h1>
-		<p>{user.email || user.userName}</p>
+		<h1>{user.userName}</h1>
+		<p>{user.email}</p>
 		<div class="roles">
 			{#each user.roles as role}
 				<span class="badge badge--sage">{role}</span>

@@ -14,6 +14,10 @@ const roleHierarchy: Record<Role, number> = {
 	superadmin: 4
 };
 
+function sameUser(a: FrontendUser | null, b: FrontendUser | null) {
+	return JSON.stringify(a) === JSON.stringify(b);
+}
+
 function createAuthStore() {
 	const { subscribe, set, update } = writable<AuthState>({
 		user: null,
@@ -21,7 +25,10 @@ function createAuthStore() {
 	});
 
 	function setUser(user: FrontendUser | null) {
-		set({ user, isLoading: false });
+		update((state) => {
+			if (!state.isLoading && sameUser(state.user, user)) return state;
+			return { user, isLoading: false };
+		});
 	}
 
 	function setLoading(isLoading: boolean) {
