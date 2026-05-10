@@ -16,7 +16,7 @@
 		window.location.href = getGoogleLoginUrl(
 			window.location.origin,
 			returnUrl,
-			`${base}/auth/external/callback`
+			`${base}/auth/external/callback/`
 		);
 	}
 </script>
