@@ -1,11 +1,71 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
+	import { onMount } from 'svelte';
 	import { brand } from '$lib/config/site';
+	import { ApiError, getFriendlyApiMessage } from '$lib/api/apiErrors';
+	import { useClientFetch } from '$lib/api/clientFetch';
 	import BrandLockup from '$lib/components/brand/BrandLockup.svelte';
 	import SocialLinks from '$lib/components/layout/SocialLinks.svelte';
+	import { requestGuidance } from '$lib/services/guidanceService';
+	import { auth } from '$lib/stores/authStore';
 	import { routes } from '$lib/utils/routes';
 
 	const dispatch = createEventDispatcher<{ privacy: void }>();
+	const getClientFetch = useClientFetch();
+	const guestGuidanceKey = 'sarasblogg.footerGuidance.guestUsed';
+
+	let guidanceInput = '';
+	let guidanceResponse = '';
+	let guidanceError = '';
+	let isGuidanceLoading = false;
+	let guestHasUsedGuidance = false;
+
+	$: isLoggedIn = Boolean($auth.user);
+	$: hasReachedGuestLimit = !isLoggedIn && guestHasUsedGuidance;
+	$: guidanceInputValue = guidanceInput.trim();
+	$: guidanceSubmitDisabled =
+		isGuidanceLoading || guidanceInputValue.length === 0 || hasReachedGuestLimit;
+
+	onMount(() => {
+		guestHasUsedGuidance = sessionStorage.getItem(guestGuidanceKey) === 'true';
+	});
+
+	function markGuestGuidanceUsed() {
+		if (isLoggedIn) return;
+
+		guestHasUsedGuidance = true;
+		sessionStorage.setItem(guestGuidanceKey, 'true');
+	}
+
+	function getGuidanceErrorMessage(error: unknown) {
+		if (error instanceof ApiError && error.status === 429) {
+			return 'Vänta en liten stund innan du frågar igen.';
+		}
+
+		return getFriendlyApiMessage(
+			error,
+			'Vägledningen kunde inte hämtas just nu. Försök igen om en stund.'
+		);
+	}
+
+	async function submitGuidance() {
+		if (guidanceSubmitDisabled) return;
+
+		isGuidanceLoading = true;
+		guidanceError = '';
+		guidanceResponse = '';
+
+		try {
+			const result = await requestGuidance(getClientFetch(), { input: guidanceInputValue });
+			guidanceResponse = result.guidance;
+			guidanceInput = '';
+			markGuestGuidanceUsed();
+		} catch (error) {
+			guidanceError = getGuidanceErrorMessage(error);
+		} finally {
+			isGuidanceLoading = false;
+		}
+	}
 </script>
 
 <footer class="site-footer">
@@ -27,12 +87,37 @@
 			<SocialLinks />
 		</div>
 
-		<form class="newsletter" aria-label="Nyhetsbrev" on:submit|preventDefault>
-			<h2>Nyhetsbrev</h2>
-			<p>Få inspiration och nya inlägg direkt till din inkorg.</p>
-			<div>
-				<input type="email" placeholder="Din e-postadress" aria-label="Din e-postadress" />
-				<button type="submit" aria-label="Anmäl till nyhetsbrev">→</button>
+		<form class="guidance" aria-label="Dagens kompassord" on:submit|preventDefault={submitGuidance}>
+			<h2>Dagens kompassord</h2>
+			<p>Ställ en fråga eller skriv ett ord, så får du ett litet vägledande svar.</p>
+			<div class="guidance-row">
+				<input
+					type="text"
+					bind:value={guidanceInput}
+					placeholder="Vad behöver du vägledning kring?"
+					aria-label="Vad behöver du vägledning kring?"
+					maxlength="180"
+					disabled={isGuidanceLoading || hasReachedGuestLimit}
+				/>
+				<button type="submit" aria-label="Skicka fråga" disabled={guidanceSubmitDisabled}>→</button>
+			</div>
+
+			<div class="guidance-status" aria-live="polite">
+				{#if isGuidanceLoading}
+					<p class="guidance-note guidance-note--loading">Lyssnar in...</p>
+				{:else}
+					{#if guidanceResponse}
+						<p class="guidance-response"><span aria-hidden="true">✦</span>{guidanceResponse}</p>
+					{/if}
+
+					{#if guidanceError}
+						<p class="guidance-note guidance-note--error">{guidanceError}</p>
+					{:else if hasReachedGuestLimit}
+						<p class="guidance-note">
+							Vill du fråga igen? <a href={routes.login}>Logga in</a> så finns kompassordet kvar.
+						</p>
+					{/if}
+				{/if}
 			</div>
 		</form>
 	</div>
@@ -92,7 +177,7 @@
 		color: var(--color-muted);
 	}
 
-	.newsletter button {
+	.guidance button {
 		display: grid;
 		place-items: center;
 		width: 2.45rem;
@@ -113,24 +198,98 @@
 		z-index: 1;
 	}
 
-	.newsletter div {
+	.guidance-row {
 		display: grid;
 		grid-template-columns: 1fr auto;
 		gap: 0.5rem;
 		margin-top: 1rem;
 	}
 
-	.newsletter input {
+	.guidance input {
 		min-width: 0;
 		border: 1px solid var(--color-border);
 		border-radius: 0.75rem;
 		background: #fff;
 		padding: 0.75rem 0.9rem;
+		color: var(--color-text);
 	}
 
-	.newsletter button {
+	.guidance input:disabled {
+		background: rgba(255, 250, 244, 0.7);
+		color: var(--color-muted);
+	}
+
+	.guidance button {
 		border: 0;
 		background: var(--color-accent);
+		transition:
+			transform 160ms ease,
+			opacity 160ms ease,
+			background 160ms ease;
+	}
+
+	.guidance button:not(:disabled):hover {
+		transform: translateX(1px);
+		background: #c98277;
+	}
+
+	.guidance button:disabled {
+		cursor: default;
+		opacity: 0.52;
+	}
+
+	.guidance-status {
+		display: grid;
+		gap: 0.65rem;
+		min-height: 0;
+		margin-top: 1rem;
+	}
+
+	.guidance-response,
+	.guidance-note {
+		margin: 0;
+		max-width: none;
+	}
+
+	.guidance-response {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: 0.72rem;
+		align-items: start;
+		padding: 0.9rem 1rem;
+		border: 1px solid rgba(217, 155, 121, 0.22);
+		border-radius: 0.9rem;
+		background: rgba(255, 250, 244, 0.78);
+		box-shadow: 0 10px 28px rgba(95, 74, 59, 0.07);
+		color: var(--color-heading);
+		line-height: 1.55;
+	}
+
+	.guidance-response span {
+		color: var(--color-accent);
+		font-size: 1.1rem;
+		line-height: 1.45;
+	}
+
+	.guidance-note {
+		color: var(--color-muted);
+		font-size: 0.92rem;
+		line-height: 1.5;
+	}
+
+	.guidance-note a {
+		color: #9f664f;
+		font-weight: 700;
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
+	}
+
+	.guidance-note--loading {
+		animation: soft-pulse 1.4s ease-in-out infinite;
+	}
+
+	.guidance-note--error {
+		color: #9b3f35;
 	}
 
 	.footer-bottom {
@@ -172,6 +331,21 @@
 		.footer-bottom {
 			grid-template-columns: 1fr;
 			flex-direction: column;
+		}
+
+		.guidance-row {
+			grid-template-columns: minmax(0, 1fr) auto;
+		}
+	}
+
+	@keyframes soft-pulse {
+		0%,
+		100% {
+			opacity: 0.62;
+		}
+
+		50% {
+			opacity: 1;
 		}
 	}
 </style>

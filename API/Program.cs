@@ -17,6 +17,7 @@ using System.Security.Claims;
 using AngleSharp.Dom;
 using Ganss.Xss;
 using Microsoft.AspNetCore.RateLimiting;
+using SarasBloggAPI.Services.Guidance;
 using SarasBloggAPI.Services.Tarot;
 
 
@@ -249,6 +250,13 @@ namespace SarasBloggAPI
                     config.Window = TimeSpan.FromMinutes(1);
                     config.QueueLimit = 0;
                 });
+
+                options.AddFixedWindowLimiter("guidance", config =>
+                {
+                    config.PermitLimit = 8;
+                    config.Window = TimeSpan.FromMinutes(1);
+                    config.QueueLimit = 0;
+                });
             });
 
             // FILE HELPER: Local för Development, GitHub för Test/Prod
@@ -270,6 +278,7 @@ namespace SarasBloggAPI
             builder.Services.AddScoped<IAboutMeImageService, AboutMeImageService>();
             
             builder.Services.AddScoped<TarotService>();
+            builder.Services.AddScoped<GuidanceService>();
             
             builder.Services.AddScoped<ContactMeManager>();
             builder.Services.AddScoped<UserManagerService>();
