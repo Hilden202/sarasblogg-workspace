@@ -9,10 +9,15 @@
 	import { ensureBasePath, isSafeLocalPath, routes } from '$lib/utils/routes';
 
 	let error = '';
+	const exchangeCommitDelayMs = 250;
 
 	function safeReturnUrl(value: string | null) {
 		if (!isSafeLocalPath(value)) return routes.home;
 		return ensureBasePath(value);
+	}
+
+	function allowExchangeResponseToSettle() {
+		return new Promise((resolve) => setTimeout(resolve, exchangeCommitDelayMs));
 	}
 
 	onMount(async () => {
@@ -27,6 +32,7 @@
 		try {
 			const fetchFn = window.fetch.bind(window);
 			await exchangeExternalLoginCode(fetchFn, code);
+			await allowExchangeResponseToSettle();
 			toasts.success('Du är inloggad.');
 			window.location.replace(returnUrl);
 		} catch (err) {
