@@ -40,7 +40,7 @@
 			<p id="cookie-banner-title" class="cookie-banner__title">Vår cookie-policy</p>
 			<p>
 				Vi använder endast nödvändiga cookies och lokal lagring för att webbplatsen ska fungera
-				och komma ihåg dina val.
+				korrekt. Genom att klicka på Acceptera godkänner du detta och slipper se rutan igen.
 			</p>
 		</div>
 		<div class="cookie-banner__actions">
@@ -53,14 +53,16 @@
 <Modal open={isPrivacyOpen} title="Integritet och cookies" on:close={closePrivacy}>
 	<div class="privacy-content">
 		<p>
-			På SarasBlogg värnar vi om din integritet. Vi sparar inga känsliga uppgifter och
-			samlar inte in mer data än vad som behövs för att webbplatsen ska fungera.
+			På SarasBlogg värnar vi om din integritet. Den här sidan förklarar hur vi hanterar
+			personuppgifter, cookies och annan information kopplad till din användning av webbplatsen.
+			Vi sparar inga känsliga uppgifter och samlar inte in mer data än nödvändigt.
 		</p>
 
 		<h3>Cookies och lokal lagring</h3>
 		<p>
-			Vi använder nödvändiga cookies för inloggning och säker åtkomst. För cookie-bannern
-			sparas ditt val i webbläsarens lokala lagring så att du slipper se frågan igen.
+			Cookies används enbart för att förbättra upplevelsen, till exempel för att komma ihåg
+			om du accepterat cookies eller är inloggad. I Svelte-versionen sparas cookie-banner-valet
+			i webbläsarens lokala lagring.
 		</p>
 
 		<table>
@@ -68,24 +70,42 @@
 				<tr>
 					<th>Namn</th>
 					<th>Syfte</th>
+					<th>Leverantör</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr>
 					<td>{consentStorageKey}</td>
 					<td>Kommer ihåg att du accepterat cookieinformationen.</td>
+					<td>SarasBlogg</td>
 				</tr>
 				<tr>
 					<td>SarasAuth / api_access_token</td>
 					<td>Nödvändiga inloggnings- och åtkomstcookies när du loggar in.</td>
+					<td>SarasBlogg</td>
 				</tr>
 			</tbody>
 		</table>
 
-		<h3>Dina val</h3>
+		<h3>Kommentarer och konto</h3>
 		<p>
-			Vi lägger inte till analysverktyg eller tredjepartsspårning här. Om du rensar
-			webbläsarens lagring visas bannern igen vid nästa besök.
+			Om du lämnar kommentarer eller skapar ett konto sparas din information endast i syfte
+			att driva bloggen och kommer inte att delas med tredje part.
+		</p>
+
+		<h3>Tredje parter</h3>
+		<p>
+			Vi använder Googles tjänster för kommentarsmoderering via Perspective API och för extern
+			inloggning när du väljer Google OAuth. Då behandlas uppgifter enligt
+			<a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Googles integritetspolicy</a>.
+		</p>
+
+		<h3>Dina rättigheter</h3>
+		<p>
+			Du kan ladda ned eller radera din personliga data via kontosidorna. Nödvändiga cookies
+			används med berättigat intresse för drift och säkerhet, och kommentarsmoderering används
+			för att motverka missbruk och spam. Om du rensar webbläsarens lagring visas bannern igen
+			vid nästa besök.
 		</p>
 
 		<div class="privacy-content__actions">
@@ -167,9 +187,11 @@
 	}
 
 	table {
+		display: block;
 		width: 100%;
+		max-width: 100%;
+		overflow-x: auto;
 		border-collapse: collapse;
-		overflow: hidden;
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-soft);
 	}
@@ -197,6 +219,9 @@
 	@media (max-width: 720px) {
 		.cookie-banner {
 			grid-template-columns: 1fr;
+			bottom: 0.5rem;
+			max-height: min(52dvh, 24rem);
+			overflow: auto;
 		}
 
 		.cookie-banner__actions,

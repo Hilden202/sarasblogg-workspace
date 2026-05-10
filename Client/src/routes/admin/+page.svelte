@@ -22,6 +22,8 @@
 		<a href={routes.adminPosts}><strong>{data.postCount ?? '–'}</strong><span>Inlägg</span></a>
 		<a href={routes.adminComments}><strong>{data.commentCount ?? '–'}</strong><span>Kommentarer</span></a>
 		<a href={routes.adminUsers}><strong>{data.userCount ?? '–'}</strong><span>Användare</span></a>
+		<a href={routes.adminContactMessages}><strong>{data.contactMessageCount ?? '–'}</strong><span>Kontaktmeddelanden</span></a>
+		<a href={routes.adminForbiddenWords}><strong>{data.forbiddenWordCount ?? '–'}</strong><span>Förbjudna ord</span></a>
 	</div>
 </section>
 
@@ -35,7 +37,7 @@
 
 	.stats {
 		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 		gap: 1rem;
 	}
 

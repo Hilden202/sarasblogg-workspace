@@ -14,6 +14,7 @@
 		{ href: routes.admin, label: 'Översikt', roles: ['superuser', 'admin', 'superadmin'] },
 		{ href: routes.adminPosts, label: 'Inlägg', roles: ['admin', 'superadmin'] },
 		{ href: routes.adminComments, label: 'Kommentarer', roles: ['superuser', 'admin', 'superadmin'] },
+		{ href: routes.adminContactMessages, label: 'Kontakt', roles: ['admin', 'superadmin'] },
 		{ href: routes.adminAbout, label: 'Om mig', roles: ['superadmin'] },
 		{ href: routes.adminUsers, label: 'Användare', roles: ['admin', 'superadmin'] },
 		{ href: routes.adminRoles, label: 'Roller', roles: ['superadmin'] },
