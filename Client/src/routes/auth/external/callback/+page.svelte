@@ -5,15 +5,35 @@
 	import AuthPanel from '$lib/components/auth/AuthPanel.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { getFriendlyApiMessage } from '$lib/api/apiErrors';
-	import { exchangeExternalLoginCode } from '$lib/services/authService';
+	import { exchangeExternalLoginCode, getCurrentUser } from '$lib/services/authService';
 	import { toasts } from '$lib/stores/toastStore';
 	import { ensureBasePath, isSafeLocalPath, routes } from '$lib/utils/routes';
 
 	let error = '';
+	const sessionRestoreDelays = [80, 160, 320, 640];
 
 	function safeReturnUrl(value: string | null) {
 		if (!isSafeLocalPath(value)) return routes.home;
 		return ensureBasePath(value);
+	}
+
+	function delay(ms: number) {
+		return new Promise((resolve) => setTimeout(resolve, ms));
+	}
+
+	async function waitForSessionRestore(fetchFn: typeof fetch) {
+		for (const delayMs of sessionRestoreDelays) {
+			await delay(delayMs);
+
+			try {
+				const user = await getCurrentUser(fetchFn);
+				if (user) return true;
+			} catch {
+				// The final document navigation below still gives the browser a fresh session read.
+			}
+		}
+
+		return false;
 	}
 
 	onMount(async () => {
@@ -26,10 +46,16 @@
 		}
 
 		try {
-			await exchangeExternalLoginCode(window.fetch.bind(window), code);
-			await invalidate('auth:session');
+			const fetchFn = window.fetch.bind(window);
+			await exchangeExternalLoginCode(fetchFn, code);
+			const sessionRestored = await waitForSessionRestore(fetchFn);
 			toasts.success('Du är inloggad.');
-			await goto(returnUrl, { replaceState: true });
+			if (sessionRestored) {
+				await invalidate('auth:session');
+				await goto(returnUrl, { replaceState: true, invalidateAll: true });
+				return;
+			}
+			window.location.replace(returnUrl);
 		} catch (err) {
 			error = getFriendlyApiMessage(err, 'Google-inloggningen kunde inte slutföras.');
 			toasts.error(error);

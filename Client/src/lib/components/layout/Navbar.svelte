@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { afterNavigate, goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import BrandLockup from '$lib/components/brand/BrandLockup.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -13,6 +13,10 @@
 	const getClientFetch = useClientFetch();
 
 	let open = false;
+
+	afterNavigate(() => {
+		open = false;
+	});
 
 	const navItems = [
 		{ href: routes.home, label: 'Hem' },
