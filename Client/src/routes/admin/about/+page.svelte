@@ -59,10 +59,19 @@
 			}
 
 			if (data.about?.id) {
-				await updateAboutMe(apiFetch, { id: data.about.id, title: payload.title, content: payload.content, image: imageUrl });
+				await updateAboutMe(apiFetch, {
+					id: data.about.id,
+					title: payload.title.trim() || null,
+					content: payload.content.trim() || null,
+					image: imageUrl
+				});
 				toasts.success('Om mig-sidan är uppdaterad.');
 			} else {
-				await createAboutMe(apiFetch, { title: payload.title, content: payload.content, image: imageUrl });
+				await createAboutMe(apiFetch, {
+					title: payload.title.trim() || null,
+					content: payload.content.trim() || null,
+					image: imageUrl
+				});
 				toasts.success('Om mig-sidan är skapad.');
 			}
 			editorOpen = false;

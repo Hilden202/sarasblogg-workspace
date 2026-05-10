@@ -3,6 +3,7 @@ using SarasBloggAPI.DAL;
 using SarasBloggAPI.Services.AboutMe;
 using SarasBloggAPI.DTOs.AboutMe;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using AboutMeModel = SarasBloggAPI.Models.AboutMe;
 
 namespace SarasBloggAPI.Controllers.AboutMe
@@ -33,6 +34,7 @@ namespace SarasBloggAPI.Controllers.AboutMe
         [HttpPost]
         public async Task<IActionResult> CreateAboutMe([FromBody] AboutMeModel aboutMe)
         {
+            aboutMe.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? aboutMe.UserId;
             var created = await _manager.CreateAsync(aboutMe);
             return CreatedAtAction(nameof(GetAboutMe), new { id = created.Id }, created);
         }
@@ -45,6 +47,7 @@ namespace SarasBloggAPI.Controllers.AboutMe
 
             // säkerställ att route-id gäller
             aboutMe.Id = id;
+            aboutMe.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? aboutMe.UserId;
 
             var updated = await _manager.UpdateAsync(aboutMe);
             if (!updated)

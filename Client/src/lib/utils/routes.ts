@@ -67,6 +67,7 @@ export const routes = {
 	adminAbout: appRoute('/admin/about'),
 	adminUsers: appRoute('/admin/users'),
 	adminRoles: appRoute('/admin/roles'),
+	adminContactMessages: appRoute('/admin/contact-messages'),
 	adminForbiddenWords: appRoute('/admin/forbidden-words')
 };
 
@@ -97,10 +98,5 @@ export function resolveMediaUrl(path?: string | null) {
 }
 
 export function fallbackBlogImage(index = 0) {
-	const images = [
-		staticAsset('/images/blogg/myskaffe.jpg'),
-		staticAsset('/images/blogg/tree.png'),
-		staticAsset('/images/blogg/flowers.jpg')
-	];
-	return images[index % images.length];
+	return staticAsset('/images/blogg/default.png');
 }

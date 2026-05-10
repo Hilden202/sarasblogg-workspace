@@ -33,7 +33,7 @@ namespace SarasBloggAPI.DAL
             existing.Title = aboutMe.Title;
             existing.Content = aboutMe.Content;
             existing.Image = aboutMe.Image;
-            existing.UserId = aboutMe.UserId;
+            existing.UserId = aboutMe.UserId ?? existing.UserId;
 
             await _context.SaveChangesAsync();
             return true;
