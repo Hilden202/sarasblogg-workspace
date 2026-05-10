@@ -1,4 +1,5 @@
 import { writable } from 'svelte/store';
+import { clearTemporarySvelteAccessToken } from '$lib/api/temporarySvelteAuth';
 import type { FrontendUser, Role } from '$lib/types/auth';
 
 type AuthState = {
@@ -28,6 +29,7 @@ function createAuthStore() {
 	}
 
 	function clear() {
+		clearTemporarySvelteAccessToken();
 		set({ user: null, isLoading: false });
 	}
 

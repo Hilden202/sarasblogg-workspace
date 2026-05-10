@@ -1,4 +1,8 @@
 import { apiGet, apiPost, getExternalApiBaseUrl, type ApiFetch } from '$lib/api/apiClient';
+import {
+	clearTemporarySvelteAccessToken,
+	setTemporarySvelteAccessToken
+} from '$lib/api/temporarySvelteAuth';
 import type {
 	AuthSessionDto,
 	BasicResultDto,
@@ -51,11 +55,13 @@ export async function login(
 	password: string,
 	rememberMe = true
 ): Promise<LoginResponse> {
-	return apiPost<LoginResponse>(fetchFn, '/api/auth/login', {
+	const response = await apiPost<LoginResponse>(fetchFn, '/api/auth/login', {
 		userNameOrEmail,
 		password,
 		rememberMe
 	});
+	setTemporarySvelteAccessToken(response.accessToken, response.accessTokenExpiresUtc);
+	return response;
 }
 
 export async function register(
@@ -66,14 +72,20 @@ export async function register(
 }
 
 export async function logout(fetchFn: ApiFetch): Promise<void> {
-	await apiPost<void>(fetchFn, '/api/auth/logout', undefined, { emptyResponse: true });
+	try {
+		await apiPost<void>(fetchFn, '/api/auth/logout', undefined, { emptyResponse: true });
+	} finally {
+		clearTemporarySvelteAccessToken();
+	}
 }
 
 export async function exchangeExternalLoginCode(
 	fetchFn: ApiFetch,
 	code: string
 ): Promise<LoginResponse> {
-	return apiPost<LoginResponse>(fetchFn, '/api/auth/external/exchange', { code });
+	const response = await apiPost<LoginResponse>(fetchFn, '/api/auth/external/exchange', { code });
+	setTemporarySvelteAccessToken(response.accessToken, response.accessTokenExpiresUtc);
+	return response;
 }
 
 export function getGoogleLoginUrl(

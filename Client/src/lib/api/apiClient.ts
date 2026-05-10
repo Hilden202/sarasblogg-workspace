@@ -1,4 +1,5 @@
 import { createApiError } from './apiErrors';
+import { getTemporarySvelteAccessToken } from './temporarySvelteAuth';
 
 export type ApiFetch = typeof fetch;
 
@@ -66,6 +67,16 @@ export async function apiRequest<T>(
 	if (hasBody && !isFormData && !headers.has('Content-Type')) {
 		headers.set('Content-Type', 'application/json');
 	}
+	const temporaryAccessToken = getTemporarySvelteAccessToken();
+	if (temporaryAccessToken && !headers.has('Authorization')) {
+		// TEMPORARY SVELTE SPA COMPATIBILITY LAYER:
+		// Mobile Safari/WebKit may reject the Render API's cross-site HttpOnly cookie
+		// when Svelte runs on GitHub Pages. Prefer the short-lived access token returned
+		// by the existing API login/exchange response for Svelte requests only. Cookie
+		// auth stays enabled via credentials: 'include' and Razor remains unchanged.
+		// Remove this when Svelte and API are same-site or a BFF/server-auth flow exists.
+		headers.set('Authorization', `Bearer ${temporaryAccessToken}`);
+	}
 
 	const response = await fetchFn(resolveApiUrl(path), {
 		...options,
@@ -98,6 +109,10 @@ export async function apiDownload(
 
 	const headers = new Headers(options.headers);
 	if (!headers.has('Accept')) headers.set('Accept', '*/*');
+	const temporaryAccessToken = getTemporarySvelteAccessToken();
+	if (temporaryAccessToken && !headers.has('Authorization')) {
+		headers.set('Authorization', `Bearer ${temporaryAccessToken}`);
+	}
 
 	const response = await fetchFn(resolveApiUrl(path), {
 		...init,
