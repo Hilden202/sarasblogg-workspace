@@ -13,8 +13,8 @@
 	export let data;
 
 	const topLeftFlower = staticAsset('/images/logo/top-left-corner-flower-ny.png');
-	const bottomRightFlower = staticAsset('/images/logo/bottom-right-corner-flower-ny.png');
-	const appShellStyle = `--app-flower-top-left: url("${topLeftFlower}"); --app-flower-bottom-right: url("${bottomRightFlower}");`;
+	const heroBranch = staticAsset('/images/logo/olive-branch-soft.png');
+	const appShellStyle = `--app-flower-top-left: url("${topLeftFlower}"); --app-hero-branch: url("${heroBranch}");`;
 	let cookieConsent: CookieConsent;
 
 	function isExternalAuthCallbackPath(pathname: string) {
