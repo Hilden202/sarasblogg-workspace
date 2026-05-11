@@ -77,8 +77,14 @@ img {
 	display: flex;
 	flex-direction: column;
 	background:
-		var(--app-flower-top-left) top left / min(24vw, 220px) auto no-repeat,
-		var(--app-flower-bottom-right) right 24rem / min(24vw, 240px) auto no-repeat,
+		var(--app-flower-top-left)
+			left calc(-1 * clamp(2.6rem, 6vw, 4.75rem))
+			top calc(-1 * clamp(1.85rem, 4.5vw, 3.75rem)) /
+			clamp(150px, 27vw, 260px) auto no-repeat,
+		var(--app-hero-branch)
+			right calc(-1 * clamp(1.55rem, 3.75vw, 3.35rem))
+			top clamp(9.75rem, 20vw, 21rem) /
+			clamp(120px, 15vw, 190px) auto no-repeat,
 		var(--color-bg);
 }
 
@@ -291,6 +297,14 @@ img {
 }
 
 @media (max-width: 760px) {
+	.app-shell {
+		background:
+			var(--app-flower-top-left) left -3.25rem top -2.5rem / 150px auto no-repeat,
+			var(--app-hero-branch) right -3.5rem top clamp(13.5rem, 58vw, 15rem) /
+				clamp(86px, 24vw, 110px) auto no-repeat,
+			var(--color-bg);
+	}
+
 	body {
 		background-size: 150px auto, 160px auto, auto;
 	}
