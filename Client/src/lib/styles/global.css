@@ -82,10 +82,25 @@ img {
 			top clamp(5.15rem, 6.4vw, 5.8rem) /
 			clamp(132px, 15vw, 220px) auto no-repeat,
 		var(--app-hero-branch)
-			right calc(-1 * clamp(1.55rem, 3.75vw, 3.35rem))
+			right calc(-1 * clamp(1.35rem, 3.1vw, 2.85rem))
 			top clamp(9.75rem, 20vw, 21rem) /
 			clamp(120px, 15vw, 190px) auto no-repeat,
 		var(--color-bg);
+}
+
+@media (min-width: 1800px) {
+	.app-shell {
+		background:
+			var(--app-flower-top-left-crop)
+				left calc(-1 * clamp(0.25rem, 1.2vw, 1rem))
+				top clamp(5.15rem, 6.4vw, 5.8rem) /
+				clamp(132px, 15vw, 220px) auto no-repeat,
+			var(--app-hero-branch)
+				right calc(-1 * clamp(1.35rem, 2.35vw, 2.45rem))
+				top clamp(9.75rem, 20vw, 21rem) /
+				clamp(120px, 15vw, 190px) auto no-repeat,
+			var(--color-bg);
+	}
 }
 
 .page-main {
@@ -299,9 +314,10 @@ img {
 @media (max-width: 760px) {
 	.app-shell {
 		background:
-			var(--app-flower-top-left) left -3.25rem top -2.5rem / 150px auto no-repeat,
-			var(--app-hero-branch) right -3.5rem top clamp(13.5rem, 58vw, 15rem) /
-				clamp(86px, 24vw, 110px) auto no-repeat,
+			var(--app-flower-top-left-crop) left calc(-1 * clamp(0.9rem, 4vw, 1.25rem)) top
+				clamp(4.85rem, 13vw, 5.15rem) / clamp(126px, 34vw, 148px) auto no-repeat,
+			var(--app-hero-branch) right calc(-1 * clamp(2.35rem, 9vw, 2.75rem)) top
+				clamp(13rem, 56vw, 14.75rem) / clamp(92px, 26vw, 118px) auto no-repeat,
 			var(--color-bg);
 	}
 
