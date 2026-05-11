@@ -77,10 +77,10 @@ img {
 	display: flex;
 	flex-direction: column;
 	background:
-		var(--app-flower-top-left)
-			left calc(-1 * clamp(2.6rem, 6vw, 4.75rem))
-			top calc(-1 * clamp(1.85rem, 4.5vw, 3.75rem)) /
-			clamp(150px, 27vw, 260px) auto no-repeat,
+		var(--app-flower-top-left-crop)
+			left calc(-1 * clamp(0.25rem, 1.2vw, 1rem))
+			top clamp(5.15rem, 6.4vw, 5.8rem) /
+			clamp(132px, 15vw, 220px) auto no-repeat,
 		var(--app-hero-branch)
 			right calc(-1 * clamp(1.55rem, 3.75vw, 3.35rem))
 			top clamp(9.75rem, 20vw, 21rem) /

@@ -13,8 +13,9 @@
 	export let data;
 
 	const topLeftFlower = staticAsset('/images/logo/top-left-corner-flower-ny.png');
+	const topLeftFlowerCrop = staticAsset('/images/logo/topleftflowercut.png');
 	const heroBranch = staticAsset('/images/logo/olive-branch-soft.png');
-	const appShellStyle = `--app-flower-top-left: url("${topLeftFlower}"); --app-hero-branch: url("${heroBranch}");`;
+	const appShellStyle = `--app-flower-top-left: url("${topLeftFlower}"); --app-flower-top-left-crop: url("${topLeftFlowerCrop}"); --app-hero-branch: url("${heroBranch}");`;
 	let cookieConsent: CookieConsent;
 
 	function isExternalAuthCallbackPath(pathname: string) {
