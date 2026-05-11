@@ -89,42 +89,28 @@ Frontend får inte anta databasstruktur eller duplicera backend-logik.
 
 # 🎨 Frontends
 
-## Frontend/ (Razor Pages)
+## Live-frontends
 
-Nuvarande stabil frontend.
+### Razor Pages
+Stabil produktionsfrontend.
 
-- API-driven
-- Ingen direkt databasåtkomst
-- All data hämtas via API
+🌐 https://xn--medhjrtatsomkompass-kwb.se/
+
+### SvelteKit
+Nästa generations frontend byggd mot samma API-kontrakt.
+
+🌐 https://hilden202.github.io/sarasblogg-workspace/
 
 ---
 
-## Client/ (SvelteKit)
+# ⚖️ Frontend-jämförelse
 
-Nästa generations frontend.
+Båda klienterna använder samma backend och API-kontrakt men har olika tekniska mål.
 
-Teknik:
-
-- SvelteKit
-- TypeScript
-- Vite
-
-Principer:
-
-```text
-routes/
-components/
-services/
-stores/
-lib/
-```
-
-Regler:
-
-- API-anrop sker via services
-- inga direkta fetch-anrop i komponenter
-- DTOs typas
-- komponenter hålls presentationsnära
+| Frontend | Fokus |
+|---|---|
+| Razor Pages | Stabilitet, etablerat flöde |
+| SvelteKit | Modern UX, snabbare klientupplevelse |
 
 ---
 
@@ -223,6 +209,24 @@ API:t ansvarar för:
 - AI-baserad innehållsanalys och filtrering
 
 Frontend skickar endast nödvändig data för skapande av kommentarer.
+
+---
+
+# 🤖 AI-funktionalitet
+
+Projektet innehåller flera AI-drivna funktioner via API:t.
+
+Nuvarande funktioner:
+
+- AI-baserad kommentarsmoderering
+- Reflekterande vägledningssvar
+- Kontextbaserade korta AI-svar i frontend
+- Tarot-/vägledningsmotor via API
+
+AI-logik hålls backend-driven för att:
+- skydda API-nycklar
+- centralisera prompts/logik
+- möjliggöra flera klienter mot samma AI-flöden
 
 ---
 
@@ -342,6 +346,12 @@ PostgreSQL-backups hanteras via scripts och utvecklingsverktyg för lokal åters
 - ✅ Typed HttpClients + Polly
 - ✅ Monorepo etablerat
 - ✅ AI-baserad kommentarsmoderering
+- ✅ API-driven auth/session-flöden
+- ✅ Google login
+- ✅ Hybrid frontend-arkitektur
+- ✅ AI-guidance i footer
+- ✅ Responsive dekorationssystem
+- ✅ Svelte username/setup parity
 
 ---
 
@@ -356,10 +366,18 @@ PostgreSQL-backups hanteras via scripts och utvecklingsverktyg för lokal åters
 
 # 🔗 Snabblänkar
 
-## Produktion
+# 🔗 Live
 
-- 🌐 Frontend: https://sarasblogg.onrender.com
-- 🔗 API: https://sarasbloggapi.onrender.com
+- 🌐 Razor frontend:
+  https://xn--medhjrtatsomkompass-kwb.se/
+
+- ⚡ Svelte frontend:
+  https://hilden202.github.io/sarasblogg-workspace/
+
+- 🔗 API:
+  https://sarasbloggapi.onrender.com
+
+---
 
 ## Övrigt
 
