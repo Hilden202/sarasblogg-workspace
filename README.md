@@ -283,51 +283,6 @@ Fokusområden:
 
 ---
 
-# ⚠️ Viktigt vid vidareutveckling
-
-## Razor
-
-Var försiktig med:
-
-- hidden fields
-- model binding
-- modal-state
-- form lifecycle
-- date formatting
-
----
-
-## API-kontrakt
-
-Tänk alltid:
-
-- är detta en breaking change?
-- påverkar detta flera klienter?
-- är detta backend- eller frontend-ansvar?
-
----
-
-# 🧠 Monorepo
-
-Var uppmärksam på:
-
-- Node-version
-- .NET-version
-- CORS
-- cookies/auth
-- environment variables
-- build/deploy-påverkan
-
----
-
-# ☁️ Deployment
-
-Separata Render-services används för frontend och API.
-
-Konfiguration sker via environment variables.
-
----
-
 # 📦 Backup
 
 PostgreSQL-backups hanteras via scripts och utvecklingsverktyg för lokal återställning och testning.
