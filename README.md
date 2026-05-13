@@ -1,3 +1,14 @@
+<!-- sarasblogg banner -->
+<div align="center">
+  <a href="https://hilden202.github.io/sarasblogg-workspace/" target="_blank">
+    <img
+      height="220"
+      src="https://raw.githubusercontent.com/Hilden202/HildenMedia/main/images/sarasblogg-banner.png"
+      alt="Med hjärtat som kompass – ❤️"
+    />
+  </a>
+</div>
+
 # SarasBlogg – Monorepo Workspace
 
 SarasBlogg är ett API-first monorepo där backend är systemets kärna och frontend är utbytbar.
