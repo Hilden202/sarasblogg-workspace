@@ -47,7 +47,7 @@
 		<div>
 			<p class="eyebrow">Kontakt</p>
 			<h1>Skriv några rader</h1>
-			<p>Här kan du skicka en hälsning, fråga eller tanke. Jag läser allt med värme.</p>
+			<p>Här kan du skicka en hälsning, ställa en fråga eller dela en tanke. Jag ser fram emot att höra från dig.</p>
 		</div>
 
 		<form class="card" on:submit|preventDefault={submit}>
