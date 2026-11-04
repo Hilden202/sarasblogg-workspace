@@ -1,5 +1,6 @@
 <script lang="ts">
 	import '$lib/styles/global.css';
+	import { onMount } from 'svelte';
 	import Navbar from '$lib/components/layout/Navbar.svelte';
 	import Footer from '$lib/components/layout/Footer.svelte';
 	import CookieConsent from '$lib/components/layout/CookieConsent.svelte';
@@ -17,6 +18,12 @@
 	const heroBranch = staticAsset('/images/logo/olive-branch-soft.png');
 	const appShellStyle = `--app-flower-top-left: url("${topLeftFlower}"); --app-flower-top-left-crop: url("${topLeftFlowerCrop}"); --app-hero-branch: url("${heroBranch}");`;
 	let cookieConsent: CookieConsent;
+
+	onMount(() => {
+		// Only hide the static startup fallback after Svelte actually mounts.
+		// If a JS bundle fails to load, the user still sees recovery instructions.
+		document.getElementById('startup-fallback')?.remove();
+	});
 
 	function isExternalAuthCallbackPath(pathname: string) {
 		return pathname.replace(/\/+$/, '').endsWith('/auth/external/callback');
