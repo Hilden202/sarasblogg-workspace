@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="sv">
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -7,5 +7,13 @@
 	</head>
 	<body data-sveltekit-preload-data="hover">
 		<div style="display: contents">%sveltekit.body%</div>
+		<!-- Svelte uses ssr=false. Keep a useful, static fallback if JS or its assets fail to load. -->
+		<section id="startup-fallback" role="status" aria-live="polite" style="min-height:100vh;box-sizing:border-box;display:grid;place-content:center;padding:2rem;background:#fbf4ea;color:#40372f;font:16px/1.6 system-ui,-apple-system,sans-serif;text-align:center">
+			<div style="max-width:34rem">
+				<h1 style="font-size:1.65rem;line-height:1.25;margin:0 0 .75rem">SarasBlogg laddas...</h1>
+				<p style="margin:0 0 1rem">Om sidan fortsätter att visas har webbappen inte kunnat starta.</p>
+				<p style="margin:0"><a href="/sarasblogg-workspace/" style="color:#71412d;font-weight:600">Till bloggens startsida</a> · Uppdatera sidan i webbläsaren och försök igen</p>
+			</div>
+		</section>
 	</body>
 </html>
