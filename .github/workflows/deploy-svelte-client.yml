@@ -42,6 +42,17 @@ jobs:
         env:
           VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
 
+      - name: Verify prerendered Google auth callback
+        run: |
+          test -s Client/build/auth/external/callback/index.html || {
+            echo "::error::Google auth callback is missing from GitHub Pages build."
+            exit 1
+          }
+          grep -q 'startup-fallback' Client/build/auth/external/callback/index.html || {
+            echo "::error::Google auth callback has no startup recovery UI."
+            exit 1
+          }
+
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
